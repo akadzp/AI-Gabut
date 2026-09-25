@@ -1,0 +1,86 @@
+AI-GABUT / AGENTIC AI
+00_Roadmap-Besar.txt
+
+ROADMAP BESAR
+=============
+
+00. Project Initialization
+    Menyiapkan fondasi awal proyek, struktur repository, aturan dasar,
+    dan lingkungan kerja agar seluruh pengembangan berikutnya memiliki
+    titik awal yang jelas dan konsisten.
+
+01. Agentic AI
+    Pembentukan otak AI sebagai agen yang mampu memahami tujuan,
+    melakukan reasoning, menyusun rencana, menggunakan tools,
+    dan menjalankan pekerjaan secara agentic.
+
+02. Platform Foundation
+    Membangun fondasi platform tempat seluruh subsystem AI-Gabut
+    akan berjalan, sehingga Agentic AI tidak berdiri sendiri dan
+    dapat menjadi bagian dari satu sistem yang terintegrasi.
+
+03. Internal State & Storage
+    Menyediakan tempat bagi sistem untuk menyimpan state, data,
+    konfigurasi, memory, metadata, dan informasi internal yang
+    diperlukan agar sistem dapat mempertahankan konteks dan kondisi.
+
+04. Workspace & Change System
+    Membangun ruang kerja bersama tempat manusia dan AI dapat
+    bekerja terhadap project dan file, termasuk pengelolaan perubahan
+    agar aktivitas keduanya dapat dilacak dan dikelola dengan aman.
+
+05. Agentic ↔ Platform Integration
+    Menghubungkan otak Agentic AI dengan seluruh fondasi platform
+    sehingga kemampuan reasoning dan pengambilan keputusan dapat
+    benar-benar mengendalikan dan menggunakan subsystem platform.
+
+06. Internal Execution & Tasks
+    Menyediakan kemampuan bagi AI dan platform untuk menjalankan
+    pekerjaan nyata secara terkontrol, termasuk execution, task,
+    process, scheduling, dan pekerjaan internal lainnya.
+
+07. Synchronization
+    Menyatukan perubahan dari manusia, AI, workspace lokal, dan
+    sumber eksternal agar data dan pekerjaan tetap konsisten serta
+    konflik dapat ditangani.
+
+08. External Connectors
+    Menghubungkan AI-Gabut dengan layanan dan platform eksternal
+    sehingga sistem dapat membaca, menggunakan, dan melakukan aksi
+    terhadap sumber daya di luar sistem.
+
+09. Media & Advanced Services
+    Menambahkan kemampuan tingkat lanjut seperti pemrosesan media
+    dan layanan tambahan yang memperluas kemampuan AI-Gabut di luar
+    pekerjaan berbasis teks dan kode.
+
+10. API & User Experience
+    Menyediakan antarmuka yang memungkinkan manusia dan aplikasi lain
+    berinteraksi dengan AI-Gabut melalui API dan pengalaman pengguna
+    yang konsisten.
+
+11. Production Hardening
+    Memperkuat keamanan, reliability, observability, recovery,
+    performance, dan pengendalian sistem agar siap digunakan secara
+    serius dan berkelanjutan.
+
+12. Production Release
+    Mengubah sistem yang telah selesai dibangun dan diperkuat menjadi
+    release yang siap digunakan sebagai platform AI-Gabut secara nyata.
+
+13. Project Complete
+    Menandai tercapainya keseluruhan roadmap utama, ketika seluruh
+    fondasi dan kemampuan inti AI-Gabut telah tersedia sebagai satu
+    sistem yang utuh.
+
+
+CATATAN
+=======
+
+File ini merupakan peta utama urutan pengembangan proyek.
+
+Penjelasan pada setiap poin hanya menjelaskan tujuan umum dan alasan
+mengapa tahap tersebut diperlukan.
+
+Detail pekerjaan setiap tahap berada pada file roadmap dengan nomor
+yang sesuai.

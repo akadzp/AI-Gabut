@@ -1,0 +1,15 @@
+TECHNICAL DOCUMENTATION
+SECURITY MODEL
+
+Dokumen ini menjelaskan model authority dan security.
+
+Isi:
+- identity
+- permission
+- policy
+- capability
+- approval
+- execution authority
+- secret handling
+- audit
+- security boundary

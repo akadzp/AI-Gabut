@@ -1,0 +1,20 @@
+TECHNICAL DOCUMENTATION
+WORKSPACE AND CHANGE MODEL
+
+Dokumen ini menjelaskan bagaimana manusia dan AI bekerja terhadap
+workspace yang sama.
+
+Isi:
+- workspace
+- project
+- file identity
+- file state
+- change
+- change-set
+- origin
+- ownership
+- locking
+- snapshot
+- diff
+- rollback
+- change journal

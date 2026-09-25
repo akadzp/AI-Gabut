@@ -1,0 +1,14 @@
+STATUS DOCUMENTATION
+IMPLEMENTATION STATUS
+
+Mencatat status implementasi aktual setiap subsystem dan komponen.
+
+Gunakan kategori:
+- DONE
+- PARTIAL
+- SCAFFOLD
+- PLANNED
+- BLOCKED
+
+Jangan menggunakan roadmap sebagai sumber status implementasi.
+Status harus berdasarkan repository dan hasil validasi aktual.

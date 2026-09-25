@@ -1,0 +1,13 @@
+TECHNICAL DOCUMENTATION
+DEPENDENCY RULES
+
+Dokumen ini berisi aturan dependency architecture.
+
+Isi:
+- dependency direction
+- allowed dependency
+- forbidden dependency
+- cross-subsystem communication
+- event-based communication
+- circular dependency rules
+- architecture validation rules

@@ -1,0 +1,15 @@
+TECHNICAL DOCUMENTATION
+PROJECT CONTEXT
+
+Dokumen ini menjelaskan konteks teknis dasar proyek agar developer
+atau AI lain dapat memahami proyek tanpa bergantung pada percakapan.
+
+Isi yang harus dijaga:
+- tujuan sistem
+- jenis sistem
+- konsep Personal AI Operating Environment
+- posisi Agentic AI
+- prinsip modularitas
+- prinsip internal-first
+- istilah utama
+- aturan penting proyek

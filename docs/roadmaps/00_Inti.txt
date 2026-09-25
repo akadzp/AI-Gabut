@@ -1,0 +1,532 @@
+AI-GABUT — ROADMAP BESAR
+=========================
+
+Dokumen ini merupakan roadmap utama pembangunan AI-Gabut.
+
+Roadmap ini menjelaskan arah besar sistem dari fondasi sampai menjadi
+platform AI yang dapat digunakan untuk membangun berbagai AI / aplikasi
+dengan identitas, kebutuhan, dan lingkungan penggunaan yang berbeda.
+
+Roadmap disusun berdasarkan arsitektur AI-Gabut saat ini.
+
+Struktur utama:
+
+AI-Gabut
+│
+├── core/
+├── apps/
+├── connectors/
+├── data/
+├── runtime/
+├── workspace/
+├── config/
+├── scripts/
+├── public/
+├── docs/
+└── tests/
+
+
+PRINSIP ROADMAP
+---------------
+
+1. AI-Gabut adalah platform / sistem dasar.
+
+2. `core/` berisi kemampuan dan mekanisme generik AI-Gabut.
+
+3. `apps/` berisi AI atau produk yang menggunakan AI-Gabut.
+   Contohnya:
+   - Agentic
+   - BukaOlshop CS
+   - aplikasi AI lainnya
+
+4. Identitas sebuah aplikasi tidak boleh dimasukkan ke dalam core
+   hanya karena aplikasi tersebut merupakan pengguna pertama dari
+   suatu kemampuan.
+
+5. `connectors/` berisi adapter terhadap sistem eksternal.
+
+6. `data/`, `runtime/`, dan `workspace/` merupakan bagian dari state,
+   runtime state, dan working state sistem, bukan sekadar source-code
+   module.
+
+7. Pembangunan dilakukan berdasarkan dependency antar kemampuan,
+   bukan berdasarkan urutan nama folder.
+
+8. Setiap tahap harus mempunyai batas tanggung jawab yang jelas,
+   validation, dan definition of done.
+
+9. Jumlah tahap roadmap tidak ditentukan terlebih dahulu.
+   Tahap dapat dipecah, digabung, atau ditambahkan apabila proses
+   pembangunan menunjukkan bahwa hal tersebut memang diperlukan.
+
+10. Roadmap besar hanya menentukan arah dan kelompok pembangunan.
+    Detail implementasi setiap tahap didokumentasikan pada roadmap
+    turunannya ketika tahap tersebut sudah ditentukan.
+
+
+ROADMAP UTAMA
+-------------
+
+01. CORE FOUNDATION & RUNTIME
+
+    Membangun fondasi dasar agar seluruh bagian AI-Gabut dapat hidup
+    sebagai satu sistem.
+
+    Mencakup mekanisme seperti:
+    - bootstrap
+    - lifecycle
+    - configuration
+    - environment
+    - dependency wiring
+    - capability discovery
+    - internal contracts
+    - event mechanism
+    - diagnostics
+    - logging
+    - system identity
+    - health / readiness
+    - architecture validation
+
+    Hasil yang diharapkan:
+    AI-Gabut mempunyai fondasi runtime yang konsisten dan dapat
+    digunakan oleh subsystem lainnya.
+
+
+02. AI / AGENT INTELLIGENCE ENGINE
+
+    Membangun dan menyempurnakan mesin kecerdasan yang menjadi
+    kemampuan generik AI-Gabut.
+
+    Mencakup kemampuan seperti:
+    - understanding
+    - context
+    - memory
+    - reasoning
+    - planning
+    - decomposition
+    - tool intelligence
+    - execution control
+    - observation
+    - replanning
+    - goal management
+    - model routing
+    - specialist capability
+    - evaluation
+    - reliability
+
+    Engine ini bersifat generik.
+
+    Engine bukan merupakan aplikasi Agentic dan tidak boleh
+    mengandung product identity tertentu.
+
+
+03. SECURITY, AUTHORITY & GOVERNANCE
+
+    Membangun mekanisme yang menentukan apa yang boleh dilakukan
+    oleh sistem, agent, application, connector, maupun user.
+
+    Mencakup:
+    - identity
+    - authentication
+    - authorization
+    - capability permission
+    - policy
+    - secret handling
+    - execution authority
+    - isolation
+    - audit
+    - approval / controlled action
+
+    Security menjadi bagian lintas sistem dan harus menjadi boundary
+    bagi operasi yang membutuhkan authority.
+
+
+04. STATE, STORAGE & PERSISTENCE
+
+    Membangun mekanisme penyimpanan dan pengelolaan state AI-Gabut.
+
+    Mencakup:
+    - storage contract
+    - structured state
+    - database
+    - metadata
+    - object / blob storage
+    - cache
+    - virtual filesystem
+    - snapshot
+    - transaction
+    - idempotency
+    - indexing
+    - storage lifecycle
+
+    Tujuannya agar state sistem dapat disimpan, diambil, divalidasi,
+    dan dipulihkan secara konsisten.
+
+
+05. LOCAL SYSTEM & EXECUTION CAPABILITIES
+
+    Membangun kemampuan AI-Gabut untuk berinteraksi dengan lingkungan
+    sistem tempat AI-Gabut berjalan.
+
+    Termasuk kemampuan yang berada pada:
+    - Linux / OS
+    - process
+    - filesystem
+    - command execution
+    - system resources
+    - environment interaction
+
+    Seluruh kemampuan eksekusi harus mengikuti security,
+    authority, resource limit, dan audit yang berlaku.
+
+
+06. WORKSPACE & CHANGE SYSTEM
+
+    Membangun working environment bersama yang digunakan oleh manusia
+    maupun AI.
+
+    Mencakup:
+    - workspace model
+    - file identity
+    - change model
+    - change set
+    - ownership
+    - origin
+    - concurrency
+    - locking
+    - versioning
+    - diff
+    - validation
+    - apply / commit
+    - snapshot
+    - rollback
+    - change journal
+
+    Perubahan yang dilakukan manusia maupun agent harus dapat
+    menggunakan model perubahan yang konsisten.
+
+
+07. TASK, JOB & EXECUTION ORCHESTRATION
+
+    Membangun sistem untuk menjalankan pekerjaan secara terkontrol.
+
+    Mencakup:
+    - task model
+    - queue
+    - worker
+    - job lifecycle
+    - scheduler
+    - workflow
+    - checkpoint
+    - retry
+    - recovery
+    - cancellation
+    - execution limit
+    - audit
+
+    Execution harus berjalan melalui authority dan security policy
+    yang telah ditentukan.
+
+
+08. SYNCHRONIZATION & RECONCILIATION
+
+    Membangun kemampuan untuk menjaga kesesuaian state antara
+    lingkungan lokal dan lingkungan eksternal.
+
+    Mencakup:
+    - sync state
+    - change detection
+    - sync journal
+    - reconciliation
+    - conflict detection
+    - merge
+    - conflict resolution
+    - snapshot
+    - rollback
+    - sync policy
+    - sync execution
+
+    Synchronization merupakan capability tersendiri.
+
+    Connector menyediakan interface ke sistem eksternal, sedangkan
+    mekanisme sinkronisasi tetap menjadi tanggung jawab subsystem sync.
+
+
+09. EXTERNAL CONNECTOR & INTEGRATION LAYER
+
+    Membangun framework untuk menghubungkan AI-Gabut dengan sistem
+    eksternal tanpa memasukkan ketergantungan vendor ke core.
+
+    Contoh lingkungan eksternal:
+    - GitHub
+    - Replit
+    - Google
+    - Microsoft
+    - browser
+    - custom API
+    - sistem eksternal lainnya
+
+    Mencakup:
+    - connector contract
+    - authentication
+    - capability model
+    - connector registry
+    - connector security
+    - reliability
+    - external API interaction
+    - validation
+
+    Connector harus dapat ditambahkan atau dilepas tanpa mengubah
+    arsitektur inti AI-Gabut.
+
+
+10. MEDIA & ADVANCED CAPABILITIES
+
+    Membangun kemampuan pemrosesan data non-teks dan capability
+    tingkat lanjut.
+
+    Mencakup:
+    - image
+    - audio
+    - video
+    - document processing
+    - OCR
+    - transcription
+    - embeddings
+    - indexing
+    - retrieval
+    - media pipeline
+
+    Capability ini harus tersedia melalui contract yang dapat
+    digunakan oleh subsystem atau application yang membutuhkan.
+
+
+11. API & SYSTEM INTERFACE
+
+    Membangun interface agar AI-Gabut dapat digunakan, dikontrol,
+    dan dipantau dari luar subsystem internal.
+
+    Mencakup:
+    - API contract
+    - session
+    - agent interface
+    - workspace interface
+    - task interface
+    - approval interface
+    - realtime communication
+    - web interface
+    - small-screen / mobile interface
+    - error / recovery UX
+
+    Interface harus menggunakan capability core tanpa mengambil
+    alih tanggung jawab subsystem internal.
+
+
+12. APPLICATION / PRODUCT LAYER
+
+    Membangun AI atau produk yang menggunakan AI-Gabut.
+
+    Application berada di luar core dan memiliki:
+    - identity
+    - configuration
+    - policy
+    - domain behavior
+    - UI / presentation
+    - deployment context
+
+    Contoh:
+
+    AI-Gabut
+       │
+       ├── Agentic
+       │
+       ├── BukaOlshop CS
+       │
+       └── aplikasi AI lainnya
+
+    Satu core dapat digunakan oleh banyak application.
+
+    Application dapat berjalan pada lingkungan berbeda.
+
+    Contoh:
+
+    Agentic
+    └── VPS
+        └── Agentic UI
+
+    BukaOlshop CS
+    └── BukaOlshop
+        └── halaman / interface di dalam aplikasi
+
+    Perbedaan tempat deployment tidak mengubah konsep bahwa
+    application menggunakan AI-Gabut sebagai platform.
+
+
+13. OPERATIONS, RECOVERY & PRODUCTION READINESS
+
+    Menjadikan AI-Gabut siap digunakan secara stabil pada lingkungan
+    nyata.
+
+    Mencakup:
+    - observability
+    - performance
+    - resource control
+    - security hardening
+    - backup
+    - restore
+    - disaster recovery
+    - migration
+    - failure testing
+    - release management
+    - operational runbook
+    - production validation
+
+
+HUBUNGAN ANTAR BAGIAN
+---------------------
+
+Secara konseptual:
+
+    AI-Gabut
+       │
+       ├── Core
+       │   ├── Foundation
+       │   ├── Intelligence
+       │   ├── Security
+       │   ├── Storage
+       │   ├── System
+       │   ├── Workspace
+       │   ├── Tasks
+       │   ├── Sync
+       │   ├── Media
+       │   └── API
+       │
+       ├── Connectors
+       │   └── External Systems
+       │
+       └── Apps
+           ├── Agentic
+           ├── BukaOlshop CS
+           └── Other AI Applications
+
+
+DEPENDENCY PRINSIP
+------------------
+
+Core dapat menggunakan capability dari core lainnya sesuai
+dependency yang telah ditentukan.
+
+Application dapat menggunakan core.
+
+Application dapat menggunakan connector melalui interface yang
+tersedia.
+
+Connector dapat menggunakan core infrastructure yang diperlukan.
+
+Core tidak boleh bergantung kepada application tertentu.
+
+Connector tidak boleh bergantung kepada application tertentu.
+
+Product identity tidak boleh dimasukkan ke dalam generic core.
+
+
+ROADMAP DETAIL
+--------------
+
+Roadmap besar ini tidak menentukan terlebih dahulu jumlah dokumen
+detail.
+
+Ketika pembangunan dimulai, setiap kelompok pekerjaan yang sudah
+memiliki boundary dan alur pembangunan yang jelas dapat dibuatkan
+dokumen roadmap detail:
+
+    01_Roadmap-....txt
+    02_Roadmap-....txt
+    03_Roadmap-....txt
+    ...
+
+Nomor tersebut mengikuti urutan proses pembangunan yang sebenarnya,
+bukan ditentukan hanya berdasarkan jumlah folder atau jumlah domain.
+
+Setiap roadmap detail harus mendokumentasikan satu tahap dari:
+
+    0 / belum dibangun
+        ↓
+    prerequisite
+        ↓
+    pembangunan bertahap
+        ↓
+    integration
+        ↓
+    validation
+        ↓
+    definition of done
+        ↓
+    selesai
+
+
+STATUS ROADMAP
+--------------
+
+Status roadmap merupakan dokumen terpisah yang menunjukkan kondisi
+aktual pembangunan terhadap roadmap.
+
+Status harus dapat menunjukkan:
+
+- completed
+- current
+- next
+- planned
+- blocked jika ada
+- validation status jika diperlukan
+
+Status tidak menentukan arsitektur.
+
+Status hanya mencatat posisi pembangunan terhadap roadmap yang telah
+ditentukan.
+
+
+ATURAN PERUBAHAN ROADMAP
+------------------------
+
+Roadmap dapat berkembang selama pembangunan.
+
+Apabila implementasi menunjukkan bahwa sebuah tahap terlalu besar,
+tahap tersebut dapat dipecah.
+
+Apabila dua tahap ternyata mempunyai dependency dan lifecycle yang
+sama, tahap tersebut dapat digabung.
+
+Apabila muncul capability baru yang memang diperlukan oleh arsitektur,
+tahap baru dapat ditambahkan.
+
+Perubahan tersebut harus tercermin pada roadmap besar dan status
+roadmap.
+
+Tujuan roadmap bukan mempertahankan jumlah tahap tertentu, tetapi
+memastikan pembangunan AI-Gabut mempunyai arah, dependency, dan
+definition of done yang jelas.
+
+
+DEFINISI AKHIR AI-GABUT
+-----------------------
+
+AI-Gabut selesai ketika seluruh capability yang diperlukan oleh
+arsitektur telah dibangun, terintegrasi, tervalidasi, dan dapat
+digunakan sebagai platform untuk menjalankan berbagai application
+AI tanpa mencampurkan identity atau kebutuhan khusus application
+ke dalam generic core.
+
+Dengan demikian:
+
+    AI-Gabut = platform
+
+    Agentic = salah satu application
+
+    BukaOlshop CS = salah satu application
+
+    Connector = interface/adaptor ke sistem eksternal
+
+    Core = generic capability dan machinery
+
+    Data / Runtime / Workspace = state dan working environment sistem

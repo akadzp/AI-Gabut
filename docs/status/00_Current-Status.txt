@@ -1,0 +1,24 @@
+STATUS DOCUMENTATION
+CURRENT STATUS
+
+Dokumen ini adalah snapshot kondisi proyek saat ini.
+
+Format status per subsystem:
+
+STATUS:
+DONE / IN PROGRESS / NEXT / PLANNED / BLOCKED / SCAFFOLD
+
+IMPLEMENTATION:
+Apa yang benar-benar sudah ada di repository.
+
+VALIDATION:
+Test/check yang sudah berhasil.
+
+GAPS:
+Apa yang masih kurang.
+
+NEXT:
+Pekerjaan aktual berikutnya.
+
+Catatan:
+Status dapat berubah tanpa mengubah roadmap atau technical architecture.

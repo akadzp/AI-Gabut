@@ -1,0 +1,13 @@
+TECHNICAL DOCUMENTATION
+SYSTEM ARCHITECTURE
+
+Dokumen ini menjelaskan arsitektur teknis keseluruhan.
+
+Isi:
+- subsystem utama
+- hubungan antar subsystem
+- layer
+- runtime boundary
+- data flow
+- control flow
+- deployment/runtime concept

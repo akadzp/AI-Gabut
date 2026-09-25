@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-Gabut M5.3</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <h1>AI-Gabut</h1>
+        <p>Personal AI Development Agent · Local Workspace · M5.3</p>
+      </div>
+      <div class="selectors">
+        <label><span>Platform AI</span><select id="provider"><option value="openai">OpenAI</option><option value="gemini">Gemini</option></select></label>
+        <label><span>Bot / Model</span><select id="model" disabled><option value="">Memuat model...</option></select></label>
+      </div>
+    </header>
+    <section id="chat" class="chat"></section>
+    <form id="chat-form" class="composer">
+      <textarea id="prompt" rows="3" placeholder="Contoh: periksa project ini dan jelaskan struktur utamanya"></textarea>
+      <button id="send" type="submit">Send</button>
+    </form>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+01_Roadmap-Core-Foundation.txt
+
+AI-GABUT — ROADMAP 01
+CORE FOUNDATION & RUNTIME
+=========================
+
+TUJUAN
+------
+
+Membangun fondasi dasar AI-Gabut agar seluruh subsystem dapat
+berjalan sebagai satu sistem dengan lifecycle, configuration,
+dependency, capability, event, diagnostics, identity, contract,
+health, dan validation yang konsisten.
+
+
+KONDISI AWAL
+------------
+
+Menentukan kondisi awal yang harus tersedia sebelum pembangunan
+Core Foundation dimulai.
+
+Pemeriksaan meliputi:
+
+- struktur core saat ini
+- subsystem yang sudah tersedia
+- dependency yang sudah ada
+- entry point / bootstrap yang tersedia
+- configuration yang sudah ada
+- environment yang digunakan
+- contract yang sudah ada
+- mekanisme logging dan diagnostics yang sudah tersedia
+- mekanisme event yang sudah tersedia
+- kondisi test dan validation
+
+Kondisi awal digunakan sebagai baseline.
+
+Pembangunan tidak boleh menghapus capability yang sudah ada tanpa
+alasan arsitektural yang jelas.
+
+
+ROADMAP
+-------
+
+01. Menentukan Core Runtime Boundary
+
+    Menentukan dengan jelas apa yang menjadi tanggung jawab
+    platform foundation dan apa yang berada di luar foundation.
+
+    Hasil:
+    Boundary Core Foundation jelas dan tidak mengambil alih
+    tanggung jawab subsystem lain.
+
+
+02. Menentukan Application Bootstrap
+
+    Membangun entry point untuk menjalankan AI-Gabut sebagai sistem.
+
+    Bootstrap harus mampu:
+
+    - memuat environment
+    - memuat configuration
+    - menyiapkan dependency
+    - menginisialisasi subsystem
+    - mengatur lifecycle
+    - menangani startup failure
+    - menghasilkan kondisi runtime yang dapat diperiksa
+
+    Hasil:
+    AI-Gabut dapat melakukan startup melalui mekanisme bootstrap
+    yang terdefinisi.
+
+
+03. Membangun Runtime Lifecycle
+
+    Menentukan lifecycle standar subsystem dan aplikasi.
+
+    Lifecycle minimal harus mempunyai konsep:
+
+    - initialize
+    - start
+    - ready
+    - stop
+    - shutdown
+    - failure
+
+    Lifecycle harus mempunyai aturan yang konsisten sehingga
+    subsystem tidak berjalan dengan urutan yang tidak valid.
+
+
+04. Membangun Configuration System
+
+    Menentukan bagaimana AI-Gabut memperoleh, memuat, memvalidasi,
+    dan menggunakan configuration.
+
+    Configuration harus mempunyai:
+
+    - source
+    - schema / contract
+    - validation
+    - default
+    - override
+    - environment separation
+
+    Configuration tidak boleh tersebar tanpa aturan di seluruh
+    subsystem.
+
+
+05. Membangun Environment Management
+
+    Menentukan bagaimana runtime mengetahui dan menggunakan
+    environment tempat AI-Gabut berjalan.
+
+    Environment mencakup informasi dan capability yang diperlukan
+    runtime tanpa mencampurkan configuration dengan hard-coded
+    implementation.
+
+
+06. Membangun Dependency Wiring
+
+    Menentukan bagaimana subsystem memperoleh dependency.
+
+    Dependency wiring harus:
+
+    - eksplisit
+    - dapat divalidasi
+    - mempunyai lifecycle yang jelas
+    - tidak menghasilkan circular dependency
+    - tidak membuat core bergantung pada application tertentu
+
+    Hasil:
+    subsystem dapat dihubungkan tanpa dependency tersembunyi.
+
+
+07. Membangun Capability Registry
+
+    Menentukan mekanisme untuk mendaftarkan dan menemukan
+    capability yang tersedia di dalam AI-Gabut.
+
+    Registry harus dapat mengetahui:
+
+    - capability
+    - provider
+    - availability
+    - contract
+    - lifecycle
+    - dependency yang diperlukan
+
+    Capability discovery menjadi dasar bagi subsystem lain untuk
+    menggunakan kemampuan sistem tanpa mengetahui implementasi
+    internalnya.
+
+
+08. Membangun Event System
+
+    Menentukan mekanisme komunikasi event internal.
+
+    Event system harus mempunyai:
+
+    - event contract
+    - publisher
+    - subscriber
+    - lifecycle
+    - error handling
+    - observability
+
+    Event system tidak boleh menjadi jalur dependency tersembunyi.
+
+
+09. Membangun Diagnostics
+
+    Menyediakan kemampuan untuk mengetahui kondisi internal
+    subsystem dan runtime.
+
+    Diagnostics harus dapat membantu menemukan:
+
+    - subsystem failure
+    - dependency failure
+    - configuration failure
+    - lifecycle failure
+    - capability failure
+    - runtime problem
+
+
+10. Membangun Structured Logging
+
+    Menentukan standar logging internal AI-Gabut.
+
+    Logging harus konsisten untuk:
+
+    - subsystem
+    - component
+    - lifecycle
+    - event
+    - error
+    - request / operation
+    - correlation
+
+    Logging harus dapat digunakan oleh diagnostics dan operational
+    tooling.
+
+
+11. Membangun Internal Identity
+
+    Menentukan identity yang digunakan oleh runtime, subsystem,
+    component, operation, dan bagian sistem lain yang membutuhkan
+    identitas internal.
+
+    Identity harus konsisten dan dapat digunakan untuk:
+
+    - tracing
+    - correlation
+    - authorization integration
+    - diagnostics
+    - audit
+
+
+12. Membangun Base Contracts
+
+    Menentukan contract dasar yang digunakan antar subsystem.
+
+    Contract harus menjadi boundary yang stabil antara implementasi.
+
+    Contract mencakup kebutuhan seperti:
+
+    - interface
+    - capability
+    - lifecycle
+    - result
+    - error
+    - event
+    - identity
+    - health
+
+
+13. Membangun Health & Readiness
+
+    Menentukan bagaimana AI-Gabut mengetahui apakah sistem:
+
+    - sedang startup
+    - belum siap
+    - siap digunakan
+    - mengalami degraded state
+    - mengalami failure
+    - sedang shutdown
+
+    Health dan readiness harus dapat digunakan oleh runtime maupun
+    interface eksternal.
+
+
+14. Integrasi Foundation
+
+    Menghubungkan seluruh capability foundation yang telah dibangun
+    menjadi satu runtime.
+
+    Integration memastikan:
+
+    bootstrap
+        ↓
+    lifecycle
+        ↓
+    configuration
+        ↓
+    environment
+        ↓
+    dependency
+        ↓
+    capability
+        ↓
+    event
+        ↓
+    diagnostics
+        ↓
+    logging
+        ↓
+    identity
+        ↓
+    contracts
+        ↓
+    health / readiness
+
+    dapat bekerja sebagai satu sistem.
+
+
+15. Architecture Validation
+
+    Memvalidasi bahwa implementasi foundation mematuhi boundary
+    arsitektur AI-Gabut.
+
+    Validasi meliputi:
+
+    - dependency direction
+    - circular dependency
+    - core → apps violation
+    - connector → apps violation
+    - contract violation
+    - lifecycle violation
+    - capability registration
+    - configuration integrity
+    - runtime integrity
+
+
+16. Foundation Validation
+
+    Melakukan validasi menyeluruh terhadap Core Foundation.
+
+    Validasi harus mencakup:
+
+    - startup
+    - normal runtime
+    - shutdown
+    - failure handling
+    - configuration
+    - dependency wiring
+    - capability discovery
+    - event
+    - diagnostics
+    - logging
+    - identity
+    - health
+    - architecture
+
+
+17. Definition of Done
+
+    Core Foundation & Runtime dianggap selesai apabila:
+
+    - AI-Gabut dapat melakukan bootstrap secara konsisten.
+    - Lifecycle subsystem telah mempunyai aturan yang jelas.
+    - Configuration dapat dimuat dan divalidasi.
+    - Environment dapat digunakan secara konsisten.
+    - Dependency dapat di-wire dan divalidasi.
+    - Capability dapat didaftarkan dan ditemukan.
+    - Event system dapat digunakan secara terkontrol.
+    - Diagnostics tersedia.
+    - Structured logging tersedia.
+    - Internal identity tersedia.
+    - Base contracts tersedia.
+    - Health dan readiness tersedia.
+    - Architecture validation lulus.
+    - Foundation validation lulus.
+    - Tidak terdapat dependency yang melanggar boundary arsitektur.
+    - Foundation dapat digunakan oleh subsystem berikutnya.
+
+
+HASIL AKHIR
+-----------
+
+Setelah roadmap ini selesai, AI-Gabut mempunyai platform foundation
+yang dapat menjadi runtime dasar bagi seluruh capability berikutnya.
+
+Foundation tidak menjadi application.
+
+Foundation tidak memiliki product identity.
+
+Foundation menjadi lapisan dasar yang dapat digunakan oleh:
+
+    core/
+        ↓
+    apps/
+        ↓
+    connectors/
+
+sesuai dependency dan contract yang telah ditentukan.
+
+
+CATATAN PEMBANGUNAN
+-------------------
+
+Urutan di atas merupakan urutan roadmap, bukan daftar file yang
+harus dibuat satu per satu.
+
+Implementasi dapat menghasilkan perubahan struktur internal selama:
+
+- boundary tetap jelas
+- dependency tetap valid
+- capability tetap teruji
+- backward compatibility yang diperlukan tetap diperhatikan
+- definition of done tetap terpenuhi
+
+Perubahan besar terhadap arsitektur harus dicatat kembali pada
+technical documentation.
+
+Progress aktual pembangunan dicatat pada folder:
+
+    docs/status/

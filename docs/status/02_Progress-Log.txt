@@ -1,0 +1,12 @@
+STATUS DOCUMENTATION
+PROGRESS LOG
+
+Catatan perkembangan proyek secara kronologis.
+
+Setiap entry:
+DATE:
+AREA:
+CHANGE:
+RESULT:
+VALIDATION:
+NOTES:

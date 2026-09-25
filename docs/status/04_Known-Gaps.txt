@@ -1,0 +1,15 @@
+STATUS DOCUMENTATION
+KNOWN GAPS
+
+Daftar kekurangan yang diketahui pada implementasi saat ini.
+
+Kategori:
+- missing implementation
+- partial implementation
+- architecture gap
+- test gap
+- documentation gap
+- security gap
+- reliability gap
+
+Dokumen ini tidak menggantikan roadmap.

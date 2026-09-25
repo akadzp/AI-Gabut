@@ -1,0 +1,17 @@
+TECHNICAL DOCUMENTATION
+DATA AND STATE MODEL
+
+Dokumen ini menjelaskan state dan data ownership.
+
+Isi:
+- persistent state
+- runtime state
+- workspace state
+- task state
+- execution state
+- memory
+- metadata
+- object/blob
+- snapshots
+- ownership
+- lifecycle

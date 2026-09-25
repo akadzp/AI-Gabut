@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises'; import os from 'node:os'; import path from 'node:path';
+const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ai-gabut-r10-')); process.env.AI_RELIABILITY_DIR = dir;
+const runtime = await import('../../core/agent-engine/reliability/runtime.js');
+const run = await runtime.startExecution({ sessionId: 'r10-check', prompt: 'reliability test' }); assert.ok(run.id);
+await runtime.checkpointExecutionState({ id: run.id, checkpoint: { type: 'tool-result', turn: 1, steps: [{ name: 'read_file' }], messages: [{ role: 'user', content: 'x' }] } });
+const resumed = await runtime.resumeExecution(run.id); assert.equal(resumed.checkpoint.turn, 1); assert.equal(resumed.checkpoint.steps[0].name, 'read_file');
+assert.equal(await runtime.withTimeout(Promise.resolve('ok'), 500, 'check'), 'ok'); let timedOut = false; try { await runtime.withTimeout(new Promise(r => setTimeout(r, 100)), 100, 'slow-check'); } catch { timedOut = true; } assert.equal(timedOut, false);
+const order = []; await Promise.all([runtime.withExecutionLock('same', async () => { order.push(1); await new Promise(r => setTimeout(r, 20)); order.push(2); }), runtime.withExecutionLock('same', async () => order.push(3))]); assert.deepEqual(order, [1, 2, 3]);
+await runtime.finishExecution({ id: run.id, status: 'completed', result: { ok: true } }); assert.equal((await runtime.loadExecution(run.id)).status, 'completed');
+console.log('R10 PRODUCTION RELIABILITY CHECK PASSED');

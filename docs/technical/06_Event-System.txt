@@ -1,0 +1,16 @@
+TECHNICAL DOCUMENTATION
+EVENT SYSTEM
+
+Dokumen ini menjelaskan event architecture.
+
+Isi:
+- event model
+- event envelope
+- publisher
+- subscriber
+- event naming
+- correlation
+- causation
+- delivery semantics
+- error handling
+- event ownership

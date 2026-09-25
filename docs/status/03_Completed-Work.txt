@@ -1,0 +1,12 @@
+STATUS DOCUMENTATION
+COMPLETED WORK
+
+Daftar pekerjaan yang benar-benar sudah selesai.
+
+Setiap item sebaiknya mencatat:
+- tanggal
+- subsystem
+- pekerjaan
+- hasil
+- validation/test
+- referensi commit bila tersedia

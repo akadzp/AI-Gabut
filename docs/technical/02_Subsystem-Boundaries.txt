@@ -1,0 +1,13 @@
+TECHNICAL DOCUMENTATION
+SUBSYSTEM BOUNDARIES
+
+Dokumen ini menjelaskan tanggung jawab dan batas setiap subsystem.
+
+Untuk setiap subsystem:
+- responsibility
+- owns
+- consumes
+- exposes
+- dependencies
+- forbidden dependencies
+- boundary rules

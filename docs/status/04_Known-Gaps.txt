@@ -1,15 +1,16 @@
 STATUS DOCUMENTATION
 KNOWN GAPS
 
-Daftar kekurangan yang diketahui pada implementasi saat ini.
+1. Legacy test gap
+   Some legacy milestone tests still assume the old `backend/` paths.
+   They are historical checks and are not used as the current platform
+   validation contract.
 
-Kategori:
-- missing implementation
-- partial implementation
-- architecture gap
-- test gap
-- documentation gap
-- security gap
-- reliability gap
+2. Runtime integration environment
+   Full HTTP startup requires project dependencies such as Express to
+   be installed in the execution environment. Foundation runtime
+   validation is performed independently without requiring node_modules.
 
-Dokumen ini tidak menggantikan roadmap.
+3. Roadmap 01 completion
+   Core Foundation & Runtime is not yet marked DONE. Final Definition
+   of Done review remains before closing the roadmap stage.

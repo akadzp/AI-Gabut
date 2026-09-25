@@ -1,14 +1,29 @@
 STATUS DOCUMENTATION
 IMPLEMENTATION STATUS
 
-Mencatat status implementasi aktual setiap subsystem dan komponen.
+CORE FOUNDATION & RUNTIME
 
-Gunakan kategori:
-- DONE
-- PARTIAL
-- SCAFFOLD
-- PLANNED
-- BLOCKED
+STATUS: PARTIAL — VALIDATION PASSED
 
-Jangan menggunakan roadmap sebagai sumber status implementasi.
-Status harus berdasarkan repository dan hasil validasi aktual.
+IMPLEMENTED:
+- bootstrap
+- environment
+- configuration
+- lifecycle
+- dependency wiring
+- health/readiness
+- base contracts
+- capability registry
+- core capability registration
+- runtime composition
+
+VALIDATED:
+- contracts
+- dependency and health behavior
+- capability registration and sealing
+- runtime bootstrap lifecycle
+- architecture boundaries
+
+REMAINING:
+- final Definition of Done review for Roadmap 01
+- remaining foundation capabilities defined by roadmap that are not yet implemented

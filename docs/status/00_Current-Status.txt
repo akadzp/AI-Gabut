@@ -1,24 +1,47 @@
 STATUS DOCUMENTATION
 CURRENT STATUS
 
-Dokumen ini adalah snapshot kondisi proyek saat ini.
+PROJECT:
+AI-Gabut
 
-Format status per subsystem:
+CURRENT ROADMAP:
+01. Core Foundation & Runtime
+
+CURRENT STEP:
+06. Validation
 
 STATUS:
-DONE / IN PROGRESS / NEXT / PLANNED / BLOCKED / SCAFFOLD
+IN PROGRESS — VALIDATION PASSED
 
 IMPLEMENTATION:
-Apa yang benar-benar sudah ada di repository.
+- Platform bootstrap tersedia.
+- Environment dan configuration foundation tersedia.
+- Lifecycle foundation tersedia.
+- Dependency container tersedia.
+- Health/readiness foundation tersedia.
+- Base platform contracts tersedia.
+- Capability registry tersedia.
+- Existing core capabilities dapat diregistrasikan ke platform registry.
+- API menggunakan capability registry untuk capability yang sudah diintegrasikan.
+- Runtime menjadi entry point utama melalui core/system/runtime.js.
 
 VALIDATION:
-Test/check yang sudah berhasil.
+- npm test: PASS
+- Platform contracts: PASS
+- Dependency/health validation: PASS
+- Capability registry validation: PASS
+- Runtime foundation validation: PASS
+- Architecture check: PASS
+- Core check: PASS — 65 JavaScript files
 
-GAPS:
-Apa yang masih kurang.
+KNOWN VALIDATION NOTE:
+Dua legacy milestone test masih mempunyai asumsi path `backend/` dari
+arsitektur lama. Keduanya bukan bagian dari current platform validation
+dan tidak diubah untuk mempertahankan kompatibilitas semu terhadap
+struktur V1.
 
 NEXT:
-Pekerjaan aktual berikutnya.
+07. Definition of Done untuk Core Foundation & Runtime
 
 Catatan:
-Status dapat berubah tanpa mengubah roadmap atau technical architecture.
+Status ini menggambarkan kondisi repository aktual dan hasil validation.

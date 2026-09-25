@@ -8,12 +8,15 @@ CURRENT ROADMAP:
 01. Core Foundation & Runtime
 
 CURRENT STEP:
-06. Validation
+07. Definition of Done
 
 STATUS:
-IN PROGRESS — VALIDATION PASSED
+COMPLETED — CORE FOUNDATION & RUNTIME
 
-IMPLEMENTATION:
+The Core Foundation & Runtime roadmap has reached its current
+Definition of Done.
+
+COMPLETED FOUNDATION CAPABILITIES:
 - Platform bootstrap tersedia.
 - Environment dan configuration foundation tersedia.
 - Lifecycle foundation tersedia.
@@ -21,18 +24,21 @@ IMPLEMENTATION:
 - Health/readiness foundation tersedia.
 - Base platform contracts tersedia.
 - Capability registry tersedia.
-- Existing core capabilities dapat diregistrasikan ke platform registry.
+- Structured logging tersedia.
+- Diagnostics tersedia.
+- Internal runtime identity tersedia.
+- Existing core capabilities dapat diregistrasikan melalui platform registry.
 - API menggunakan capability registry untuk capability yang sudah diintegrasikan.
 - Runtime menjadi entry point utama melalui core/system/runtime.js.
 
 VALIDATION:
-- npm test: PASS
+- Core check: PASS — 68 JavaScript files
+- Architecture check: PASS — 68 JavaScript files
 - Platform contracts: PASS
 - Dependency/health validation: PASS
 - Capability registry validation: PASS
-- Runtime foundation validation: PASS
-- Architecture check: PASS
-- Core check: PASS — 65 JavaScript files
+- Runtime validation: PASS
+- Foundation Definition of Done: PASS
 
 KNOWN VALIDATION NOTE:
 Dua legacy milestone test masih mempunyai asumsi path `backend/` dari
@@ -41,7 +47,7 @@ dan tidak diubah untuk mempertahankan kompatibilitas semu terhadap
 struktur V1.
 
 NEXT:
-07. Definition of Done untuk Core Foundation & Runtime
+Roadmap berikutnya sesuai Roadmap Besar.
 
 Catatan:
 Status ini menggambarkan kondisi repository aktual dan hasil validation.

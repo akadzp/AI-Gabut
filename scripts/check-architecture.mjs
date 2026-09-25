@@ -26,6 +26,12 @@ for (const file of jsFiles) {
   const imports = [...text.matchAll(/(?:from\s+|import\s*\(|require\()\s*["']([^"']+)["']/g)].map(m => m[1]);
   for (const spec of imports) {
     if (!spec.startsWith(".")) continue;
+
+    if (owner !== "agent-engine" && spec.includes("agent-engine/") && !spec.endsWith("agent-engine/index.js")) {
+      violations.push(`${path.relative(process.cwd(), file)} -> agent-engine internal (${spec}); use core/agent-engine/index.js`);
+      continue;
+    }
+
     const target = path.resolve(path.dirname(file), spec);
     const targetRel = path.relative(root, target).split(path.sep);
     const targetOwner = targetRel[0];

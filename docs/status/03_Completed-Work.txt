@@ -1,23 +1,23 @@
-STATUS DOCUMENTATION
 COMPLETED WORK
 
-2026-09-26
+ROADMAP 01 — CORE FOUNDATION & RUNTIME
 
-SUBSYSTEM:
-Core Foundation & Runtime
+Completed capabilities:
+- Runtime bootstrap
+- Environment handling
+- Configuration loading
+- Runtime lifecycle
+- Dependency container
+- Capability registry
+- Health/readiness
+- Base platform contracts
+- Structured logging
+- Diagnostics
+- Internal runtime identity
+- Integration of existing core capabilities
+- Runtime entry point through core/system/runtime.js
+- Architecture validation
+- Foundation validation
 
-WORK:
-- Established platform bootstrap runtime.
-- Added environment/configuration foundation.
-- Added lifecycle management.
-- Added dependency container and wiring.
-- Added health/readiness reporting.
-- Added base platform contracts.
-- Added capability registry.
-- Integrated existing Agent Engine, Security, Workspace, and Linux
-  capabilities through the platform registry.
-- Added foundation validation tests.
-
-RESULT:
-Foundation runtime and current integration layer pass project checks
-and architecture validation.
+The platform foundation is now available as the runtime layer on
+which subsequent AI-Gabut capabilities can be integrated.

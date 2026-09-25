@@ -8,19 +8,12 @@ export async function startRuntime() {
       registerCoreCapabilities(registry);
       return createServer({ configuration, environment, health, registry });
     },
-    stop: async server => new Promise(resolve => {
-      if (!server || typeof server.close !== "function") return resolve();
-      server.close(() => resolve());
-    })
+    stop: async server => new Promise(resolve => { if (!server || typeof server.close !== "function") return resolve(); server.close(() => resolve()); })
   });
 }
 
 if (import.meta.url === new URL(`file://${process.argv[1]}`).href) {
   const runtime = await startRuntime();
-  const shutdown = async () => {
-    await runtime.stop();
-    process.exit(0);
-  };
-  process.once("SIGINT", shutdown);
-  process.once("SIGTERM", shutdown);
+  const shutdown = async () => { await runtime.stop(); process.exit(0); };
+  process.once("SIGINT", shutdown); process.once("SIGTERM", shutdown);
 }

@@ -17,9 +17,19 @@ import { resumeExecution, getReliabilityMetrics, getReliabilityLimits } from "..
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-export function createServer({ configuration = {}, environment = {}, health = null } = {}) {
+export function createServer({ configuration = {}, environment = {}, health = null, registry = null } = {}) {
     const app = express();
     const PORT = configuration.port ?? 3000;
+    const capabilities = registry
+      ? {
+          agentEngine: registry.resolve("agent-engine"),
+          reliability: registry.resolve("agent-reliability"),
+          security: registry.resolve("security-governance"),
+          workspace: registry.resolve("workspace"),
+          linuxTerminal: registry.resolve("linux-terminal"),
+          linuxGit: registry.resolve("linux-git")
+        }
+      : null;
 
     app.use(express.json({ limit: "2mb" }));
   app.use(express.static(path.join(__dirname, "..", "..", "public")));
@@ -29,18 +39,18 @@ export function createServer({ configuration = {}, environment = {}, health = nu
   }
 
   app.get("/api/governance/policy", (_req, res) => {
-    res.json({ ok: true, policy: getGovernancePolicy() });
+    res.json({ ok: true, policy: (capabilities?.security ?? { getGovernancePolicy }).getGovernancePolicy() });
   });
 
   app.get("/api/governance/audit", (req, res) => {
-    res.json({ ok: true, entries: getAuditTrail({ limit: req.query.limit }) });
+    res.json({ ok: true, entries: (capabilities?.security ?? { getAuditTrail }).getAuditTrail({ limit: req.query.limit }) });
   });
 
   app.post("/api/governance/approvals", (req, res) => {
     try {
       const { tool, input = {}, sessionId = null, reason = "" } = req.body || {};
       if (typeof tool !== "string" || !tool.trim()) return res.status(400).json({ ok: false, error: "tool wajib diisi" });
-      const approval = issueApproval({ tool: tool.trim(), input, sessionId, reason });
+      const approval = (capabilities?.security ?? { issueApproval }).issueApproval({ tool: tool.trim(), input, sessionId, reason });
       res.status(201).json({ ok: true, approval });
     } catch (error) {
       res.status(400).json({ ok: false, error: error instanceof Error ? error.message : "Approval gagal" });
@@ -48,21 +58,21 @@ export function createServer({ configuration = {}, environment = {}, health = nu
   });
 
   app.get("/api/reliability", (_req, res) => {
-    res.json({ ok: true, metrics: getReliabilityMetrics(), limits: getReliabilityLimits() });
+    res.json({ ok: true, metrics: (capabilities?.reliability ?? { getReliabilityMetrics }).getReliabilityMetrics(), limits: (capabilities?.reliability ?? { getReliabilityLimits }).getReliabilityLimits() });
   });
 
   app.get("/api/executions/:id", async (req, res) => {
-    try { const execution = await resumeExecution(req.params.id); res.json({ ok: true, execution }); }
+    try { const execution = await (capabilities?.reliability ?? { resumeExecution }).resumeExecution(req.params.id); res.json({ ok: true, execution }); }
     catch (error) { res.status(404).json({ ok: false, error: error instanceof Error ? error.message : "Execution checkpoint tidak ditemukan" }); }
   });
 
   app.post("/api/executions/:id/resume", async (req, res) => {
     try {
-      const execution = await resumeExecution(req.params.id);
+      const execution = await (capabilities?.reliability ?? { resumeExecution }).resumeExecution(req.params.id);
       if (!execution.prompt) return res.status(400).json({ ok: false, error: "Execution tidak memiliki prompt" });
       const session = getOrCreateSession(execution.sessionId);
       const history = getRecentMessages(session);
-      const result = await runAgent({ prompt: execution.prompt, provider: req.body?.provider, model: req.body?.model, conversation: history, memories: getMemories(session), sessionId: session.id, approvalToken: req.body?.approvalToken, executionId: execution.id });
+      const result = await (capabilities?.agentEngine ?? { runAgent }).runAgent({ prompt: execution.prompt, provider: req.body?.provider, model: req.body?.model, conversation: history, memories: getMemories(session), sessionId: session.id, approvalToken: req.body?.approvalToken, executionId: execution.id });
       res.json({ ok: true, sessionId: session.id, ...result });
     } catch (error) { res.status(500).json({ ok: false, error: error instanceof Error ? error.message : "Resume gagal" }); }
   });
@@ -144,6 +154,10 @@ export function createServer({ configuration = {}, environment = {}, health = nu
     res.json({ ok: true, integrations: TOOL_CATALOG.integrationCatalog });
   });
 
+  app.get("/api/runtime/capabilities", (_req, res) => {
+    res.json({ ok: true, capabilities: registry?.list?.() ?? [] });
+  });
+
   app.get("/api/tools", (req, res) => {
     const query = typeof req.query.q === "string" ? req.query.q : "";
     const discovered = discoverTools({ query, definitions: TOOL_DEFINITIONS, limit: 20 });
@@ -189,7 +203,7 @@ export function createServer({ configuration = {}, environment = {}, health = nu
 
       const session = getOrCreateSession(sessionId);
       const history = getRecentMessages(session);
-      const result = await runAgent({
+      const result = await (capabilities?.agentEngine ?? { runAgent }).runAgent({
         prompt: prompt.trim(), provider, model, conversation: history, memories: getMemories(session), sessionId: session.id, approvalToken
       });
       addMessage(session, "user", prompt.trim());
@@ -232,7 +246,7 @@ export function createServer({ configuration = {}, environment = {}, health = nu
 
     try {
       await emit({ type: "session", sessionId: session.id });
-      const result = await runAgent({
+      const result = await (capabilities?.agentEngine ?? { runAgent }).runAgent({
         prompt: prompt.trim(), provider, model, conversation: history, memories: getMemories(session), sessionId: session.id, approvalToken,
         onActivity: activity => emit(activity)
       });

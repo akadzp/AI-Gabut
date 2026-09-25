@@ -4,6 +4,7 @@ import { DependencyContainer } from "../dependency/index.js";
 import { createHealth } from "../health/index.js";
 import { Lifecycle } from "../lifecycle/index.js";
 import { assertPlatformContracts } from "../contracts/index.js";
+import { CapabilityRegistry } from "../registry/index.js";
 
 export async function bootstrap({ start, stop, environment = {}, configuration = {} } = {}) {
   if (typeof start !== "function") throw new TypeError("bootstrap requires a start function");
@@ -20,7 +21,15 @@ export async function bootstrap({ start, stop, environment = {}, configuration =
     .register("lifecycle", runtime.lifecycle);
 
   runtime.health = createHealth({ lifecycle: runtime.lifecycle, dependencies: runtime.dependencies });
-  runtime.dependencies.register("health", runtime.health).seal();
+  runtime.dependencies.register("health", runtime.health);
+
+  runtime.registry = new CapabilityRegistry()
+    .register("platform.environment", runtime.environment, { domain: "platform", type: "environment" })
+    .register("platform.configuration", runtime.configuration, { domain: "platform", type: "configuration" })
+    .register("platform.lifecycle", runtime.lifecycle, { domain: "platform", type: "lifecycle" })
+    .register("platform.health", runtime.health, { domain: "platform", type: "health" });
+
+  runtime.dependencies.register("registry", runtime.registry).seal();
   assertPlatformContracts(runtime);
 
   await runtime.lifecycle.initialize();
@@ -28,6 +37,7 @@ export async function bootstrap({ start, stop, environment = {}, configuration =
   await runtime.lifecycle.start(async () => {
     started = await start(runtime);
   });
+  runtime.registry.seal();
   runtime.server = started;
 
   return {

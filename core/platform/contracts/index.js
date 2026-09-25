@@ -5,7 +5,8 @@ export const PLATFORM_CONTRACTS = Object.freeze({
   environment: Object.freeze(["mode", "platform", "arch", "nodeVersion", "pid", "cwd", "hostname"]),
   configuration: Object.freeze(["port", "host"]),
   dependency: Object.freeze(["register", "resolve", "optional", "has", "names", "seal"]),
-  health: Object.freeze(["status"])
+  health: Object.freeze(["status"]),
+  registry: Object.freeze(["register", "resolve", "has", "list", "seal"])
 });
 
 function assertObject(value, name) {
@@ -42,11 +43,16 @@ export function assertHealthContract(value) {
   return assertMembers(value, "health", PLATFORM_CONTRACTS.health);
 }
 
-export function assertPlatformContracts({ lifecycle, environment, configuration, dependencies, health } = {}) {
+export function assertRegistryContract(value) {
+  return assertMembers(value, "registry", PLATFORM_CONTRACTS.registry);
+}
+
+export function assertPlatformContracts({ lifecycle, environment, configuration, dependencies, health, registry } = {}) {
   assertLifecycleContract(lifecycle);
   assertEnvironmentContract(environment);
   assertConfigurationContract(configuration);
   assertDependencyContract(dependencies);
   assertHealthContract(health);
+  assertRegistryContract(registry);
   return true;
 }

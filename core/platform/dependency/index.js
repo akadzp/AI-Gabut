@@ -7,7 +7,7 @@ export class DependencyContainer {
     if (typeof name !== "string" || !name.trim()) throw new TypeError("Dependency name is required");
     if (this.#entries.has(name)) throw new Error(`Dependency already registered: ${name}`);
     this.#entries.set(name, value);
-    return value;
+    return this;
   }
 
   has(name) {

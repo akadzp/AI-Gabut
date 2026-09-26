@@ -1,0 +1,131 @@
+AI-GABUT — ROADMAP 11
+API & SYSTEM INTERFACE
+======================
+
+TUJUAN
+------
+Membentuk boundary API generik untuk transport HTTP, request context,
+response/error contract, dan route registration tanpa memindahkan
+business logic subsystem ke layer API.
+
+AUDIT RESULT
+------------
+Baseline `core/api/server.js` sudah menyediakan banyak route dan Express
+server, tetapi file tersebut juga langsung mengetahui detail internal:
+Agent Engine context/memory/tools/evaluation/specialists/models, security,
+Git, dan reliability.
+
+Tidak ditemukan boundary API generik terpisah untuk:
+- API errors
+- request context
+- response contract
+- route registration
+- centralized error normalization
+
+ROADMAP STEPS
+-------------
+01. Audit Existing API & System Interface
+02. Define API Boundary
+03. Define Request / Response Contracts
+04. Build API Error Boundary
+05. Build API Router Boundary
+06. Integrate Existing Server
+07. Validation
+08. Definition of Done
+
+BOUNDARY
+--------
+core/api owns:
+- HTTP/API transport boundary
+- request context
+- API version metadata
+- route registration helper
+- API error normalization
+- generic success/error envelope helpers
+
+core/api does not own:
+- agent reasoning
+- memory semantics
+- model routing
+- security policy
+- Git implementation
+- storage implementation
+- task orchestration
+- connector implementation
+- product/application identity
+
+Existing subsystem capabilities remain responsible for their own domain
+logic. API handlers are adapters from HTTP requests to those capabilities.
+
+CONTRACT
+--------
+Request context:
+- requestId
+- version
+- method
+- path
+- query
+- params
+
+Generic API error:
+- code
+- message
+- HTTP status
+- details internal-only
+
+Public error response:
+- ok=false
+- error.code
+- error.message
+- meta.requestId
+
+Generic success response:
+- ok=true
+- data
+- meta
+
+API version:
+- v1
+
+INTEGRATION
+-----------
+The new boundary is additive and preserves the existing route surface.
+Existing `createServer()` remains the application HTTP composition point,
+while `core/api` now owns generic HTTP contract primitives and router
+registration/error infrastructure.
+
+No product-specific route is moved into core as a domain capability.
+
+SECURITY
+--------
+- requestId is generated when the client does not supply `x-request-id`.
+- requestId is returned through the response header and error metadata.
+- Error details are not exposed through the public response envelope.
+- Authentication/authorization remains owned by security/application
+  boundaries.
+
+RELIABILITY
+-----------
+- Route handlers can be wrapped through the API router boundary.
+- Unhandled route errors are normalized to a stable API error envelope.
+- Request context is attached once per request.
+
+VALIDATION
+----------
+- API contract test covers method/path normalization, request context,
+  and public error response.
+- npm test must include the API contract test.
+- Architecture validation must not introduce dependencies from core/api
+  into application-specific code.
+
+DEFINITION OF DONE
+------------------
+1. API error contract exists.
+2. Request/response contracts exist.
+3. Request IDs are supported.
+4. Generic router boundary exists.
+5. Central error normalization exists.
+6. Existing server behavior remains available.
+7. API test is integrated into npm test.
+8. API layer does not own domain logic.
+9. Documentation and status identify Roadmap 11 as completed.

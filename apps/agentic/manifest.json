@@ -1,7 +1,10 @@
 {
   "id": "agentic",
   "name": "Agentic",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "ai-application",
-  "platform": "ai-gabut"
+  "platform": "ai-gabut",
+  "runtime": "apps/agentic/backend/server.js",
+  "frontend": "apps/agentic/frontend",
+  "status": "active-runtime-baseline"
 }

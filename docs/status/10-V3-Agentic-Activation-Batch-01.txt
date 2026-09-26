@@ -1,0 +1,36 @@
+# V3 AGENTIC ACTIVATION — BATCH 01
+
+## Audit result
+V2 already provides the public Agent Engine, durable generic storage/state,
+security governance/audit/secrets, task orchestration, workspace/change
+capabilities, connector runtime, and API/runtime foundation.
+
+The principal activation gap was the application layer: user identity,
+ownership, durable sessions, provider connection state, application API,
+and frontend.
+
+## Implemented
+- Agentic backend and frontend boundary.
+- Registration/login/logout and durable auth sessions.
+- User-owned durable chat sessions.
+- Encrypted provider credential storage.
+- GitHub account/repository/branch/tree/file read operations.
+- Workspace context records.
+- Agentic chat delegation to the public Agent Engine boundary.
+- Sidebar, sessions, Chat, Connections, Files frontend shell.
+- Targeted tests for crypto, authentication, and cross-user isolation.
+
+## Deliberate boundaries
+GitHub mutations are not exposed in this batch. This avoids bypassing the
+existing V2 governance/approval model while provider write contracts are
+not fully integrated.
+
+OAuth is not implemented in this first provider activation. A user-supplied
+GitHub token is accepted and encrypted server-side and is never returned to
+the frontend.
+
+Realtime transport, approval UI, durable activity/task UX, and complete
+restart/resume UI remain explicit V3 gaps.
+
+## Definition status
+V3 is NOT completed by this batch.

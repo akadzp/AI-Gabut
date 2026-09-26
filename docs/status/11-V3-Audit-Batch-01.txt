@@ -1,0 +1,40 @@
+# V3 AUDIT — BATCH 01
+
+## Baseline
+Repository: akadzp/AI-Gabut
+Branch: main
+Active version: V3
+
+## Existing foundation reused
+- core/agent-engine public boundary
+- core/storage/state
+- core/security governance/audit/secrets
+- core/tasks
+- core/workspace
+- core/connectors runtime
+- core/api/runtime
+
+## Main gaps found
+1. apps/agentic was only an identity/manifest boundary.
+2. Existing Agent Engine sessions were process-local and not user-isolated.
+3. Generic API behavior was not an application-level Agentic boundary.
+4. No durable application user/session/connection model existed.
+5. GitHub provider was a scaffold.
+6. No Agentic frontend existed.
+7. No encrypted user-owned provider credential vault existed.
+
+## Boundary decisions
+- User/application identity lives in apps/agentic.
+- Generic AI execution remains in core/agent-engine.
+- Provider credentials stay server-side and encrypted.
+- GitHub API access stays in the provider adapter.
+- Frontend talks only to Agentic API.
+- Owned resources are keyed by user identity.
+- GitHub writes are excluded until mutation is wired through governance/approval.
+
+## Validation
+Targeted tests cover password hashing/verification, encrypted credential
+opacity/round-trip, authentication lifecycle, and cross-user isolation.
+
+Full repository verification must be run in the applied repository with its
+installed npm dependencies. `test:agentic` is included for targeted checks.

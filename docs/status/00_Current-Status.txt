@@ -1,34 +1,38 @@
-CURRENT STATUS
+# CURRENT STATUS
 
 PROJECT: AI-Gabut
-
 ACTIVE VERSION: V3
-
 ACTIVE ROADMAP: V3 — Agentic Activation
 
-V1: Fase awal. Dokumentasi lengkap tidak tersedia.
+V1: fase awal; dokumentasi lengkap tidak tersedia.
+V2: roadmap besar 00–13; foundation completed/validated dan dipertahankan sebagai historical baseline.
 
-V2: Roadmap besar 00–13. Foundation AI-Gabut completed/validated dan
-tetap dipertahankan sebagai historical baseline.
+V3 CURRENT BATCH: Agentic Activation — Batch 01.
 
-V3 CURRENT STATE: - V3 roadmap besar sudah didefinisikan. - V3 detail
-roadmap sudah didefinisikan. - Agentic activation belum completed. -
-apps/agentic menjadi target utama implementasi V3. - Roadmap dibuat
-sebagai rencana; implementation status harus diverifikasi dari source
-aktual.
+IMPLEMENTED IN THIS BATCH:
+- Agentic application backend boundary.
+- User registration/login/logout with durable auth sessions.
+- User-owned resource isolation for Agentic data.
+- Durable chat sessions and messages.
+- Agentic application API.
+- Encrypted provider credential storage.
+- GitHub connection baseline.
+- GitHub account/repository/branch/tree/file read operations.
+- Workspace context records.
+- Agentic frontend shell: sidebar, sessions, Chat, Connections, Files.
+- Agent Engine integration through public boundary.
+- Agentic-specific crypto/auth/isolation tests.
+- start:agentic and test:agentic scripts.
 
-V3 AREAS: 01 Application Runtime 02 Identity, Authentication &
-Multi-user Isolation 03 Sessions & Conversation 04 Agent Execution
-Activation 05 Memory & Context 06 Connections Framework 07 GitHub
-Provider 08 Workspace & Project Context 09 Agentic Frontend 10 Realtime,
-Activity & Progress 11 Approval, Security & Credential Governance 12
-Persistence, Recovery & Continuity 13 Deployment & Operations 14
-Testing, Validation & Reliability 15 Final Definition of Done
+NOT YET COMPLETE:
+- GitHub write/mutation workflow.
+- OAuth flow; first provider uses a user-supplied token.
+- durable task/activity UX.
+- realtime SSE/WebSocket transport.
+- full approval UI and durable approval lifecycle.
+- complete execution resume UI.
+- production deployment validation.
+- full V3 end-to-end Definition of Done.
 
-STATUS: CURRENT — V3 BASELINE / ROADMAP PREPARATION
-
-NEXT: Audit source aktual terhadap V3 roadmap, lalu implementasikan V3
-sebagai satu batch lengkap.
-
-IMPORTANT: Roadmap V2 tidak hilang dan tidak dianggap gagal. V3 adalah
-fase berikutnya.
+STATUS: IN PROGRESS — Agentic Activation
+NEXT: V3 hardening and end-to-end validation from actual source state.

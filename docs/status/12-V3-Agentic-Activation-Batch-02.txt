@@ -1,0 +1,36 @@
+# V3 — AGENTIC ACTIVATION — BATCH 02
+
+STATUS: COMPLETED
+
+SCOPE
+- Bind Agentic application execution lifecycle to the existing AI-Gabut Agent Engine.
+- Add user-owned durable execution records.
+- Persist Agent Engine activity into Agentic activity records.
+- Expose execution inspection, approval, resume, and cancellation endpoints.
+- Preserve bounded/stopped/max-turns semantics instead of reporting every run as completed.
+- Keep tool authorization in core governance; Agentic owns application lifecycle and user ownership.
+
+IMPLEMENTED
+- Execution records: ownerId, sessionId, taskId, status, prompt, plan, checkpoint, approval, result/error, timestamps.
+- Execution ownership enforcement through the Agentic store.
+- Activity persistence through onActivity callback.
+- Human approval bridge using the existing core issueApproval/consumeApproval governance path.
+- Approval state: waiting_approval → approve → resume same execution.
+- User cancellation state and cancellation observation during activity callbacks.
+- Agent Engine wrapper accepts an application-supplied execution id for new executions.
+- Agent Engine status mapping distinguishes completed, stopped, max_turns, failed, and cancelled.
+- Execution API and tests added.
+
+NOT IN THIS BATCH
+- Realtime SSE/WebSocket transport.
+- Full approval UX in frontend.
+- Cross-process cancellation guarantees.
+- Provider OAuth.
+- Full production deployment hardening.
+
+VALIDATION TARGET
+- Agentic execution ownership isolation.
+- Bounded execution status mapping.
+- Approval lifecycle and same-execution resume.
+- Cancellation lifecycle.
+- Existing V2 foundation remains unchanged except the minimal Agent Engine execution-status/id integration required by this boundary.

@@ -1,0 +1,27 @@
+# V3 AGENTIC EXECUTION BOUNDARY
+
+Agentic does not implement a second agent engine. It owns the application lifecycle around the existing AI-Gabut Agent Engine.
+
+FLOW
+User → Agentic API → Agentic execution record → AI-Gabut Agent Engine → governed tools → checkpoint/activity → Agentic execution record → User
+
+OWNERSHIP
+Every Agentic execution, task, activity, and session is keyed to the authenticated user. An execution id from another user resolves as not found to prevent cross-user disclosure.
+
+EXECUTION
+- Agentic creates a durable application execution record before invoking the engine.
+- The application supplies the execution id to the generic reliability layer for new runs.
+- The generic engine remains responsible for planning, tool execution, checkpointing, locking, timeout, and resume mechanics.
+- Agentic translates engine outcomes into application-visible statuses: completed, stopped, max_turns, failed, cancelled, waiting_approval.
+
+ACTIVITY
+The Agent Engine emits observable lifecycle events through onActivity. Agentic persists those events with ownerId, executionId, sessionId, action, status, label, metadata, and timestamp. Hidden chain-of-thought is not persisted.
+
+APPROVAL
+Core governance remains the authority for tool approval. Agentic detects a blocked approval result, records waiting_approval, exposes approval to the user, then issues a fresh bounded approval token through core governance and resumes the same engine checkpoint. Credentials/tokens are never returned as normal chat content.
+
+CANCELLATION
+Cancellation is application-owned and user-owned. A cancellation marks the execution cancelled. Active engine callbacks observe the durable status and abort with EXECUTION_CANCELLED. This is cooperative cancellation; hard process termination is outside this batch.
+
+MULTI-USER INVARIANT
+No execution, activity, task, session, connection, credential, or workspace may be read through another authenticated user's id unless an explicit sharing feature is introduced later.

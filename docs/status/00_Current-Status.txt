@@ -7,37 +7,31 @@ ACTIVE ROADMAP: V3 — Agentic Activation
 V1: fase awal; dokumentasi lengkap tidak tersedia.
 V2: roadmap besar 00–13; foundation completed/validated dan dipertahankan sebagai historical baseline.
 
-V3 CURRENT BATCH: Agentic Activation — Batch 01 Finalization.
+CURRENT BATCH: V3 Agentic Activation — Batch 02.
 
-IMPLEMENTED IN THIS BATCH:
-- Agentic application backend boundary.
-- User registration/login/logout with durable auth sessions.
-- User-owned resource isolation for Agentic data.
-- Durable chat sessions and messages.
-- Agentic application API.
-- Encrypted provider credential storage.
-- GitHub connection baseline.
-- GitHub account/repository/branch/tree/file read operations.
-- Workspace context records.
-- Agentic frontend shell: sidebar, sessions, Chat, Connections, Files.
-- Agent Engine integration through public boundary.
-- Agentic-specific crypto/auth/isolation tests.
-- Agentic npm start/test scripts.
+BATCH 01 CLOSED
+- Agentic application runtime, authentication, sessions, connections, GitHub read baseline, workspace context, frontend shell, and public Agent Engine integration are present.
+- package version 0.17.0 established the Batch 01 baseline.
 
-BATCH 01 FINALIZATION:
-- npm start:agentic launches the Agentic backend.
-- npm test includes the Agentic test suite.
-- package version advanced to 0.17.0 for this application activation baseline.
+BATCH 02 COMPLETED
+- User-owned durable execution records.
+- User-owned task/activity records connected to execution.
+- Agent Engine observable activity persisted by Agentic.
+- Explicit execution status mapping: completed, stopped, max_turns, failed, cancelled, waiting_approval.
+- Human approval bridge through core governance with same-execution checkpoint resume.
+- Cooperative cancellation with ownership checks.
+- Execution inspection, approval, cancel, and list APIs.
+- Agent Engine wrapper accepts an application execution id for new executions and no longer labels bounded stops/max-turns as completed.
+- Batch 02 execution tests and architecture documentation.
+- package version advanced to 0.18.0.
 
-NOT YET COMPLETE:
+NOT YET COMPLETE
+- Realtime SSE/WebSocket transport.
+- Full approval UI in Agentic frontend.
 - GitHub write/mutation workflow.
-- OAuth flow; first provider uses a user-supplied token.
-- durable task/activity UX.
-- realtime SSE/WebSocket transport.
-- full approval UI and durable approval lifecycle.
-- complete execution resume UI.
-- production deployment validation.
-- full V3 end-to-end Definition of Done.
+- OAuth provider flow.
+- Production deployment validation.
+- Full V3 end-to-end Definition of Done.
 
 STATUS: IN PROGRESS — Agentic Activation
-NEXT: Apply Batch 01 finalization delta, then verify the resulting GitHub source and run the complete Batch 01 validation before starting V3 Batch 02.
+NEXT: Verify Batch 02 source after user applies the single Batch 02 delta, then proceed to V3 Batch 03.

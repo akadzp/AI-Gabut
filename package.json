@@ -1,6 +1,6 @@
 {
   "name": "ai-gabut",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
     "start:agentic": "node apps/agentic/backend/server.js",
     "check": "node scripts/check-backend.mjs",
     "test": "npm run check && node tests/platform/contracts.mjs && node tests/platform/dependency-health.mjs && node tests/platform/capability-registry.mjs && node tests/platform/runtime-validation.mjs && node tests/platform/operations.mjs && node tests/platform/configuration.mjs && node tests/security/secret-sandbox.mjs && node tests/security/audit-observability.mjs && node tests/storage/record-object.mjs && node tests/storage/state.mjs && node tests/linux/local-system.mjs && node tests/workspace/change-system.mjs && node tests/tasks/orchestrator.mjs && node tests/sync/reconciliation.mjs && node tests/connectors/runtime.mjs && node tests/media/runtime.mjs && node tests/api/contracts.mjs && node tests/apps/application-layer.mjs && npm run test:agentic",
-    "test:agentic": "node --test tests/apps/agentic-v3.mjs",
+    "test:agentic": "node --test tests/apps/agentic-v3.mjs tests/apps/agentic-execution-v3.mjs",
     "check:architecture": "node scripts/check-architecture.mjs"
   },
   "dependencies": {

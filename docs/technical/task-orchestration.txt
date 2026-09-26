@@ -1,0 +1,40 @@
+AI-GABUT — TASK ORCHESTRATION BOUNDARY
+======================================
+
+PURPOSE
+-------
+core/tasks is the durable orchestration layer between application requests and
+execution-capable services. It tracks what should run, a schedulable job for
+that task, and each execution attempt.
+
+OWNERSHIP
+---------
+Task: lifecycle and user-visible work identity.
+Job: queue state, priority, scheduling, worker lease, attempt count, retry policy.
+Execution: one concrete attempt, checkpoint, result/error, final state.
+
+NON-OWNERSHIP
+-------------
+Reasoning, model routing, tool semantics, and agent autonomy belong to
+core/agent-engine. Authorization and approvals belong to core/security.
+Durability primitives belong to core/storage. Workspace and Linux remain their
+own capability boundaries.
+
+FLOW
+----
+createTask -> enqueue -> claimNext -> startExecution -> checkpoint* ->
+finishExecution
+
+Failure path:
+finishExecution(failed) -> retryJob -> queued -> claimNext -> next attempt
+
+Adapter
+-------
+runNext accepts an injected executor callback. The callback receives task, job,
+execution, and a checkpoint function. This keeps orchestration independent from
+any particular Agent Engine implementation.
+
+CONSISTENCY
+-----------
+All durable mutations use State Persistence and its record version checks.
+Task/job/execution records retain bounded lifecycle history for observability.

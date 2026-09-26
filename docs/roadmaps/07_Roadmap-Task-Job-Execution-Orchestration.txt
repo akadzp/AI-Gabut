@@ -1,0 +1,78 @@
+AI-GABUT — ROADMAP 07
+TASK, JOB & EXECUTION ORCHESTRATION
+===================================
+
+TUJUAN
+------
+Membentuk boundary core/tasks untuk durable task lifecycle, job queue/lease,
+execution attempts, checkpoint, retry, cancellation, dan orchestration tanpa
+mengambil alih reasoning Agent Engine, authority Security, atau primitive
+Storage.
+
+STEPS
+-----
+01. Audit Existing Task, Job & Execution Orchestration
+02. Define Task/Job/Execution Boundary
+03. Define Lifecycle & Reliability Contracts
+04. Build Durable Orchestration Core
+05. Integrate Execution Adapter
+06. Security, Consistency & Reliability
+07. Validation
+08. Definition of Done
+
+IMPLEMENTATION RESULT
+---------------------
+- New core/tasks boundary.
+- Durable task, job, and execution state using State Persistence.
+- Explicit task/job/execution state machines.
+- Priority-aware queue discovery and worker lease.
+- Execution attempts with checkpoint support.
+- Bounded retry policy with exponential backoff.
+- Cancellation at task level.
+- Executor adapter so Task layer does not own Agent Engine internals.
+- Optimistic version checks through State Persistence.
+- Platform capability registration.
+- Task/job/execution contract test integrated into npm test.
+
+BOUNDARY
+--------
+core/tasks owns orchestration state and lifecycle.
+core/storage owns durable state primitives.
+core/agent-engine owns reasoning and agent execution semantics.
+core/security owns authorization, approvals, audit, and policy.
+core/workspace owns workspace/change lifecycle.
+core/linux owns local execution primitives.
+Applications and connectors remain outside core/tasks.
+
+RELIABILITY & SECURITY
+----------------------
+- Jobs require a worker lease before execution.
+- Lease expiry prevents starting an unclaimed/stale job.
+- Storage version checks prevent silent concurrent overwrites.
+- Retry attempts are bounded by maxAttempts.
+- Backoff is bounded by maxBackoffMs.
+- History is bounded to prevent unbounded record growth.
+- Task orchestration does not introduce shell execution or Git authority.
+- Executor is injected rather than imported from Agent Engine internals.
+- Final task/job/execution states are explicit and observable.
+
+VALIDATION
+----------
+- Contract test covers task creation, enqueue, claim, execution start,
+  checkpoint, completion, durable state transitions, and adapter execution.
+- npm test integration is required.
+- Architecture validation must show tasks does not import security internals,
+  application code, or connector implementations.
+
+DEFINITION OF DONE
+------------------
+1. core/tasks exists as a generic orchestration boundary.
+2. Task, Job, and Execution have explicit lifecycle contracts.
+3. Durable state uses core/storage/state rather than custom persistence.
+4. Job leasing and optimistic conflict handling exist.
+5. Execution checkpointing exists.
+6. Retry is bounded and observable.
+7. Cancellation exists at task level.
+8. Agent execution is injected through an adapter boundary.
+9. Tests are integrated into npm test.
+10. Documentation and status identify Roadmap 07 as completed.

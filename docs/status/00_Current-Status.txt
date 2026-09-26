@@ -6,13 +6,13 @@ PROJECT:
 AI-Gabut
 
 CURRENT ROADMAP:
-12. Application / Product Layer
+13. Operations, Recovery & Production Readiness
 
 CURRENT STEP:
-01. Audit Existing Application / Product Layer
+01. Audit Existing Operations & Production Readiness
 
 STATUS:
-READY — ROADMAP 12
+READY — ROADMAP 13
 
 COMPLETED ROADMAPS:
 - 01. Core Foundation & Runtime
@@ -26,26 +26,35 @@ COMPLETED ROADMAPS:
 - 09. External Connector & Integration Layer
 - 10. Media & Advanced Capabilities
 - 11. API & System Interface
+- 12. Application / Product Layer
 
-ROADMAP 11 RESULT:
+ROADMAP 12 RESULT:
 COMPLETED
 
 DELIVERED:
-- Generic API error boundary.
-- Request context and API version contract.
-- Success/error response helpers.
-- Request ID generation and propagation.
-- Generic API router boundary.
-- Central route error normalization.
-- API contract test integrated into npm test.
-- Existing server remains the HTTP composition point.
-- Domain logic remains in existing subsystem boundaries.
+- New `apps/` application boundary.
+- Application layer handover documentation.
+- Application identity/composition contract.
+- Agentic application identity.
+- BukaOlshop CS application identity.
+- Capability access through injected platform registry.
+- No product identity embedded into core.
+- Application contract test integrated into npm test.
 
 BOUNDARY:
-core/api owns generic HTTP/API transport contracts and routing helpers.
-Domain capabilities remain in their respective core subsystems.
-Applications own product-specific routes and identity.
-Security remains responsible for authorization and credentials.
+core owns generic platform capabilities.
+apps owns product/application identity and composition.
+connectors owns external provider adapters.
+Application-specific business logic remains in its own app.
+
+INITIAL APPLICATION IDENTITIES:
+- agentic
+- bukaolshop-cs
+
+IMPORTANT:
+BukaOlshop CS API integration, semantic scope gate, domain policy, and UI
+are not implemented by this roadmap. They belong to subsequent application
+work or connector-specific roadmaps as appropriate.
 
 VALIDATION NOTE:
 Source-level validation and test wiring are included in the roadmap batch.
@@ -53,4 +62,4 @@ npm test must be executed in the repository environment after applying
 the final roadmap ZIP.
 
 NEXT:
-01. Audit Existing Application / Product Layer
+01. Audit Existing Operations & Production Readiness

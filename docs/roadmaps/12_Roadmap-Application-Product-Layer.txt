@@ -1,0 +1,97 @@
+AI-GABUT — ROADMAP 12
+APPLICATION / PRODUCT LAYER
+===========================
+
+TUJUAN
+------
+Memisahkan identity dan composition application dari generic AI-Gabut core.
+Application dapat mempunyai identity, domain policy, configuration,
+interface, dan deployment sendiri sambil menggunakan capability generic
+dari core.
+
+AUDIT RESULT
+------------
+Baseline tidak memiliki folder `apps/` atau application layer terpisah.
+Tidak ditemukan implementation `Agentic` atau `BukaOlshop CS` sebagai
+application identity di source tree.
+
+API dan core capability sebelumnya masih menjadi satu-satunya composition
+surface. Karena itu Roadmap 12 membangun application boundary minimal
+tanpa memindahkan generic subsystem.
+
+ROADMAP STEPS
+-------------
+01. Audit Existing Application / Product Layer
+02. Define Application Boundary
+03. Define Application Manifest & Identity Contract
+04. Build Application Registry/Composition Boundary
+05. Create Initial Application Identities
+06. Integrate Platform Capability Access
+07. Validation
+08. Definition of Done
+
+BOUNDARY
+--------
+apps/ owns:
+- product/application identity
+- manifest
+- application-level composition
+- domain-specific policy/configuration
+- interface/deployment composition
+
+core/ owns:
+- generic platform capabilities
+- agent engine
+- storage
+- tasks
+- security
+- sync
+- connectors
+- media
+- API transport primitives
+
+RULES
+-----
+- core -> apps prohibited.
+- apps -> core allowed.
+- apps -> connectors allowed.
+- Application identity must not be embedded into generic core capability code.
+- Product-specific business logic belongs in its application.
+- External provider adapters remain under connectors.
+
+INITIAL APPLICATIONS
+--------------------
+1. Agentic
+   Identity: `agentic`
+   Type: `ai-application`
+
+2. BukaOlshop CS
+   Identity: `bukaolshop-cs`
+   Type: `domain-application`
+
+These are application identities only. This roadmap does not yet implement
+BukaOlshop API calls, CS scope gate, product policy, or a product UI.
+
+COMPOSITION
+-----------
+Applications receive the platform capability registry and resolve only
+capabilities they need. The application layer does not recreate or wrap
+generic core services unnecessarily.
+
+VALIDATION
+----------
+- Application contract test covers both initial application identities.
+- Test verifies capability resolution through an injected platform boundary.
+- No application dependency is introduced into core.
+- npm test must include the application contract test.
+
+DEFINITION OF DONE
+------------------
+1. `apps/` exists as application boundary.
+2. Application identity contract exists.
+3. Agentic identity exists.
+4. BukaOlshop CS identity exists.
+5. Applications consume core through capability boundary.
+6. Core remains application-agnostic.
+7. Application test is integrated into npm test.
+8. Documentation and status identify Roadmap 12 as completed.

@@ -4,6 +4,18 @@ import { getGovernancePolicy, issueApproval, getAuditTrail, getAuditMetrics, get
 import { readWorkspaceFile, writeWorkspaceFile, listWorkspaceFiles } from "../workspace/manager.js";
 import { executeTerminal } from "../linux/terminal/executor.js";
 import { gitStatus, gitDiff, gitChanges, gitLog } from "../linux/git/manager.js";
+import {
+  getEnvironmentSnapshot,
+  getSystemInfo,
+  getResourceSnapshot,
+  getCurrentProcessInfo,
+  isProcessAlive,
+  statWorkspacePath,
+  listWorkspaceDirectory,
+  detectPackageManagers,
+  readPackageManifest,
+  getServiceManager
+} from "../linux/index.js";
 
 export function registerCoreCapabilities(registry) {
   registry
@@ -31,7 +43,19 @@ export function registerCoreCapabilities(registry) {
       gitDiff,
       gitChanges,
       gitLog
-    }), { domain: "linux", type: "git" });
+    }), { domain: "linux", type: "git" })
+    .register("linux-local-system", Object.freeze({
+      getEnvironmentSnapshot,
+      getSystemInfo,
+      getResourceSnapshot,
+      getCurrentProcessInfo,
+      isProcessAlive,
+      statWorkspacePath,
+      listWorkspaceDirectory,
+      detectPackageManagers,
+      readPackageManifest,
+      getServiceManager
+    }), { domain: "linux", type: "local-system" });
 
   return registry;
 }

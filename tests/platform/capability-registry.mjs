@@ -10,8 +10,10 @@ assert.equal(registry.has("security-governance"), true);
 assert.equal(registry.has("workspace"), true);
 assert.equal(registry.has("linux-terminal"), true);
 assert.equal(registry.has("linux-git"), true);
-assert.equal(registry.list().length, 6);
+assert.equal(registry.has("linux-local-system"), true);
+assert.equal(registry.list().length, 7);
 assert.equal(typeof registry.resolve("agent-engine").runAgent, "function");
+assert.equal(typeof registry.resolve("linux-local-system").getSystemInfo, "function");
 
 registry.seal();
 assert.throws(() => registry.register("test", {}), /sealed/);

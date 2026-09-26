@@ -6,56 +6,47 @@ PROJECT:
 AI-Gabut
 
 CURRENT ROADMAP:
-05. Local System & Execution Capabilities
+06. Workspace & Change System
 
 CURRENT STEP:
-01. Audit Existing Local System & Execution Capabilities
+01. Audit Existing Workspace & Change System
 
 STATUS:
-READY — ROADMAP 05
+READY — ROADMAP 06
 
 COMPLETED ROADMAPS:
 - 01. Core Foundation & Runtime
 - 02. AI / Agent Intelligence Engine
 - 03. Security, Authority & Governance
 - 04. State, Storage & Persistence
+- 05. Local System & Execution Capabilities
 
-ROADMAP 04 RESULT:
+ROADMAP 05 RESULT:
 COMPLETED
 
-ROADMAP 04 DELIVERED:
-- Canonical core storage service.
-- Structured record storage with version and etag.
-- Atomic record writes.
-- Expected-version conflict detection.
-- Safe storage key/path validation.
-- Byte-oriented object storage.
-- Object size and etag metadata.
-- Structured storage errors.
-- Generic State Persistence Service.
-- Isolated state scopes for sessions, memories, executions, runtime.
-- Public createStateService export.
-- Storage and state tests integrated into npm test.
-- Storage boundary kept independent from Agent Engine and product identity.
+DELIVERED:
+- Local system capability error contract.
+- Environment snapshot with secret sanitization.
+- System/resource inspection.
+- Current-process inspection.
+- Workspace-bound filesystem stat/list capability.
+- Package-manager discovery and package manifest read capability.
+- Service-manager discovery capability.
+- Generic core/linux facade.
+- Local-system tests integrated into npm test.
+- Existing terminal/Git/security/workspace ownership preserved.
 
-ROADMAP 04 ARCHITECTURE:
-core/storage/
-├── errors.js
-├── path.js
-├── index.js
-├── record/
-├── object/
-└── state/
-
-IMPORTANT:
-Storage provides generic persistence primitives and state facade.
-It does not take ownership of domain behavior belonging to Agent Engine,
-Workspace, Security, Tasks, Connectors, or applications.
+BOUNDARY:
+core/linux provides local environment capabilities.
+core/workspace owns workspace mutation.
+core/security owns authority and policy.
+core/agent-engine decides when/how capabilities are used.
+Applications remain outside core.
 
 VALIDATION NOTE:
-Source-level validation and test wiring have been checked against the
-current GitHub baseline. npm test should be executed in the repository
-environment as part of the normal integration workflow.
+Source-level validation and test wiring are included in the roadmap batch.
+npm test must be executed in the repository environment after applying
+the final roadmap ZIP.
 
 NEXT:
-01. Audit Existing Local System & Execution Capabilities
+01. Audit Existing Workspace & Change System

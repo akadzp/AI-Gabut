@@ -1,0 +1,79 @@
+AI-GABUT — ROADMAP 05
+LOCAL SYSTEM & EXECUTION CAPABILITIES
+======================================
+
+TUJUAN
+------
+Membangun boundary capability untuk lingkungan lokal tempat AI-Gabut
+berjalan: terminal, filesystem, process, system resources, environment,
+package discovery, dan service discovery. Capability mutasi tetap tunduk
+pada Security/Governance dan tidak diberikan sebagai primitive bebas.
+
+STEPS
+-----
+01. Audit Existing Local System & Execution Capabilities
+02. Define Local System Boundary
+03. Define Local System Contracts
+04. Build Local System Capability Layer
+05. Integrate Security, Authority & Capability Registry
+06. Reliability & Validation
+07. Definition of Done
+
+IMPLEMENTED CONTRACTS
+---------------------
+- core/linux/errors.js
+- core/linux/environment/
+- core/linux/system/
+- core/linux/process/
+- core/linux/filesystem/
+- core/linux/package/
+- core/linux/service/
+- core/linux/index.js
+
+EXISTING EXECUTION
+------------------
+- terminal execution remains the governed command execution path.
+- Git operations remain under core/linux/git and are not exposed as an
+  unrestricted generic process primitive.
+- workspace file mutation remains owned by core/workspace.
+- process capability is inspection-only.
+- filesystem capability is workspace-bound and read-only.
+- package capability is discovery/manifest-read only.
+- service capability is discovery-only.
+
+SECURITY BOUNDARY
+-----------------
+1. Local filesystem inspection is workspace-bound.
+2. Sensitive paths are rejected.
+3. Environment snapshots are sanitized.
+4. Arbitrary process control is not exposed.
+5. Package/service mutation is not exposed.
+6. Terminal execution remains subject to command policy and sandbox; it is not exported through the generic local-system facade.
+7. Existing Git commit/push approval policy remains authoritative.
+8. No product identity enters core/linux.
+
+VALIDATION
+----------
+tests/linux/local-system.mjs verifies environment sanitization, system
+metadata, process inspection, workspace-bound filesystem inspection,
+package discovery contract, service discovery, and traversal rejection.
+
+DEFINITION OF DONE
+------------------
+Roadmap 05 is complete when:
+- local-system contracts exist and are generic;
+- terminal remains governed;
+- filesystem/process/system/environment capability boundaries exist;
+- sensitive data is not exposed by environment/filesystem inspection;
+- read-only local capabilities are exposed through the core capability layer;
+- workspace and security ownership remain intact;
+- tests are integrated into npm test;
+- architecture validation passes;
+- no product/application dependency is introduced.
+
+STATUS
+------
+ROADMAP 05 COMPLETED.
+
+NEXT:
+06. Workspace & Change System

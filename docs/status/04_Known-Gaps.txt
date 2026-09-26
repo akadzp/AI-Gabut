@@ -2,15 +2,30 @@ STATUS DOCUMENTATION
 KNOWN GAPS
 
 1. Legacy test gap
-   Some historical milestone tests still assume old V1 paths or old
-   architecture. They are retained as regression evidence, not as the
-   canonical architecture contract.
+   Some legacy milestone tests still assume the old `backend/` paths.
+   They are historical checks and are not used as the current platform
+   validation contract.
 
 2. Runtime integration environment
-   Full npm test requires project dependencies such as Express/OpenAI to
-   be installed. The current validation environment may not have those
-   dependencies available.
+   Full HTTP startup requires project dependencies such as Express to
+   be installed in the execution environment. Foundation/runtime
+   validation is performed independently when dependencies are absent.
 
-3. Security observability
-   Audit storage is still process-local and will be addressed in Roadmap 03
-   Step 06 with a dedicated security observability boundary.
+3. State/storage gap
+   Roadmap 04 has started. Storage directories exist as structural
+   placeholders, but there is no canonical storage contract yet.
+
+4. In-memory state gap
+   Sessions, memory, approvals, reliability locks/metrics, and several
+   caches are process-local. Durability and lifecycle requirements must
+   be decided per state category rather than globally.
+
+5. Persistence ownership gap
+   Reliability checkpoint persistence and Workspace file persistence
+   currently bypass a unified storage abstraction. Roadmap 04 must
+   define the relationship without breaking their domain ownership.
+
+6. Roadmap documentation gap
+   Historical roadmap/status documents may still describe Roadmap 01 as
+   current. Current status must be treated as the source of handover
+   truth after each applied delta.

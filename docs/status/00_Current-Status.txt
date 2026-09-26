@@ -5,57 +5,37 @@ PROJECT:
 AI-Gabut
 
 CURRENT ROADMAP:
-03. Security, Authority & Governance
+04. State, Storage & Persistence
 
 CURRENT STEP:
-08. Definition of Done
+01. Audit Existing State, Storage & Persistence
 
 STATUS:
-ROADMAP 03 COMPLETED
+IN PROGRESS — ROADMAP 04
 
-COMPLETED:
-- Roadmap 01 — Core Foundation & Runtime
-- Roadmap 02 — AI / Agent Intelligence Engine
-- Roadmap 03 — Security, Authority & Governance
+COMPLETED ROADMAPS:
+- 01. Core Foundation & Runtime
+- 02. AI / Agent Intelligence Engine
+- 03. Security, Authority & Governance
 
-ROADMAP 03 COMPLETION:
-- Step 01 — Audit Existing Security & Governance
-- Step 02 — Define Security Boundary
-- Step 03 — Define Authority & Permission Contracts
-- Step 04 — Build Identity, Authorization & Policy Enforcement
-- Step 05 — Build Secret Protection & Sandbox Controls
-- Step 06 — Build Audit & Security Observability
-- Step 07 — Validation
-- Step 08 — Definition of Done
+ROADMAP 04 STEP 01:
+COMPLETED
 
-CURRENT SECURITY CAPABILITIES:
-- Canonical security principals and authorization contracts.
-- Explicit action/resource/scope permission decisions.
-- Approval-bound high-risk operations.
-- Fail-closed authorization semantics.
-- Secret detection/redaction and private-key protection.
-- Sensitive environment filtering.
-- Workspace-only sandbox path validation.
-- Terminal command policy enforcement.
-- Workspace-owned sensitive file protection.
-- Security-owned structured immutable audit trail.
-- Audit filtering and security metrics.
-- Execution/session/application/connector audit context.
+AUDIT SUMMARY:
+- Reliability checkpoints already persist execution state as JSON.
+- Workspace manager directly persists workspace files.
+- Sessions, memory, approvals, locks, metrics, and several caches remain
+  process-local.
+- `core/storage/` is currently structural and has no canonical storage API.
+- `data/` and `runtime/` provide reserved state locations but do not yet
+  have a unified lifecycle/ownership contract.
+- Snapshot, transaction, idempotency, indexing, object/blob, and cache
+  contracts are not yet implemented.
 
-FINAL VALIDATION:
-- Architecture check: PASS — 72 JavaScript files.
-- Platform contracts: PASS.
-- Security authorization contract: PASS.
-- Secret/sandbox contract: PASS.
-- Audit observability contract: PASS.
-- Roadmap 03 validation: PASS.
-- npm test: PASS for the available dependency-backed suite.
-- Legacy static milestones: 38 PASS / 2 historical V1 path failures.
-
-KNOWN HISTORICAL EXCEPTIONS:
-- check-project-intelligence.mjs retains a V1 backend-oriented path assumption.
-- check-test-intelligence.mjs retains a V1 backend workspace test-path assumption.
-These are historical migration checks and are not current Security/Governance regressions.
+IMPORTANT:
+Roadmap 04 must introduce storage contracts without taking ownership
+away from Workspace, Agent Engine reliability, Security, Tasks, or
+Connectors where those subsystems already own their domain behavior.
 
 NEXT:
-Roadmap 04 — State, Storage & Persistence.
+02. Define State & Storage Boundary

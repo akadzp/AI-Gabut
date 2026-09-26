@@ -5,49 +5,42 @@ PROJECT:
 AI-Gabut
 
 CURRENT ROADMAP:
-01. Core Foundation & Runtime
+03. Security, Authority & Governance
 
 CURRENT STEP:
-07. Definition of Done
+04. Build Identity, Authorization & Policy Enforcement
 
 STATUS:
-COMPLETED — CORE FOUNDATION & RUNTIME
+IN PROGRESS — SECURITY, AUTHORITY & GOVERNANCE
 
-The Core Foundation & Runtime roadmap has reached its current
-Definition of Done.
+COMPLETED:
+- Roadmap 01 Core Foundation & Runtime.
+- Roadmap 02 AI / Agent Intelligence Engine.
+- Roadmap 03 Step 01 audit completed.
+- Roadmap 03 Step 02 security boundary defined.
+- Roadmap 03 Step 03 authority and permission contracts defined.
+- Roadmap 03 Step 04 identity, authorization, and policy enforcement completed.
 
-COMPLETED FOUNDATION CAPABILITIES:
-- Platform bootstrap tersedia.
-- Environment dan configuration foundation tersedia.
-- Lifecycle foundation tersedia.
-- Dependency container tersedia.
-- Health/readiness foundation tersedia.
-- Base platform contracts tersedia.
-- Capability registry tersedia.
-- Structured logging tersedia.
-- Diagnostics tersedia.
-- Internal runtime identity tersedia.
-- Existing core capabilities dapat diregistrasikan melalui platform registry.
-- API menggunakan capability registry untuk capability yang sudah diintegrasikan.
-- Runtime menjadi entry point utama melalui core/system/runtime.js.
+STEP 03 CONTRACTS:
+- Principal/identity vocabulary defined.
+- Action/operation contract defined.
+- Resource and scope contract defined.
+- Permission relationship defined.
+- Authorization request and security context defined.
+- Policy decision and denial semantics defined.
+- Approval binding contract defined.
+- Security invariants and fail-closed defaults defined.
 
 VALIDATION:
-- Core check: PASS — 68 JavaScript files
-- Architecture check: PASS — 68 JavaScript files
-- Platform contracts: PASS
-- Dependency/health validation: PASS
-- Capability registry validation: PASS
-- Runtime validation: PASS
-- Foundation Definition of Done: PASS
+- Contract documentation: PASS.
+- Existing runtime governance remains unchanged in Step 03.
+- No production source changed in Step 03.
 
-KNOWN VALIDATION NOTE:
-Dua legacy milestone test masih mempunyai asumsi path `backend/` dari
-arsitektur lama. Keduanya bukan bagian dari current platform validation
-dan tidak diubah untuk mempertahankan kompatibilitas semu terhadap
-struktur V1.
+KNOWN VALIDATION NOTES:
+- Full npm test requires installed dependencies. The validation environment does
+  not contain node_modules and npm install previously timed out on registry access.
+- Historical V1 milestone checks retain backend assumptions and are not treated as
+  current V2 regressions.
 
 NEXT:
-Roadmap berikutnya sesuai Roadmap Besar.
-
-Catatan:
-Status ini menggambarkan kondisi repository aktual dan hasil validation.
+05. Build Secret Protection & Sandbox Controls.

@@ -1,0 +1,53 @@
+03_Roadmap-Security-Authority-Governance.txt
+
+AI-GABUT — ROADMAP 03
+SECURITY, AUTHORITY & GOVERNANCE
+================================
+
+TUJUAN
+------
+
+Membangun security boundary yang memastikan setiap tindakan AI, aplikasi,
+connector, dan subsystem execution memiliki identitas, authority, policy,
+approval, secret protection, sandbox control, dan audit yang dapat diperiksa.
+
+Security menjadi boundary lintas sistem. Security menentukan apakah suatu
+operasi boleh dilakukan, tetapi tidak menjadi executor operasi tersebut.
+
+ROADMAP
+-------
+
+01. Audit Existing Security & Governance
+    Audit implementasi security yang sudah ada, termasuk governance policy,
+    approval, terminal policy, secret protection, sandbox, dan audit.
+
+02. Define Security Boundary
+    Menetapkan ownership, authority flow, decision boundary, dan dependency
+    rules security secara eksplisit.
+
+03. Define Authority & Permission Contracts
+    Mendefinisikan identity, principal, resource, action, permission, scope,
+    approval, policy decision, dan denial contracts.
+
+04. Build Identity, Authorization & Policy Enforcement
+    Membangun identity dan authorization yang menjadi enforcement point
+    sebelum execution.
+
+    Status: COMPLETED. Identity normalization, canonical authorization request,
+    policy decision/denial contracts, approval principal binding, stable action
+    mapping, dan Agent Engine security context propagation sudah diintegrasikan.
+
+05. Build Secret Protection & Sandbox Controls
+    Membangun secret lifecycle dan sandbox/resource isolation yang terukur.
+
+06. Build Audit & Security Observability
+    Membangun audit trail dan observability security yang durable dan dapat
+    ditelusuri.
+
+07. Validation
+    Memvalidasi boundary, enforcement, denial, approval, isolation, secret
+    protection, dan audit secara menyeluruh.
+
+08. Definition of Done
+    Menetapkan security roadmap selesai hanya jika seluruh contract dan
+    enforcement requirement terpenuhi.

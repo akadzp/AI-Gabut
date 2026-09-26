@@ -2,26 +2,39 @@ IMPLEMENTATION STATUS
 
 ROADMAP 01 — CORE FOUNDATION & RUNTIME
 
-01. Audit Existing Foundation       DONE
-02. Define Foundation Boundary      DONE
-03. Define Base Contracts           DONE
-04. Build Runtime Foundation        DONE
-05. Integrate Existing Subsystems   DONE
-06. Validation                      DONE
-07. Definition of Done              DONE
+01 Audit Existing Foundation       DONE
+02 Define Foundation Boundary      DONE
+03 Define Base Contracts           DONE
+04 Build Runtime Foundation       DONE
+05 Integrate Existing Subsystems   DONE
+06 Validation                     DONE
+07 Definition of Done              DONE
 
-FINAL FOUNDATION CAPABILITY SET:
-- Bootstrap
-- Environment
-- Configuration
-- Lifecycle
-- Dependency wiring
-- Capability registry
-- Health/readiness
-- Structured logging
-- Diagnostics
-- Internal identity
-- Base contracts
+ROADMAP 02 — AI / AGENT INTELLIGENCE ENGINE
 
-ROADMAP 01 STATUS:
-COMPLETED
+01 Audit Existing Agent Engine       DONE
+02 Define Engine Boundary            DONE
+03 Define Intelligence Contracts     DONE
+04 Build / Integrate Intelligence    DONE
+05 Reliability & Evaluation          DONE
+06 Validation                        DONE
+07 Definition of Done                DONE
+
+ROADMAP 03 — SECURITY, AUTHORITY & GOVERNANCE
+
+01 Audit Existing Security & Governance  DONE
+02 Define Security Boundary              DONE
+03 Define Authority & Permission Contracts DONE
+04 Build Identity, Authorization & Policy Enforcement NEXT
+05 Build Secret Protection & Sandbox Controls
+06 Build Audit & Security Observability
+07 Validation
+08 Definition of Done
+
+SECURITY CONTRACTS:
+- Principal identity is distinct from permission.
+- Action/resource/scope are explicit authorization dimensions.
+- Policy decision is explicit and inspectable.
+- Approval is bound to operation context and expires.
+- Unknown or unsafe authority conditions fail closed.
+- Security contracts do not execute protected operations.

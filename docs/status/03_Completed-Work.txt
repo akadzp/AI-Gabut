@@ -1,23 +1,33 @@
 COMPLETED WORK
 
 ROADMAP 01 — CORE FOUNDATION & RUNTIME
+- Platform bootstrap, configuration, environment, lifecycle, dependency,
+  health/readiness, contracts, capability registry, logging, diagnostics,
+  and runtime identity completed.
 
-Completed capabilities:
-- Runtime bootstrap
-- Environment handling
-- Configuration loading
-- Runtime lifecycle
-- Dependency container
-- Capability registry
-- Health/readiness
-- Base platform contracts
-- Structured logging
-- Diagnostics
-- Internal runtime identity
-- Integration of existing core capabilities
-- Runtime entry point through core/system/runtime.js
-- Architecture validation
-- Foundation validation
+ROADMAP 02 — AI / AGENT INTELLIGENCE ENGINE
+- Existing Agent Engine audited and bounded.
+- Intelligence contracts defined for context, reasoning, planning, model
+  routing, tools, specialists, reliability, and evaluation.
+- Public Agent Engine facade established at core/agent-engine/index.js.
+- API and core capability registration routed through the public engine
+  surface.
+- Architecture guard blocks direct external imports of Agent Engine internals.
+- Execution lock cleanup and timeout metrics hardened.
+- Evaluation tool-efficiency and expected-tool checks hardened.
+- Async evaluation case/suite APIs added.
+- Step 06 validation completed.
+- Step 07 Definition of Done completed; Roadmap 02 is complete.
 
-The platform foundation is now available as the runtime layer on
-which subsequent AI-Gabut capabilities can be integrated.
+VALIDATED CHECKS
+- Core check: PASS — 69 JavaScript files
+- Architecture check: PASS — 69 JavaScript files
+- Platform contracts: PASS
+- Dependency/health validation: PASS
+- Agent Engine public boundary: PASS
+- Agent Engine reliability/evaluation: PASS
+- Legacy R7 evaluation: PASS
+- Legacy R10 reliability: PASS
+
+NEXT
+Roadmap 03 — Security, Authority & Governance.

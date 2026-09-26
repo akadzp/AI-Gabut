@@ -11,3 +11,10 @@ In particular, OS command policy lives under `80-security/policies/`, while comm
 ```text
 Agent → capability request → Security → executor/connector → audit
 ```
+
+
+PUBLIC SECURITY SURFACE
+-----------------------
+`core/security/index.js` is the public security boundary for identity,
+authorization contracts, governance policy, approval, and audit operations.
+Consumers should prefer this surface over importing security internals.

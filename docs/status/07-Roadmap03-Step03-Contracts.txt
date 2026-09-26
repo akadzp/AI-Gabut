@@ -1,0 +1,48 @@
+ROADMAP 03 — STEP 03
+DEFINE AUTHORITY & PERMISSION CONTRACTS
+
+STATUS
+------
+COMPLETED
+
+CONTRACTS DEFINED
+-----------------
+- Principal / identity
+- Action / operation
+- Resource
+- Scope
+- Permission
+- Authorization request
+- Policy decision
+- Denial
+- Approval
+- Security context
+
+DECISION SEMANTICS
+------------------
+- allow
+- deny
+- approval_required
+
+DEFAULT AUTHORITY RULES
+-----------------------
+- unknown principal -> deny
+- unknown action -> deny
+- unknown resource/scope -> deny
+- missing permission -> deny
+- invalid/expired approval -> deny
+- security evaluation failure -> fail closed
+
+SECURITY INVARIANTS
+-------------------
+- Security decides; it does not execute.
+- Every protected operation has an explicit authority context.
+- Allow decisions are inspectable and have provenance.
+- Denied operations do not reach executors.
+- Secret material is not persisted in authority/audit records.
+- Contracts remain independent of product identity and executor implementation.
+
+IMPLEMENTATION STATUS
+---------------------
+Step 03 defines canonical contracts only. Existing runtime governance remains
+unchanged until Step 04 implements identity, authorization, and enforcement.

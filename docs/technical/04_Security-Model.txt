@@ -1,15 +1,127 @@
-TECHNICAL DOCUMENTATION
-SECURITY MODEL
+04_Security-Model.txt
 
-Dokumen ini menjelaskan model authority dan security.
+SECURITY, AUTHORITY & GOVERNANCE MODEL
+======================================
 
-Isi:
-- identity
-- permission
-- policy
-- capability
-- approval
-- execution authority
-- secret handling
-- audit
-- security boundary
+SECURITY BOUNDARY
+-----------------
+
+Security adalah authority boundary AI-Gabut. Security menerima permintaan
+operasi dan memutuskan apakah operasi tersebut boleh dilakukan berdasarkan
+identity, action, resource, scope, policy, risk, dan approval.
+
+Security TIDAK menjalankan operasi yang diotorisasi.
+Executor tetap dimiliki oleh subsystem tujuan:
+
+- core/workspace  → filesystem/workspace operations
+- core/linux      → terminal dan Git execution
+- connectors/     → external service operations
+- core/tasks      → task execution/orchestration
+
+AUTHORITY FLOW
+--------------
+
+APP / AGENT
+    ↓
+operation request
+    ↓
+SECURITY
+    ├── identity
+    ├── permission
+    ├── scope
+    ├── policy decision
+    ├── approval (jika diperlukan)
+    ├── secret/safety checks
+    └── audit decision
+    ↓
+AUTHORIZED OPERATION
+    ↓
+EXECUTOR / CONNECTOR
+    ↓
+RESULT / EVIDENCE
+    ↓
+SECURITY AUDIT
+
+OWNERSHIP
+---------
+
+Security owns:
+- identity/principal authority
+- permission and scope model
+- policy evaluation
+- approval lifecycle
+- security-specific secret protection rules
+- sandbox/resource authorization boundary
+- security audit records
+- deny/allow decision semantics
+
+Security does not own:
+- reasoning or planning
+- tool implementation
+- filesystem implementation
+- terminal implementation
+- Git implementation
+- connector implementation
+- task execution implementation
+- product/application identity
+
+DEPENDENCY RULES
+----------------
+
+Allowed:
+- apps → core/security
+- core/agent-engine → core/security
+- core/security → core/platform and generic crypto/runtime primitives
+- executors/connectors → security contracts for authorization
+
+Prohibited:
+- core/security → apps
+- core/security → agent-engine internals
+- core/security → executor implementation details
+- security policy → direct execution of the protected operation
+
+DECISION BOUNDARY
+-----------------
+
+Policy definition and policy decision are conceptually separate.
+
+Policy definition answers:
+    "Apa aturan untuk operation/resource ini?"
+
+Policy decision answers:
+    "Dengan principal, scope, context, risk, dan approval saat ini,
+     apakah operation ini diizinkan?"
+
+The decision must be explicit and inspectable. A denied operation must not
+reach the executor.
+
+DEFAULTS
+--------
+
+- Unknown principal → deny.
+- Unknown operation/tool → deny.
+- Unknown resource scope → deny.
+- Missing required approval → deny/block.
+- Expired or mismatched approval → deny.
+- Unsafe secret material → deny.
+- Security decision failure → fail closed.
+
+AUDIT BOUNDARY
+--------------
+
+Security records the authorization decision and relevant security metadata.
+Sensitive input must be sanitized before persistence.
+Execution result auditing may be enriched by the executor, but executor
+implementation remains outside Security ownership.
+
+
+IMPLEMENTATION STATUS — STEP 04
+--------------------------------
+The runtime security boundary now has a canonical principal model and explicit
+authorization decision object. Legacy tool governance remains the policy source,
+while decisions are normalized into the authority contract.
+
+Agent Engine supplies optional principal/session/execution/application/connector
+context to Security. Security returns an explicit decision before tool execution.
+Approval records are bound to the principal and session in addition to the
+operation input fingerprint.

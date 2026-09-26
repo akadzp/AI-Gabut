@@ -1,0 +1,245 @@
+05_Authority-Permission-Contracts.txt
+
+AUTHORITY & PERMISSION CONTRACTS
+================================
+
+PURPOSE
+-------
+
+Mendefinisikan vocabulary dan data contract yang dipakai Security sebagai
+authority boundary. Contract ini menjadi dasar implementasi identity,
+authorization, approval, sandbox, secret protection, dan audit pada step
+berikutnya.
+
+PRINCIPAL / IDENTITY
+--------------------
+
+Principal adalah identitas security yang meminta atau menjalankan operasi.
+Principal contract minimal memiliki:
+
+- id        : stable identifier
+- type      : user | agent | app | service | connector | system
+- source    : sumber autentikasi/authority
+- sessionId : execution/session context bila ada
+- metadata  : metadata non-secret yang relevan
+
+Identity adalah fakta "siapa"; permission adalah "apa yang boleh dilakukan".
+Identity tidak menentukan permission dengan sendirinya.
+
+OPERATION / ACTION
+------------------
+
+Action adalah operasi yang diminta. Action harus berupa identifier yang
+stable dan tidak bergantung pada implementasi internal executor.
+
+Contoh:
+- workspace.read
+- workspace.write
+- terminal.execute
+- git.read
+- git.commit
+- git.push
+- connector.read
+
+Action contract:
+- name
+- category/domain
+- risk classification bila tersedia
+- executor capability reference bila diperlukan
+
+RESOURCE
+--------
+
+Resource adalah objek atau domain yang menjadi target action.
+Resource contract minimal:
+
+- type/domain
+- id atau locator yang sudah dinormalisasi
+- scope
+- sensitivity classification bila relevan
+
+Security tidak boleh menganggap path, URL, tool name, atau connector name
+sebagai resource yang aman secara otomatis. Resource harus dinormalisasi dan
+scope harus eksplisit.
+
+SCOPE
+-----
+
+Scope membatasi area authority sebuah principal terhadap resource/action.
+
+Scope contract:
+- domain
+- target
+- allowed actions
+- constraints
+- inheritance/reference policy bila digunakan
+
+Default scope adalah tidak ada authority. Scope wildcard tidak boleh dianggap
+aman tanpa policy eksplisit.
+
+PERMISSION
+----------
+
+Permission adalah hubungan antara principal, action, resource, dan scope.
+
+Conceptual contract:
+
+permission = {
+  principal,
+  action,
+  resource,
+  scope,
+  conditions,
+  source
+}
+
+Permission tidak langsung menjalankan operasi. Permission hanya menjadi input
+policy evaluation.
+
+POLICY DECISION
+---------------
+
+Policy decision adalah hasil evaluasi authority pada satu operation request.
+
+Decision contract:
+
+- decision : allow | deny | approval_required
+- principal
+- action
+- resource
+- scope
+- risk
+- reasons[]
+- policyVersion / policyId bila tersedia
+- approval requirement bila ada
+- timestamp
+- decisionId
+
+A decision harus dapat diperiksa tanpa membocorkan secret.
+
+DENIAL CONTRACT
+---------------
+
+Deny adalah hasil yang sah, bukan exception internal semata.
+
+Deny contract minimal:
+- decision = deny
+- stable reason code
+- human-readable message yang aman
+- decisionId
+- audit metadata
+
+Reason code harus membedakan minimal:
+- unknown-principal
+- unknown-action
+- unknown-resource
+- scope-denied
+- permission-denied
+- policy-denied
+- approval-missing
+- approval-invalid
+- approval-expired
+- unsafe-input
+- security-error
+
+Security error yang membuat keputusan tidak dapat dipercaya harus fail closed
+menjadi deny, bukan allow.
+
+APPROVAL CONTRACT
+-----------------
+
+Approval adalah authority tambahan untuk action berisiko tinggi. Approval
+harus terikat pada konteks operasi, bukan token global.
+
+Approval binding minimal:
+- principal/session
+- action
+- resource/scope
+- normalized input fingerprint
+- reason
+- issuedAt
+- expiresAt
+- state
+
+Approval state minimal:
+- issued
+- consumed
+- expired
+- rejected/revoked bila lifecycle mendukungnya
+
+Approval yang expired, sudah consumed, atau tidak cocok dengan operation harus
+ditolak.
+
+AUTHORIZATION REQUEST
+---------------------
+
+Canonical request yang dievaluasi Security:
+
+{
+  principal,
+  action,
+  resource,
+  scope,
+  context,
+  inputFingerprint,
+  requestedAt
+}
+
+`context` boleh memuat session, execution, environment, risk, dan policy
+metadata yang relevan, tetapi tidak boleh membawa secret mentah.
+
+SECURITY CONTEXT
+----------------
+
+Security context bukan conversation context. Ia hanya membawa informasi yang
+relevan untuk authority decision, misalnya:
+
+- principal identity
+- sessionId / executionId
+- application identity
+- connector identity
+- environment
+- request origin
+- risk indicators
+- approval reference
+
+Tidak boleh menyimpan hidden chain-of-thought sebagai bagian dari authority
+contract.
+
+NORMALIZATION
+-------------
+
+Sebelum policy evaluation:
+
+1. principal dinormalisasi
+2. action dinormalisasi
+3. resource locator dinormalisasi
+4. scope dinormalisasi
+5. sensitive input direduksi menjadi fingerprint/metadata
+6. policy version ditentukan
+
+Executor menerima request hanya setelah Security menghasilkan allow.
+
+CONTRACT INVARIANTS
+-------------------
+
+1. Unknown principal => deny.
+2. Unknown action => deny.
+3. Unknown resource/scope => deny.
+4. Missing permission => deny.
+5. Missing required approval => approval_required/deny sesuai enforcement mode.
+6. Invalid or expired approval => deny.
+7. Security evaluation failure => deny/fail closed.
+8. Allow harus memiliki decisionId dan policy provenance.
+9. Denied operation tidak boleh diteruskan ke executor.
+10. Secret tidak boleh menjadi bagian dari persisted decision/audit payload.
+11. Security contracts tidak bergantung pada product identity.
+12. Security contracts tidak memanggil executor.
+
+COMPATIBILITY WITH EXISTING GOVERNANCE
+--------------------------------------
+
+Existing governance policy saat ini sudah memiliki permission `read`, `write`,
+dan `approval`, risk, resource, approval token, fingerprint, dan audit.
+Contract baru menjadi vocabulary canonical di atas model tersebut. Migrasi
+implementation dilakukan pada Step 04; Step 03 tidak mengganti runtime policy.

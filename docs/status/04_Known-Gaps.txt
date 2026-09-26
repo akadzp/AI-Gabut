@@ -1,16 +1,24 @@
-STATUS DOCUMENTATION
 KNOWN GAPS
 
-1. Legacy test gap
-   Some legacy milestone tests still assume the old `backend/` paths.
-   They are historical checks and are not used as the current platform
-   validation contract.
+ROADMAP 03 — SECURITY, AUTHORITY & GOVERNANCE
 
-2. Runtime integration environment
-   Full HTTP startup requires project dependencies such as Express to
-   be installed in the execution environment. Foundation runtime
-   validation is performed independently without requiring node_modules.
+1. Identity is not yet a first-class security contract.
+2. Permission definitions are embedded in governance tool policy rather than a
+   dedicated permission model.
+3. Security policy definition and policy decision logic are not yet separated.
+4. Sandbox controls are currently limited to command classification and workspace
+   path resolution; there is no general execution sandbox abstraction.
+5. Secret handling has redaction and environment filtering but no dedicated secret
+   service or secret lifecycle.
+6. Audit records are process-local memory and are not durable.
+7. Security lacks a stable public facade for future consumers.
+8. External connector resources do not yet have an explicit authority/scope model.
 
-3. Roadmap 01 completion
-   Core Foundation & Runtime is not yet marked DONE. Final Definition
-   of Done review remains before closing the roadmap stage.
+NON-GAPS / EXISTING CONTROLS
+- deny-by-default for unknown tools
+- approval token expiry
+- approval session/tool/input binding
+- audit redaction
+- private-key input rejection
+- terminal command allowlist/risk classification
+- authorization before Agent Engine tool execution

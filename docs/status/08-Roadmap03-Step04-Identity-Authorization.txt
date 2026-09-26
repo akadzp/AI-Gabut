@@ -1,0 +1,42 @@
+ROADMAP 03 — STEP 04
+IDENTITY, AUTHORIZATION & POLICY ENFORCEMENT
+===============================================
+
+STATUS
+------
+COMPLETED
+
+IMPLEMENTED
+-----------
+- Canonical principal normalization under core/security/identity/.
+- Canonical authorization request and policy decision contracts.
+- Stable action mapping from legacy tools to authority actions.
+- Authorization decisions now expose decisionId, principal, action, resource,
+  scope, risk, reasons, policy provenance, and timestamp.
+- Approval records are bound to principal as well as session and input fingerprint.
+- Agent Engine propagates principal/execution/application/connector context into
+  the security authorization boundary.
+- Security public facade is available at core/security/index.js.
+- Existing governance endpoints and legacy tool behavior remain compatible.
+
+INVARIANTS VERIFIED
+-------------------
+- Unknown tool → deny.
+- Missing approval → approval_required / blocked.
+- Approval replay → blocked.
+- Approval principal mismatch → blocked.
+- Unsafe private key input → rejected before execution.
+- Allowed operation → explicit allow decision with decisionId.
+- Security does not execute protected operations.
+
+VALIDATION
+----------
+- Architecture check: PASS — 73 JavaScript files.
+- Security authorization contract test: PASS.
+- Legacy R9 governance check: PASS.
+- Syntax checks for changed JavaScript files: PASS.
+
+ENVIRONMENT NOTE
+----------------
+Full npm test still depends on installed node_modules. The validation environment
+previously could not complete npm install because registry access timed out.

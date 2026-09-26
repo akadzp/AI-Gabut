@@ -185,7 +185,7 @@ async function emitActivity(onActivity, payload) {
   if (typeof onActivity === "function") await onActivity(payload);
 }
 
-export async function runAgentV2({ prompt, provider, model, conversation = [], memories = [], onActivity, sessionId = null, approvalToken = null, resumeCheckpoint = null, onCheckpoint = null }) {
+export async function runAgentV2({ prompt, provider, model, conversation = [], memories = [], onActivity, sessionId = null, approvalToken = null, principal = null, executionId = null, applicationId = null, connectorId = null, resumeCheckpoint = null, onCheckpoint = null }) {
   const startedAt = Date.now();
   const context = createAgentContext({ prompt, provider, model, conversation, memories });
   const preparedContext = prepareContext({ prompt, conversation, memories });
@@ -334,7 +334,7 @@ export async function runAgentV2({ prompt, provider, model, conversation = [], m
       result = { ok: false, error: validation.error, toolIntelligence: validation };
     } else {
       try {
-        result = await withTimeout(executeTool(request.name, normalizedInput, { sessionId, approvalToken }), reliabilityLimits.operationTimeoutMs, `tool ${request.name}`);
+        result = await withTimeout(executeTool(request.name, normalizedInput, { sessionId, approvalToken, principal, executionId, applicationId, connectorId }), reliabilityLimits.operationTimeoutMs, `tool ${request.name}`);
       } catch (error) {
         result = { ok: false, error: error instanceof Error ? error.message : "Tool gagal" };
       }

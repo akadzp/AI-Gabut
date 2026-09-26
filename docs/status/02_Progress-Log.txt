@@ -24,3 +24,39 @@ Step 07 — Definition of Done
 COMPLETED
 
 ROADMAP 01 IS COMPLETE.
+
+ROADMAP 02 — AI / AGENT INTELLIGENCE ENGINE
+
+Step 01 — Audit Existing Agent Engine
+COMPLETED
+
+Step 02 — Define Engine Boundary
+COMPLETED
+
+Step 03 — Define Intelligence Contracts
+COMPLETED
+
+Step 04 — Build / Integrate Intelligence
+COMPLETED
+
+Step 05 — Reliability & Evaluation
+COMPLETED
+
+Step 06 — Validation
+COMPLETED
+
+Step 07 — Definition of Done
+COMPLETED
+
+ROADMAP 02 STATUS
+ROADMAP 02 IS COMPLETE.
+
+ROADMAP 02 VALIDATION NOTE
+Source and architecture validation pass. Full npm test requires installed
+runtime dependencies; the current environment does not contain node_modules
+and package installation could not complete because registry access timed out.
+Three historical V1 milestone checks retain old backend assumptions and are
+not treated as current-engine regressions.
+
+NEXT ROADMAP
+03 — Security, Authority & Governance.

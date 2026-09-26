@@ -1,0 +1,41 @@
+ROADMAP 03 — STEP 01 AUDIT
+
+SCOPE
+Audit existing security, authority, governance, approval, secret handling,
+sandboxing and audit controls before implementation begins.
+
+ACTUAL IMPLEMENTATION FOUND
+- core/security/governance/policy.js
+- core/security/policies/terminal-command.js
+- Agent Engine tool registry integration
+- Linux terminal executor integration
+
+WORKING CONTROLS
+- Tool permission classes: read / write / approval / deny.
+- Unknown tools are denied.
+- Approval tokens expire after a bounded period.
+- Approval tokens bind to session, tool and normalized input fingerprint.
+- Audit input is sanitized and known secret-like values are redacted.
+- Private-key material is rejected from tool input.
+- Terminal commands are checked against allowlist and risky patterns.
+- Terminal environment removes secret-like variables.
+- Authorization is executed before capability/connector execution.
+
+ARCHITECTURAL GAPS
+- No first-class identity contract.
+- No independent permission model.
+- No independent policy model/decision contract.
+- No dedicated secret service.
+- No general sandbox abstraction.
+- No dedicated audit service/storage boundary.
+- No explicit external-resource scope/authority contract.
+- No stable security facade.
+
+RECOMMENDED IMPLEMENTATION ORDER
+Boundary → contracts → identity/authority → policy enforcement → secrets/sandbox
+→ audit/observability → validation → DoD.
+
+CONCLUSION
+The existing governance implementation is a useful enforcement kernel, not yet
+a complete Security subsystem. Roadmap 03 should extend it rather than replace
+it, preserving the current Agent Engine → Security → Executor flow.

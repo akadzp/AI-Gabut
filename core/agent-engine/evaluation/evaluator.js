@@ -22,9 +22,12 @@ export function scoreTrajectory({ trajectory = {}, expected = {}, thresholds = {
     : Boolean(trajectory.text || trajectory.status === 'done' || trajectory.status === 'completed');
 
   const finalStatus = clean(trajectory.autonomy?.status || trajectory.status || '');
-  const completed = expected.complete === undefined
-    ? requiredSatisfied
-    : expected.complete === (finalStatus === 'done' || finalStatus === 'completed' || Boolean(trajectory.text));
+  const executionComplete = finalStatus === 'done' || finalStatus === 'completed' || Boolean(trajectory.text);
+  const completed = expectedTools.length
+    ? requiredSatisfied && executionComplete
+    : expected.complete === undefined
+      ? requiredSatisfied
+      : expected.complete === executionComplete;
 
   const efficiency = steps.length === 0 ? (requiredSatisfied ? 1 : 0) : clamp(successfulTools / Math.max(steps.length, expectedNames.length || steps.length));
   const failureRate = steps.length ? toolFailures / steps.length : 0;
@@ -47,7 +50,8 @@ export function scoreTrajectory({ trajectory = {}, expected = {}, thresholds = {
     status: finalStatus || null,
     pass: success >= (thresholds.success ?? DEFAULT_THRESHOLDS.success) &&
       safety >= (thresholds.safety ?? DEFAULT_THRESHOLDS.safety) &&
-      completion >= (thresholds.completion ?? DEFAULT_THRESHOLDS.completion)
+      completion >= (thresholds.completion ?? DEFAULT_THRESHOLDS.completion) &&
+      efficiency >= (thresholds.toolEfficiency ?? DEFAULT_THRESHOLDS.toolEfficiency)
   };
   return result;
 }
@@ -65,6 +69,40 @@ export function evaluateCase(testCase, runner) {
     ? { success: 0, completion: 0, safety: 0, toolEfficiency: 0, failureRate: 1, turns: 0, toolFailures: 0, successfulTools: 0, pass: false }
     : scoreTrajectory({ trajectory, expected: testCase.expected });
   return { id: testCase.id, category: testCase.category, durationMs: Date.now() - startedAt, score, error };
+}
+
+
+export async function evaluateCaseAsync(testCase, runner) {
+  const startedAt = Date.now();
+  let trajectory;
+  let error = null;
+  try {
+    trajectory = await runner(testCase);
+  } catch (cause) {
+    error = cause instanceof Error ? cause.message : String(cause);
+  }
+  const score = error
+    ? { success: 0, completion: 0, safety: 0, toolEfficiency: 0, failureRate: 1, turns: 0, toolFailures: 0, successfulTools: 0, pass: false }
+    : scoreTrajectory({ trajectory, expected: testCase.expected });
+  return { id: testCase.id, category: testCase.category, durationMs: Date.now() - startedAt, score, error };
+}
+
+export async function runEvaluationSuiteAsync(cases, runner) {
+  const results = [];
+  for (const testCase of arr(cases)) results.push(await evaluateCaseAsync(testCase, runner));
+  const passed = results.filter(item => item.score.pass).length;
+  const total = results.length;
+  const aggregate = {
+    total,
+    passed,
+    failed: total - passed,
+    passRate: total ? passed / total : 0,
+    meanSuccess: total ? results.reduce((sum, item) => sum + item.score.success, 0) / total : 0,
+    meanCompletion: total ? results.reduce((sum, item) => sum + item.score.completion, 0) / total : 0,
+    meanToolEfficiency: total ? results.reduce((sum, item) => sum + item.score.toolEfficiency, 0) / total : 0,
+    safetyRate: total ? results.reduce((sum, item) => sum + item.score.safety, 0) / total : 0
+  };
+  return { ok: aggregate.failed === 0, aggregate, results };
 }
 
 export function runEvaluationSuite(cases, runner) {

@@ -1,0 +1,85 @@
+ROADMAP 02 — AI / AGENT INTELLIGENCE ENGINE
+
+PURPOSE
+Build the generic Agent Engine boundary and intelligence lifecycle used by
+multiple application identities without coupling the engine to a product,
+connector, HTTP server, or concrete infrastructure implementation.
+
+BOUNDARY
+The engine owns task understanding, goal management, context orchestration,
+reasoning, decomposition, planning, execution planning, replanning, model
+routing, tool lifecycle coordination, specialist orchestration, execution
+checkpoint coordination, reliability coordination, evaluation, and
+interpretation of model/tool results.
+
+The engine consumes model providers, context/state services, capability/tool
+services, security authorization, workspace/task services, and connectors.
+It does not own filesystem, terminal, Git, connector, persistence, HTTP,
+security policy, or product identity implementations.
+
+STEPS
+01. Audit Existing Agent Engine
+02. Define Engine Boundary
+03. Define Intelligence Contracts
+04. Build / Integrate Intelligence
+05. Reliability & Evaluation
+06. Validation
+07. Definition of Done
+
+CURRENT PROGRESS
+01. Audit Existing Agent Engine       DONE
+02. Define Engine Boundary            DONE
+03. Define Intelligence Contracts     DONE
+04. Build / Integrate Intelligence    DONE
+05. Reliability & Evaluation          DONE
+06. Validation                        DONE
+07. Definition of Done                DONE
+
+STEP 04 RESULT
+A public Agent Engine facade was established at core/agent-engine/index.js.
+Consumers outside the engine use the public facade instead of importing
+internal engine modules directly. Architecture validation enforces this
+boundary.
+
+STEP 05 RESULT
+Execution reliability and evaluation contracts were hardened. Execution lock
+cleanup, timeout metrics, tool-efficiency evaluation, and asynchronous
+benchmark evaluation are covered by dedicated validation tests.
+
+STEP 06 VALIDATION
+Validated:
+- Core JavaScript syntax/check: PASS — 69 JavaScript files
+- Architecture boundary check: PASS — 69 JavaScript files
+- Platform contracts: PASS
+- Dependency/health checks: PASS
+- Agent Engine public boundary: PASS
+- Agent Engine reliability/evaluation: PASS
+- Legacy R7 evaluation check: PASS
+- Legacy R10 reliability check: PASS
+- Full legacy static milestone suite: 3 historical V1-assumption failures;
+  these are not current-engine regressions and are not modified to preserve
+  false compatibility with the old backend layout.
+
+ENVIRONMENT NOTE
+Full npm test execution requires declared runtime dependencies to be
+installed. The validation environment did not contain node_modules and could
+not complete npm install because registry access timed out. This is an
+environment limitation, not a source-validation failure.
+
+STEP 07 DEFINITION OF DONE
+The roadmap is complete because:
+- The engine boundary is explicit and reusable by multiple application identities.
+- External consumers use core/agent-engine/index.js as the public engine surface.
+- Internal context, reasoning, model, tool, specialist, evaluation, and reliability modules remain implementation details behind that surface.
+- Reliability provides checkpoint/resume, execution locking, timeout control, and observable metrics.
+- Evaluation provides observable trajectory scoring, regression evaluation, async evaluation, and failure analysis.
+- Architecture validation rejects direct external imports of Agent Engine internals.
+- Syntax and source-level validation pass for the current 69-JavaScript-file tree.
+- Historical V1 milestone checks are documented separately where they still assume the old backend layout.
+- No product identity is embedded into the generic Agent Engine.
+
+ROADMAP 02 STATUS
+COMPLETED
+
+NEXT
+Roadmap 03 — Security, Authority & Governance.

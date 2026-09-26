@@ -1,0 +1,59 @@
+ROADMAP 03 — STEP 02
+DEFINE SECURITY BOUNDARY
+
+STATUS
+------
+COMPLETED
+
+SECURITY OWNS
+-------------
+- identity/principal authority
+- permission and resource scope
+- policy definition/decision boundary
+- approval lifecycle
+- security-specific secret protection rules
+- sandbox/resource authorization boundary
+- security audit records
+- allow/deny decision semantics
+
+SECURITY DOES NOT OWN
+---------------------
+- reasoning/planning
+- tool implementation
+- filesystem execution
+- terminal execution
+- Git execution
+- connector execution
+- task execution
+- product/application identity
+
+AUTHORITY FLOW
+--------------
+APP / AGENT
+→ operation request
+→ SECURITY decision
+→ executor/connector if authorized
+→ result/evidence
+→ security audit
+
+ENFORCEMENT RULE
+----------------
+A denied or unresolved security decision must not reach the executor.
+Security failures default to deny/fail-closed.
+
+DEPENDENCY RULES
+----------------
+Security may expose contracts to applications, Agent Engine, executors and
+connectors. Security must not depend on application identity, Agent Engine
+internals, or executor implementation details.
+
+DECISION MODEL
+--------------
+Policy definition and policy decision are separate conceptual responsibilities.
+The decision must be explicit and inspectable and must include enough context to
+explain allow, deny, or approval-required outcomes without exposing secrets.
+
+IMPLEMENTATION STATUS
+---------------------
+Step 02 changes documentation/contracts only. No production runtime logic was
+changed because this step defines the boundary before implementation.

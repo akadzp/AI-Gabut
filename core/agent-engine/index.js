@@ -31,7 +31,7 @@ export { listModels } from "./models/index.js";
 export { routeModel, getModelCandidates } from "./models/model-router.js";
 
 export { getEvaluationCases } from "./evaluation/benchmarks.js";
-export { scoreTrajectory, analyzeFailures } from "./evaluation/evaluator.js";
+export { scoreTrajectory, evaluateCase, evaluateCaseAsync, runEvaluationSuite, runEvaluationSuiteAsync, analyzeFailures } from "./evaluation/evaluator.js";
 
 export {
   getSpecialists,
@@ -43,5 +43,7 @@ export {
 export {
   resumeExecution,
   getReliabilityMetrics,
-  getReliabilityLimits
+  getReliabilityLimits,
+  withExecutionLock,
+  withTimeout
 } from "./reliability/runtime.js";

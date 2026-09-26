@@ -6,13 +6,13 @@ PROJECT:
 AI-Gabut
 
 CURRENT ROADMAP:
-09. External Connector & Integration Layer
+10. Media & Advanced Capabilities
 
 CURRENT STEP:
-01. Audit Existing External Connector & Integration Layer
+01. Audit Existing Media & Advanced Capabilities
 
 STATUS:
-READY — ROADMAP 09
+READY — ROADMAP 10
 
 COMPLETED ROADMAPS:
 - 01. Core Foundation & Runtime
@@ -23,32 +23,28 @@ COMPLETED ROADMAPS:
 - 06. Workspace & Change System
 - 07. Task, Job & Execution Orchestration
 - 08. Synchronization & Reconciliation
+- 09. External Connector & Integration Layer
 
-ROADMAP 08 RESULT:
+ROADMAP 09 RESULT:
 COMPLETED
 
 DELIVERED:
-- Generic core/sync boundary.
-- Durable synchronization records.
-- Normalized base/local/remote snapshots.
-- Deterministic snapshot diff.
-- Three-way reconciliation planning.
-- Explicit conflict detection.
-- Manual/local/remote strategy handling.
-- Dry-run apply.
-- Adapter-driven snapshot/apply integration.
-- Optimistic State Persistence conflict handling.
-- Bounded synchronization history.
-- Sync/reconciliation capability registered at the platform boundary.
-- Synchronization contract test integrated into npm test.
+- Generic provider-agnostic core/connectors boundary.
+- Connector definition and operation contracts.
+- Connector registry with lookup/list/seal lifecycle.
+- Adapter-driven connector runtime.
+- Bounded timeout and retry behavior.
+- Connector operation observability events.
+- Connector capability registered at the platform boundary.
+- No provider-specific connector implementation embedded in core.
+- Connector contract test integrated into npm test.
 
 BOUNDARY:
-core/sync owns synchronization and reconciliation semantics.
-core/storage owns durable state primitives.
-connectors own provider-specific transport and integration behavior.
-core/workspace owns workspace/change lifecycle.
+core/connectors owns generic connector runtime semantics.
+Provider-specific implementations belong under connectors/<provider>.
+core/security owns authority, approvals, credentials, and audit policy.
+core/sync owns synchronization and reconciliation.
 core/tasks owns execution orchestration.
-core/security owns authority and policy.
 Applications remain outside core.
 
 VALIDATION NOTE:
@@ -57,4 +53,4 @@ npm test must be executed in the repository environment after applying
 the final roadmap ZIP.
 
 NEXT:
-01. Audit Existing External Connector & Integration Layer
+01. Audit Existing Media & Advanced Capabilities

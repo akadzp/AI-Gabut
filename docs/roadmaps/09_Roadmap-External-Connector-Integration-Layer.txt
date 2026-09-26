@@ -1,0 +1,77 @@
+AI-GABUT — ROADMAP 09
+EXTERNAL CONNECTOR & INTEGRATION LAYER
+======================================
+
+TUJUAN
+------
+Membentuk boundary connectors yang generic, provider-agnostic, dan dapat
+dipakai aplikasi tanpa menanamkan credential, transport, atau business
+logic provider ke core. Connector runtime menangani registration, capability
+metadata, operation dispatch, timeout/retry dasar, dan event observability.
+
+STEPS
+-----
+01. Audit Existing External Connector & Integration Layer
+02. Define Connector Boundary
+03. Define Connector & Operation Contracts
+04. Build Connector Registry
+05. Build Connector Runtime
+06. Integrate Security/Sync/Task Boundaries
+07. Validation
+08. Definition of Done
+
+IMPLEMENTATION RESULT
+---------------------
+- New core/connectors boundary.
+- Connector definition and operation contracts.
+- Connector registry with seal lifecycle.
+- Adapter-driven operation execution.
+- Timeout and bounded retry behavior.
+- Connector lifecycle/operation events.
+- Connector capability registered at platform boundary.
+- No provider-specific connector implementation added to core.
+- Connector contract test integrated into npm test.
+
+BOUNDARY
+--------
+core/connectors owns generic connector contracts, registry, and execution
+runtime.
+Provider-specific implementations belong under connectors/<provider>.
+core/security owns credentials, approvals, authorization, and audit policy.
+core/sync owns synchronization/reconciliation semantics.
+core/tasks owns orchestration.
+Applications own product-specific use cases.
+No provider-specific business logic belongs in core/connectors.
+
+SECURITY & RELIABILITY
+----------------------
+- Credentials are not stored by connector runtime.
+- Authentication mode is metadata only.
+- Provider adapters receive normalized operation input.
+- Operation timeout is bounded.
+- Retry count is bounded.
+- Connector registry can be sealed after bootstrap.
+- Disabled connectors are rejected.
+- Provider/network errors remain observable without leaking secrets.
+- Approval/authorization remains outside connector runtime.
+
+VALIDATION
+----------
+- Contract test covers registration, operation execution, metadata,
+  registry sealing, and runtime dispatch.
+- npm test integration is required.
+- Architecture validation must show core/connectors has no dependency
+  on applications or provider-specific implementations.
+
+DEFINITION OF DONE
+------------------
+1. core/connectors exists as a generic boundary.
+2. Connector definitions are normalized.
+3. Operations have explicit contracts.
+4. Registry supports registration, lookup, listing, and sealing.
+5. Runtime supports adapter execution.
+6. Timeout and bounded retry exist.
+7. Authentication remains metadata-only.
+8. Provider-specific implementations remain outside core.
+9. Tests are integrated into npm test.
+10. Documentation and status identify Roadmap 09 as completed.

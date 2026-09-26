@@ -1,0 +1,92 @@
+AI-GABUT ARCHITECTURE V3 — AGENTIC APPLICATION BOUNDARY
+
+V3 mengaktifkan apps/agentic sebagai application nyata di atas
+foundation V2. V3 tidak mengganti boundary V2.
+
+Layer
+
+User ↓ Agentic Frontend ↓ Agentic Backend / Application API ↓
+apps/agentic ├── identity/auth ├── sessions/conversation ├──
+memory/context ├── connections ├── workspace context ├── task/execution
+coordination └── application policy ↓ AI-Gabut Core ↓ Connectors /
+external providers
+
+Frontend boundary
+
+Frontend adalah client Agentic.
+
+Frontend tidak boleh: - import core langsung; - mengakses storage
+langsung; - menerima credential provider; - memutuskan authorization; -
+mengandalkan hide-in-UI sebagai security.
+
+Multi-user ownership
+
+Setiap resource user-owned harus mempunyai owner yang dapat
+ditegakkan: - sessions - messages - memory - connections - credentials -
+workspace - tasks - executions - activity
+
+Backend harus memeriksa ownership sebelum read/mutate.
+
+Session
+
+Session mengikat: - owner - conversation - active connection(s) -
+workspace - task - relevant memory - execution state
+
+Task dapat memakai lebih dari satu provider.
+
+Connection
+
+Connection adalah reference milik user terhadap akun provider eksternal.
+
+Lifecycle: created → authenticating → active → expired/requires_reauth →
+revoked/disconnected
+
+Credential dipisahkan dari conversation/memory.
+
+Agent authority
+
+User request ↓ Agent intent ↓ Capability request ↓ Security policy ↓
+Approval bila perlu ↓ Executor / Connector ↓ Observation + evidence ↓
+Evaluation ↓ Replan / finish
+
+Workspace
+
+Workspace adalah working context, bukan hanya file browser. Ia dapat
+mengikat connection, provider resource, repository/project, branch,
+changes, snapshots, dan task context.
+
+core/workspace tetap generic. Agentic mengelola application-level
+selection/context.
+
+GitHub
+
+Agentic ↓ connection contract ↓ GitHub connector ↓ GitHub API
+
+Generic core tidak memanggil GitHub API langsung.
+
+Data separation
+
+USER DATA: account, sessions, memory, preferences, connections
+
+PROJECT DATA: repository context, workspace, files, changes, tasks
+
+EXECUTION DATA: plans, checkpoints, observations, tool history, results
+
+SECURITY DATA: credentials, approvals, security audit
+
+Infrastructure storage boleh sama, tetapi ownership dan access policy
+tetap berbeda.
+
+Deployment
+
+Topology A: Frontend + Agentic Backend → AI-Gabut
+
+Topology B: Frontend → Agentic Backend → AI-Gabut
+
+Core tidak bergantung pada topology.
+
+V2 preservation
+
+V2 roadmap dan technical documentation tetap menjadi historical
+baseline. V3 menambahkan application activation tanpa menghapus sejarah
+V2.

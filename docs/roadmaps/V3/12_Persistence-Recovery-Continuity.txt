@@ -1,0 +1,11 @@
+V3 — PERSISTENCE, RECOVERY & CONTINUITY
+
+Tujuan: membuat Agentic dapat melanjutkan pekerjaan setelah
+interruption.
+
+Scope: - session/message persistence - memory - connection metadata -
+credential state - workspace - task - execution checkpoint - activity -
+version/conflict handling - restart recovery - resume
+
+DoD: Restart tidak menghapus state penting dan execution valid dapat
+dilanjutkan.

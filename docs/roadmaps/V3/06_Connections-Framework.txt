@@ -1,0 +1,13 @@
+V3 — CONNECTIONS FRAMEWORK
+
+Tujuan: menyediakan boundary generic untuk koneksi provider eksternal.
+
+Scope: - provider identity - user ownership -
+connect/authenticate/validate - active/expired/reconnect -
+disconnect/revoke - health - provider capability discovery - secure
+credential reference
+
+GitHub adalah provider pertama. Provider lain menjadi extension point.
+
+DoD: Lifecycle connection generic dapat digunakan Agentic tanpa
+dependency provider di core.

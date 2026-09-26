@@ -1,73 +1,34 @@
-STATUS DOCUMENTATION
 CURRENT STATUS
-==============
 
-PROJECT:
-AI-Gabut
+PROJECT: AI-Gabut
 
-CURRENT ROADMAP:
-13. Operations, Recovery & Production Readiness
+ACTIVE VERSION: V3
 
-CURRENT STEP:
-09. Definition of Done
+ACTIVE ROADMAP: V3 — Agentic Activation
 
-STATUS:
-COMPLETED
+V1: Fase awal. Dokumentasi lengkap tidak tersedia.
 
-COMPLETED ROADMAPS:
-- 01. Core Foundation & Runtime
-- 02. AI / Agent Intelligence Engine
-- 03. Security, Authority & Governance
-- 04. State, Storage & Persistence
-- 05. Local System & Execution Capabilities
-- 06. Workspace & Change System
-- 07. Task, Job & Execution Orchestration
-- 08. Synchronization & Reconciliation
-- 09. External Connector & Integration Layer
-- 10. Media & Advanced Capabilities
-- 11. API & System Interface
-- 12. Application / Product Layer
-- 13. Operations, Recovery & Production Readiness
+V2: Roadmap besar 00–13. Foundation AI-Gabut completed/validated dan
+tetap dipertahankan sebagai historical baseline.
 
-ROADMAP 13 RESULT:
-COMPLETED — VALIDATED
+V3 CURRENT STATE: - V3 roadmap besar sudah didefinisikan. - V3 detail
+roadmap sudah didefinisikan. - Agentic activation belum completed. -
+apps/agentic menjadi target utama implementasi V3. - Roadmap dibuat
+sebagai rencana; implementation status harus diverifikasi dari source
+aktual.
 
-VALIDATION RESULT:
-- Core check: PASS — 119 JavaScript files.
-- Platform contracts: PASS.
-- Platform dependency/health: PASS.
-- Platform runtime validation: PASS.
-- Operations runtime contract: PASS.
-- Production configuration contract: PASS.
-- Security secret/sandbox contract: PASS.
-- Security audit observability: PASS.
-- Storage record/object: PASS.
-- Storage state service: PASS.
-- Local system capability contract: PASS.
-- Workspace change-system contract: PASS.
-- Task/job/execution orchestration contract: PASS.
-- Synchronization/reconciliation contract: PASS.
-- Connector registry/runtime contract: PASS.
-- Media registry/runtime contract: PASS.
-- API contract: PASS.
-- Application layer contract: PASS.
+V3 AREAS: 01 Application Runtime 02 Identity, Authentication &
+Multi-user Isolation 03 Sessions & Conversation 04 Agent Execution
+Activation 05 Memory & Context 06 Connections Framework 07 GitHub
+Provider 08 Workspace & Project Context 09 Agentic Frontend 10 Realtime,
+Activity & Progress 11 Approval, Security & Credential Governance 12
+Persistence, Recovery & Continuity 13 Deployment & Operations 14
+Testing, Validation & Reliability 15 Final Definition of Done
 
-DEFINITION OF DONE:
-- Operations boundary exists.
-- Readiness contract exists.
-- Runtime operational snapshot exists.
-- Graceful shutdown is coordinated and bounded.
-- Production configuration contract exists.
-- `platform.operations` is registered.
-- API exposes readiness and operations snapshot.
-- Existing lifecycle and domain recovery remain intact.
-- Roadmap 13 tests are integrated into `npm test`.
-- Integrated test suite passes in the user environment.
-- Documentation identifies Roadmap 13 as completed.
+STATUS: CURRENT — V3 BASELINE / ROADMAP PREPARATION
 
-PROJECT FOUNDATION STATUS:
-Roadmaps 01–13 are completed and validated.
+NEXT: Audit source aktual terhadap V3 roadmap, lalu implementasikan V3
+sebagai satu batch lengkap.
 
-NEXT:
-Final project completion review and baseline audit before defining
-any subsequent roadmap.
+IMPORTANT: Roadmap V2 tidak hilang dan tidak dianggap gagal. V3 adalah
+fase berikutnya.

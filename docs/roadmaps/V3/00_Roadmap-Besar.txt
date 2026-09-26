@@ -1,0 +1,124 @@
+AI-GABUT V3 — ROADMAP BESAR
+
+AGENTIC ACTIVATION
+
+VERSION
+
+V1: - fase awal - dokumentasi lengkap tidak tersedia
+
+V2: - roadmap besar 00–13 - membangun foundation AI-Gabut -
+dipertahankan sebagai historical baseline
+
+V3: - fase aktif - menghidupkan apps/agentic menjadi aplikasi AI yang
+usable
+
+TUJUAN
+
+Agentic harus dapat:
+
+1.  menerima user secara aman;
+2.  mempunyai session/chat terpisah;
+3.  menjaga context dan memory;
+4.  menghubungkan provider eksternal;
+5.  menggunakan GitHub sebagai provider pertama;
+6.  mempunyai workspace yang mengikuti resource yang dipilih;
+7.  menerima pekerjaan nyata;
+8.  memahami → merencanakan → bertindak → mengamati → mengevaluasi →
+    memperbaiki/replan → menyelesaikan → melaporkan;
+9.  meminta approval bila diperlukan;
+10. menyimpan execution state;
+11. resume setelah restart;
+12. mempunyai frontend dan backend yang dapat satu server atau terpisah;
+13. menjaga isolasi antar-user;
+14. menyediakan observability, audit, recovery, dan operations.
+
+TARGET ARCHITECTURE
+
+    User
+     ↓
+    Agentic Frontend
+     ↓
+    Agentic Backend / Application API
+     ↓
+    apps/agentic
+     ├── identity/auth
+     ├── sessions/conversation
+     ├── memory/context
+     ├── connections
+     ├── workspace context
+     ├── task/execution coordination
+     └── application policy
+     ↓
+    AI-Gabut Core
+     ↓
+    Connectors
+     └── GitHub first
+
+ROADMAP TURUNAN
+
+1.  Application Runtime
+2.  Identity, Authentication & Multi-user Isolation
+3.  Sessions & Conversation
+4.  Agent Execution Activation
+5.  Memory & Context
+6.  Connections Framework
+7.  GitHub Provider
+8.  Workspace & Project Context
+9.  Agentic Frontend
+10. Realtime, Activity & Progress
+11. Approval, Security & Credential Governance
+12. Persistence, Recovery & Continuity
+13. Deployment & Operations
+14. Testing, Validation & Reliability
+15. Final Definition of Done
+
+DEPENDENCY
+
+    01 → 02 → 03
+              ↓
+           04 ↔ 05
+              ↓
+           06 → 07 → 08
+              ↓
+           09 ↔ 10
+              ↓
+           11 ↔ 12
+              ↓
+           13 → 14 → 15
+
+Parallel implementation hanya boleh dilakukan setelah contract dan
+ownership jelas.
+
+WORKFLOW
+
+Setiap roadmap detail: - Audit - Boundary - Contracts - Implementation -
+Integration - Reliability - Validation - Definition of Done
+
+Satu Roadmap V3 = satu batch lengkap = satu delta ZIP.
+
+V3 DEFINITION OF DONE
+
+    login
+    → new chat
+    → choose context
+    → give work
+    → understand
+    → plan
+    → authorize/approve
+    → act
+    → observe
+    → check
+    → repair/replan
+    → finish
+    → report
+    → persist
+    → restart
+    → resume
+
+V3 tidak dianggap selesai hanya karena UI atau endpoint tersedia.
+Workflow nyata harus berjalan end-to-end.
+
+Multi-user invariant: User A tidak dapat membaca/menggunakan session,
+memory, connection, credential, workspace, task, atau execution milik
+User B kecuali explicit sharing/collaboration feature memang dibangun di
+masa depan.

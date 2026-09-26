@@ -1,0 +1,10 @@
+V3 — WORKSPACE & PROJECT CONTEXT
+
+Tujuan: mengikat resource eksternal yang dipilih ke workspace Agentic.
+
+Scope: - ownership - connection/repository/branch binding - project
+context - file tree/content - current file - changes - snapshots -
+recovery - Agent ↔ workspace context
+
+DoD: Repository/branch terpilih menjadi context workspace eksplisit
+untuk Agentic.

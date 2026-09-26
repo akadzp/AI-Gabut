@@ -1,0 +1,10 @@
+V3 — GITHUB PROVIDER
+
+Tujuan: membuat GitHub menjadi provider pertama yang benar-benar usable.
+
+Scope: - authentication - connection - account - repository
+list/selection - branch list/selection - metadata - file tree - file
+read - search - rate-limit/error handling - connection status
+
+DoD: User dapat connect GitHub, memilih repository/branch, dan Agentic
+dapat mengakses resource melalui connector boundary.

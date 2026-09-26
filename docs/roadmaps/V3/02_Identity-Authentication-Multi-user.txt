@@ -1,0 +1,11 @@
+V3 — IDENTITY, AUTHENTICATION & MULTI-USER ISOLATION
+
+Tujuan: membuat Agentic aman untuk banyak user tanpa data silang.
+
+Scope: - user identity - authentication - login/logout - authorization -
+ownership - isolation - device/session management - revoke access
+
+Resource boundary: sessions, messages, memory, connections, credentials,
+workspace, tasks, executions, activity.
+
+DoD: Backend menegakkan ownership; cross-user access ditolak dan diuji.

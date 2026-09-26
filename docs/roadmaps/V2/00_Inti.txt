@@ -1,3 +1,18 @@
+AI-GABUT — V2 MASTER ROADMAP / HISTORICAL BASELINE
+====================================================
+
+VERSION NOTE
+------------
+V1 adalah fase awal dan tidak mempunyai dokumentasi lengkap.
+Dokumen ini adalah roadmap besar V2 AI-Gabut.
+
+V2 terdiri dari roadmap besar 00–13 dan menjadi foundation platform.
+V3 adalah fase aktif berikutnya dan didokumentasikan di:
+`docs/roadmaps/V3/00_Roadmap-Besar.txt`
+
+Isi roadmap V2 di bawah dipertahankan sebagai historical baseline.
+Jangan menghapus atau menimpa roadmap V2 ketika mengerjakan V3.
+
 AI-GABUT — ROADMAP BESAR
 =========================
 

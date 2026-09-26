@@ -1,0 +1,13 @@
+V3 — DEPLOYMENT & OPERATIONS
+
+Tujuan: mendukung frontend/backend pada server sama atau berbeda.
+
+Topology: A. Frontend + Agentic Backend + AI-Gabut B. Frontend → Agentic
+Backend → AI-Gabut
+
+Scope: - environment/config - API endpoint config - HTTPS/reverse
+proxy - startup validation - readiness - shutdown - diagnostics -
+logging/correlation - resource limits - initialization/migration -
+backup/recovery hooks
+
+DoD: Kedua topology dapat digunakan tanpa mengubah core architecture.

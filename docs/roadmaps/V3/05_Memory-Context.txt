@@ -1,0 +1,11 @@
+V3 — MEMORY & CONTEXT
+
+Tujuan: memisahkan conversation, execution context, user memory,
+project/workspace context, task memory, dan execution history.
+
+Scope: - retrieval - relevance - lifecycle - deletion - isolation
+
+Credential/token/password/API key bukan memory biasa.
+
+DoD: Context relevan dapat digunakan tanpa cross-user atau credential
+leakage.

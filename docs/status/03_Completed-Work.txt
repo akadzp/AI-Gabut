@@ -31,3 +31,18 @@ VALIDATED CHECKS
 
 NEXT
 Roadmap 03 — Security, Authority & Governance.
+
+
+VERSION HISTORY
+===============
+
+V2 — ROADMAP BESAR 00–13
+------------------------
+Roadmaps 01–13 completed and validated as the V2 platform foundation.
+This history is preserved and is not replaced by V3.
+
+V3 — AGENTIC ACTIVATION
+-----------------------
+V3 roadmap definition is established. V3 implementation is not yet marked
+completed. The active objective is to turn `apps/agentic` into a usable,
+multi-user AI application on top of V2.

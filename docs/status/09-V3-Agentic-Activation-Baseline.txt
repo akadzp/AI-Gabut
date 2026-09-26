@@ -1,0 +1,18 @@
+V3 AGENTIC ACTIVATION — BASELINE STATUS
+
+WHAT EXISTS FROM V2: - core platform foundation - Agent Engine public
+boundary - security - storage/state - linux capabilities -
+workspace/change system - task orchestration - sync/reconciliation -
+connector runtime - media runtime - API/system interface - application
+layer - operations/readiness - apps/agentic application identity
+
+V3 NOT YET CLAIMED: - full Agentic authentication - full multi-user
+isolation - complete session/chat product flow - end-to-end Agent
+execution from UI - user-owned provider connections - fully usable
+GitHub workflow - Agentic workspace binding - complete frontend -
+realtime activity UX - end-to-end approval/credential flow -
+restart/resume user workflow - V3 production readiness
+
+HANDOVER RULE: Roadmap = target. Status = current condition. Source code
+= implementation authority. Do not mark a feature completed merely
+because a contract or placeholder UI exists.

@@ -1,0 +1,20 @@
+V3 — FINAL DEFINITION OF DONE
+
+V3 selesai apabila: 1. User dapat login. 2. User dapat membuat banyak
+session. 3. Session tidak bercampur. 4. User A tidak dapat mengakses
+data User B. 5. User dapat menghubungkan GitHub. 6. Repository dan
+branch dapat dipilih. 7. Workspace mengikuti resource yang dipilih. 8.
+User dapat memberi pekerjaan nyata. 9. Agentic memahami, merencanakan,
+memilih capability, dan menjalankan. 10. Approval dipakai bila
+diperlukan. 11. Progress/task state terlihat. 12. Agentic dapat
+observe/evaluate/replan/repair sesuai capability. 13. Result dan
+activity terlihat. 14. Session/task/workspace/execution state persisten.
+15. Restart/reconnect tidak merusak state valid. 16. Credential tidak
+bocor. 17. Frontend tidak mengakses core langsung. 18. Backend dapat
+dipisah dari frontend. 19. Error/retry/timeout/recovery jelas. 20. V3
+dan V2 foundation tests lulus. 21. Documentation/status sesuai source.
+22. Tidak ada requirement penting yang hanya berupa mock/fake UI.
+
+Real-world flow: login → new chat → context → work → understand → plan →
+authorize/approve → act → observe → check → repair/replan → finish →
+report → persist → restart → resume

@@ -1,318 +1,104 @@
 AI-GABUT — DOCUMENTATION
-========================
 
-Dokumentasi ini merupakan panduan utama untuk memahami project
-AI-Gabut sebelum membaca source code atau melakukan perubahan
-terhadap sistem.
+Dokumentasi ini adalah sistem handover utama AI-Gabut.
 
-Dokumentasi dibuat agar developer maupun AI lain dapat melanjutkan
-project tanpa harus bergantung pada percakapan atau pengetahuan
-pribadi dari pembuat sebelumnya.
+VERSIONING
 
+V1 — fase awal
 
-TUJUAN DOKUMENTASI
-------------------
+Fase awal ketika AI-Gabut pertama kali dibangun. Dokumentasi lengkap V1
+tidak tersedia dan tidak perlu direkonstruksi.
 
-Dokumentasi AI-Gabut mempunyai tiga fungsi utama:
+V2 — roadmap besar 00–13
 
-1. Menjelaskan bagaimana sistem dirancang dan bekerja.
-2. Menjelaskan apa yang akan dibangun dan urutan pembangunannya.
-3. Menjelaskan kondisi project saat ini.
+V2 adalah fase pembangunan foundation AI-Gabut yang terdokumentasi pada
+roadmap besar 00–13. Seluruh roadmap dan catatan V2 dipertahankan
+sebagai sejarah dan baseline. V2 tidak dihapus atau ditimpa oleh V3.
 
-Karena ketiga hal tersebut mempunyai fungsi yang berbeda,
-dokumentasi dipisahkan menjadi tiga bagian:
+V3 — Agentic Activation
 
+V3 adalah fase aktif saat ini. Fokusnya adalah menghidupkan apps/agentic
+menjadi aplikasi AI yang benar-benar dapat digunakan manusia.
+
+V3 mencakup: - application runtime - identity/authentication -
+multi-user isolation - sessions/chat - agent execution -
+memory/context - connections - GitHub - workspace - frontend/backend
+boundary - realtime/activity - approval/security/credentials -
+persistence/recovery - deployment/operations - testing/validation
+
+Multi-AI bukan scope awal V3.
+
+STRUKTUR
+
+    docs/
+    ├── README.txt
+    ├── technical/
+    ├── roadmaps/
+    │   ├── V3/                 # roadmap aktif
+    │   └── roadmap V2/lama    # tetap dipertahankan
+    └── status/
+
+Struktur fisik repository tidak harus persis sama dengan struktur
+dokumentasi. Yang wajib adalah label V2/V3 dan hubungan antar dokumen
+jelas.
+
+TECHNICAL
+
+technical/ menjelaskan apa sistemnya dan bagaimana sistem bekerja:
+architecture, boundaries, dependency, security, state, workspace,
+events, API, runtime, dan deployment concepts.
+
+ROADMAPS
+
+roadmaps/ menjelaskan apa yang akan dibangun dan bagaimana urutannya.
+
+V2: - roadmap besar 00–13 - roadmap detail 01–13 - dipertahankan sebagai
+historical baseline
+
+V3: - roadmaps/V3/00_Roadmap-Besar.txt adalah master roadmap aktif -
+file setelahnya adalah breakdown domain - satu roadmap besar = satu
+batch pembangunan - satu batch mencakup audit → boundary → contracts →
+implementation → integration → reliability → validation → DoD - satu
+batch menghasilkan satu delta ZIP
+
+Roadmap adalah rencana, bukan bukti pekerjaan sudah selesai.
+
+STATUS
+
+status/ menjelaskan kondisi aktual: - active version - active roadmap -
+current step - completed - next - blocked - validation - known gaps
+
+Source code aktual harus diperiksa apabila dokumentasi dan implementasi
+tidak cocok.
+
+ALUR HANDOVER
+
+    README
+     ↓
     technical/
-    roadmaps/
-    status/
-
-
-STRUKTUR DOKUMENTASI
---------------------
-
-docs/
-│
-├── README.txt
-│
-├── technical/
-│
-├── roadmaps/
-│
-└── status/
-
-
-1. TECHNICAL
-------------
-
-Folder `technical/` menjelaskan sistem.
-
-Pertanyaan utama yang dijawab:
-
-    "AI-Gabut ini apa?"
-    "Bagaimana arsitekturnya?"
-    "Apa fungsi masing-masing subsystem?"
-    "Bagaimana hubungan antar bagian?"
-    "Apa aturan dependency-nya?"
-
-Dokumen di dalam folder ini menjelaskan:
-
-- project context
-- system architecture
-- subsystem boundaries
-- dependency
-- core
-- application
-- connector
-- data
-- runtime
-- workspace
-- dan konsep teknis lainnya
-
-Dokumen technical menjelaskan bagaimana sistem dirancang,
-bukan status pembangunan sistem.
-
-Technical documentation tidak digunakan untuk menentukan apakah
-sebuah pekerjaan sudah selesai atau belum.
-
-
-2. ROADMAPS
------------
-
-Folder `roadmaps/` menjelaskan rencana pembangunan AI-Gabut.
-
-File utama:
-
-    00_Roadmap-Besar.txt
-
-File tersebut merupakan roadmap utama yang menjelaskan
-kelompok besar pekerjaan yang akan dibangun.
-
-Roadmap besar tidak mematok jumlah tahap sejak awal.
-
-Jumlah dan pembagian tahap dapat berubah apabila proses pembangunan
-menunjukkan bahwa sebuah bagian perlu dipecah, digabung, atau
-ditambahkan.
-
-Roadmap detail menggunakan pola:
-
-    01_Roadmap-....txt
-    02_Roadmap-....txt
-    03_Roadmap-....txt
-    ...
-
-Dokumen detail tidak harus dibuat seluruhnya sejak awal.
-
-Dokumen tersebut dibuat ketika suatu tahap sudah cukup jelas untuk
-didokumentasikan sebagai proses pembangunan tersendiri.
-
-Setiap roadmap detail mendokumentasikan satu tahap dari awal
-sampai selesai, termasuk:
-
-- tujuan
-- prerequisite
-- dependency
-- tahapan pekerjaan
-- implementasi
-- integrasi
-- validation
-- definition of done
-- kondisi selesai
-
-Roadmap adalah rencana.
-
-Roadmap bukan bukti bahwa suatu pekerjaan sudah selesai.
-
-
-3. STATUS
----------
-
-Folder `status/` menjelaskan kondisi aktual project.
-
-Pertanyaan utama:
-
-    "Sekarang project sudah sampai mana?"
-
-Status digunakan untuk menunjukkan hubungan antara kondisi aktual
-project dengan roadmap.
-
-Status dapat mencatat:
-
-- completed
-- current
-- next
-- planned
-- blocked
-- validation status
-- catatan penting mengenai kondisi project
-
-Status harus menggambarkan kondisi nyata project.
-
-Status bukan tempat mendesain arsitektur dan bukan tempat membuat
-rencana pembangunan baru.
-
-
-HUBUNGAN KETIGA BAGIAN
-----------------------
-
-Ketiga bagian dokumentasi saling melengkapi:
-
-    technical/
-        ↓
-    bagaimana sistem bekerja
-
-    roadmaps/
-        ↓
-    apa yang akan dibangun dan bagaimana urutannya
-
-    status/
-        ↓
-    sudah sampai mana sekarang
-
-
-ALUR MEMBACA PROJECT
---------------------
-
-Developer atau AI baru sebaiknya membaca project dengan urutan:
-
-    1. docs/README.txt
-           ↓
-    2. docs/technical/
-           ↓
-    3. docs/roadmaps/00_Roadmap-Besar.txt
-           ↓
-    4. docs/status/00_Current-Status.txt
-           ↓
-    5. roadmap detail yang sedang relevan
-           ↓
-    6. Tree project
-           ↓
-    7. source code
-
-
-MENGAPA URUTAN INI DIGUNAKAN
-----------------------------
-
-Technical documentation memberikan pemahaman tentang sistem.
-
-Roadmap memberikan pemahaman tentang arah pembangunan.
-
-Status memberikan pemahaman tentang posisi aktual.
-
-Setelah ketiganya dipahami, Tree dan source code dapat dibaca
-dengan konteks yang benar.
-
-Dengan demikian developer atau AI yang baru masuk ke project tidak
-perlu mengetahui percakapan atau keputusan sebelumnya untuk dapat
-memahami kondisi project.
-
-
-AI-GABUT DAN APPLICATION
-------------------------
-
-AI-Gabut merupakan platform.
-
-Platform menyediakan capability yang dapat digunakan oleh berbagai
-application.
-
-Contoh:
-
-    AI-Gabut
-       │
-       ├── Agentic
-       │
-       ├── BukaOlshop CS
-       │
-       └── Application lainnya
-
-Application bukan bagian dari generic identity AI-Gabut.
-
-Application dapat mempunyai:
-
-- identity
-- domain
-- policy
-- configuration
-- interface
-- deployment environment
-
-Sedangkan capability generik tetap berada di core AI-Gabut.
-
-
-TREE SEBAGAI KONDISI AKTUAL
----------------------------
-
-Tree dan source code menunjukkan kondisi aktual project.
-
-Dokumentasi menjelaskan dan memberikan konteks terhadap kondisi
-tersebut.
-
-Apabila dokumentasi tidak sesuai dengan kondisi source code atau
-Tree, dokumentasi harus diperbarui.
-
-Jangan menganggap dokumentasi lebih benar daripada implementasi
-aktual tanpa melakukan pemeriksaan.
-
-
-ATURAN PEMELIHARAAN DOKUMENTASI
--------------------------------
-
-Setiap perubahan besar pada arsitektur harus diikuti dengan
-pembaruan technical documentation.
-
-Setiap perubahan arah pembangunan harus diikuti dengan pembaruan
-roadmap.
-
-Setiap perubahan kondisi pembangunan harus diikuti dengan
-pembaruan status.
-
-Jangan mencampurkan ketiga fungsi tersebut.
-
-Gunakan:
-
-    technical/
-        untuk HOW / WHAT THE SYSTEM IS
-
-    roadmaps/
-        untuk WHAT WILL BE BUILT / HOW IT WILL BE BUILT
-
-    status/
-        untuk WHERE THE PROJECT IS NOW
-
-
-PRINSIP HANDOVER
-----------------
-
-Dokumentasi harus memungkinkan orang atau AI lain untuk:
-
-    membaca dokumentasi
-        ↓
-    memahami project
-        ↓
-    memahami arsitektur
-        ↓
-    memahami roadmap
-        ↓
-    mengetahui status
-        ↓
-    melihat Tree
-        ↓
-    melanjutkan pekerjaan
-
-
-Dokumentasi tidak boleh bergantung pada:
-
-- percakapan pribadi
-- penjelasan lisan
-- ingatan developer tertentu
-- asumsi yang tidak tertulis
-- konteks yang hanya diketahui oleh pembuat project
-
-
-TUJUAN AKHIR
-------------
-
-Dokumentasi AI-Gabut dianggap baik apabila developer atau AI baru
-dapat masuk ke project, membaca dokumentasi yang tersedia, memahami
-konteks dan kondisi sistem, kemudian melanjutkan pekerjaan dengan
-arah yang benar tanpa harus mengulang seluruh proses pengambilan
-keputusan dari awal.
+     ↓
+    V2 baseline / history
+     ↓
+    V3 master roadmap
+     ↓
+    current status
+     ↓
+    V3 roadmap detail yang relevan
+     ↓
+    tree/source
+
+ATURAN ARSITEKTUR
+
+1.  AI-Gabut adalah platform.
+2.  core/ berisi machinery generik.
+3.  apps/ berisi application/product identity.
+4.  connectors/ berisi adapter sistem eksternal.
+5.  Core tidak bergantung pada application.
+6.  Provider API tidak dipanggil langsung dari generic Agent Engine.
+7.  Security adalah authority boundary.
+8.  User-owned data harus terisolasi berdasarkan user identity.
+9.  Credential/token bukan conversation memory.
+10. Frontend tidak mengakses core secara langsung.
+11. Session, memory, connection, workspace, task, execution mempunyai
+    ownership yang eksplisit.
+12. V2 tidak dihapus ketika V3 dimulai.

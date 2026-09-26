@@ -1,0 +1,11 @@
+V3 — AGENTIC FRONTEND
+
+Tujuan: membuat frontend sebagai client aplikasi, bukan client langsung
+core.
+
+Layout: - application shell - hamburger/sidebar - sessions - Chat -
+Connections - Files - profile/settings - task/activity
+
+DoD: User dapat login, memilih session, chat, melihat connection,
+memilih GitHub resource, dan melihat file/workspace melalui Agentic
+backend.

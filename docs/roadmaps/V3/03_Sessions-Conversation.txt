@@ -1,0 +1,14 @@
+V3 — SESSIONS & CONVERSATION
+
+Tujuan: membuat chat Agentic mempunyai session seperti aplikasi AI
+modern.
+
+Scope: - create/open/switch - rename/archive/delete/restore - message
+model - history - persistence - context binding - resume -
+session-task-execution relationship
+
+Session memuat owner, conversation, active connection(s), workspace,
+task, relevant memory, dan execution state.
+
+DoD: Session tidak bercampur, history persisten, dan session dapat
+dibuka kembali.

@@ -1,0 +1,14 @@
+V3 — APPLICATION RUNTIME
+
+Tujuan: membuat apps/agentic mempunyai lifecycle dan runtime application
+nyata.
+
+Scope: - bootstrap - configuration - application context - lifecycle -
+health/readiness - startup/shutdown - recovery hooks - capability
+composition - backend/frontend boundary
+
+Boundary: Agentic owns application composition and product behavior.
+Core owns generic runtime machinery.
+
+DoD: Agentic dapat start, validate dependency, expose health/readiness,
+shutdown gracefully, dan menyediakan application context.

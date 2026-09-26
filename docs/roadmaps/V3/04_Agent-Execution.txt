@@ -1,0 +1,12 @@
+V3 — AGENT EXECUTION ACTIVATION
+
+Tujuan: menghubungkan application Agentic dengan public Agent Engine
+boundary.
+
+Scope: - task understanding - goal/context assembly - planning -
+capability/tool selection - execution - observation - evaluation -
+replanning - completion - cancellation - timeout - checkpoint/resume
+integration - user-facing status
+
+DoD: Perintah kerja nyata dari session dapat dieksekusi dan menghasilkan
+observable result.

@@ -1,3 +1,25 @@
+# CURRENT KNOWN GAPS — V3
+
+1. Agentic is not yet a complete end-user application.
+2. Application-level authentication is not yet the complete user flow.
+3. Multi-user isolation needs end-to-end implementation and validation.
+4. Session/conversation persistence and resume need implementation.
+5. Agentic-to-Agent-Engine execution needs end-to-end activation.
+6. Application-level connection lifecycle/ownership needs implementation.
+7. GitHub needs to become the first fully usable provider.
+8. Workspace/project binding needs to connect provider resource to Agentic.
+9. Agentic frontend is not yet a complete backend client.
+10. Realtime activity/progress UX is not yet complete.
+11. Approval and credential governance need end-to-end integration.
+12. Restart/resume continuity needs end-to-end validation.
+13. Separate frontend/backend deployment needs validation.
+14. V3 end-to-end and production readiness tests remain.
+
+HISTORICAL V2 NOTES
+===================
+The previous contents of this file are preserved below as historical
+implementation notes. They are not the current V3 gap list.
+
 STATUS DOCUMENTATION
 KNOWN GAPS
 

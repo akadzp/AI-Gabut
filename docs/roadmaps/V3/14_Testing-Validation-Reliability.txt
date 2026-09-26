@@ -1,0 +1,11 @@
+V3 — TESTING, VALIDATION & RELIABILITY
+
+Tujuan: membuktikan Agentic benar-benar bekerja sebagai application.
+
+Test layers: - unit - contract - integration - authentication -
+authorization - cross-user/session isolation - connections/GitHub -
+workspace - agent execution - approval - persistence - restart/resume -
+realtime - failure/timeout - end-to-end
+
+DoD: Happy path dan failure path utama tervalidasi; V2 foundation tetap
+lulus.

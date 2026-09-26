@@ -1,0 +1,80 @@
+AI-GABUT — ROADMAP 08
+SYNCHRONIZATION & RECONCILIATION
+===============================
+
+TUJUAN
+------
+Membentuk boundary core/sync untuk sinkronisasi state antar sumber secara
+evidence-based: snapshot, diff, conflict detection, reconciliation planning,
+dan apply melalui adapter. Layer ini tidak mengambil alih connector, storage,
+workspace, Git, atau application ownership.
+
+STEPS
+-----
+01. Audit Existing Synchronization & Reconciliation
+02. Define Synchronization Boundary
+03. Define Snapshot, Diff & Conflict Contracts
+04. Build Sync State & Snapshot Core
+05. Build Reconciliation Engine
+06. Integrate Adapter Boundary
+07. Validation
+08. Definition of Done
+
+IMPLEMENTATION RESULT
+---------------------
+- New core/sync boundary.
+- Durable synchronization records backed by State Persistence.
+- Normalized base/local/remote snapshots.
+- Deterministic snapshot diff.
+- Three-way reconciliation planning.
+- Explicit conflict detection.
+- Manual/local/remote strategy handling.
+- Dry-run apply path.
+- Adapter injection for snapshot/apply operations.
+- Optimistic persistence version checks.
+- Bounded synchronization history.
+- Platform capability registration.
+- Synchronization contract test integrated into npm test.
+
+BOUNDARY
+--------
+core/sync owns synchronization state, snapshots, diff, conflict detection,
+and reconciliation planning.
+core/storage owns durable persistence primitives.
+connectors own external-system transport and provider-specific behavior.
+core/workspace owns workspace/change lifecycle.
+core/tasks owns execution orchestration.
+core/security owns authority, approvals, and audit.
+Git remains local version-control infrastructure.
+Applications remain outside core/sync.
+
+RELIABILITY & SECURITY
+----------------------
+- Sync state uses optimistic storage versions.
+- Reconciliation is dry-run capable before mutation.
+- Conflicts are explicit and block manual-strategy apply.
+- No connector or network implementation is embedded in core/sync.
+- No shell, Git push, or arbitrary external mutation is introduced.
+- History is bounded to prevent unbounded state growth.
+- Apply behavior is delegated to an injected adapter.
+
+VALIDATION
+----------
+- Contract test covers durable sync state, snapshot capture, diff,
+  three-way conflict detection, dry-run apply, and durable reload.
+- npm test integration is required.
+- Architecture validation must show sync does not import security internals,
+  application code, or connector implementations.
+
+DEFINITION OF DONE
+------------------
+1. core/sync exists as a generic synchronization boundary.
+2. Snapshots have a normalized contract.
+3. Diff is deterministic and observable.
+4. Three-way reconciliation detects conflicts.
+5. Manual strategy blocks unresolved conflicts.
+6. Apply is adapter-driven and dry-run capable.
+7. Durable sync state uses core/storage/state.
+8. Optimistic version checks protect concurrent state updates.
+9. Tests are integrated into npm test.
+10. Documentation and status identify Roadmap 08 as completed.

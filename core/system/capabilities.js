@@ -3,6 +3,7 @@ import { resumeExecution, getReliabilityMetrics, getReliabilityLimits } from "..
 import { getGovernancePolicy, issueApproval, getAuditTrail, getAuditMetrics, getAuditPolicy } from "../security/index.js";
 import { readWorkspaceFile, writeWorkspaceFile, listWorkspaceFiles, createWorkspaceChangeSystem, workspaceChangeSystem } from "../workspace/index.js";
 import { createTaskOrchestrator, taskOrchestrator } from "../tasks/index.js";
+import { createSyncManager, syncManager } from "../sync/index.js";
 import { executeTerminal } from "../linux/terminal/executor.js";
 import { gitStatus, gitDiff, gitChanges, gitLog } from "../linux/git/manager.js";
 import { getEnvironmentSnapshot, getSystemInfo, getResourceSnapshot, getCurrentProcessInfo, isProcessAlive, statWorkspacePath, listWorkspaceDirectory, detectPackageManagers, readPackageManifest, getServiceManager } from "../linux/index.js";
@@ -15,6 +16,7 @@ export function registerCoreCapabilities(registry) {
     .register("workspace", Object.freeze({ readWorkspaceFile, writeWorkspaceFile, listWorkspaceFiles }), { domain: "workspace", type: "workspace" })
     .register("workspace-change-system", Object.freeze({ createWorkspaceChangeSystem, workspaceChangeSystem }), { domain: "workspace", type: "change-system" })
     .register("task-orchestration", Object.freeze({ createTaskOrchestrator, taskOrchestrator }), { domain: "tasks", type: "orchestration" })
+    .register("sync-reconciliation", Object.freeze({ createSyncManager, syncManager }), { domain: "sync", type: "reconciliation" })
     .register("linux-terminal", Object.freeze({ executeTerminal }), { domain: "linux", type: "terminal" })
     .register("linux-git", Object.freeze({ gitStatus, gitDiff, gitChanges, gitLog }), { domain: "linux", type: "git" })
     .register("linux-local-system", Object.freeze({ getEnvironmentSnapshot, getSystemInfo, getResourceSnapshot, getCurrentProcessInfo, isProcessAlive, statWorkspacePath, listWorkspaceDirectory, detectPackageManagers, readPackageManifest, getServiceManager }), { domain: "linux", type: "local-system" });

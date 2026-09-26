@@ -6,13 +6,13 @@ PROJECT:
 AI-Gabut
 
 CURRENT ROADMAP:
-08. Synchronization & Reconciliation
+09. External Connector & Integration Layer
 
 CURRENT STEP:
-01. Audit Existing Synchronization & Reconciliation
+01. Audit Existing External Connector & Integration Layer
 
 STATUS:
-READY — ROADMAP 08
+READY — ROADMAP 09
 
 COMPLETED ROADMAPS:
 - 01. Core Foundation & Runtime
@@ -22,26 +22,32 @@ COMPLETED ROADMAPS:
 - 05. Local System & Execution Capabilities
 - 06. Workspace & Change System
 - 07. Task, Job & Execution Orchestration
+- 08. Synchronization & Reconciliation
 
-ROADMAP 07 RESULT:
+ROADMAP 08 RESULT:
 COMPLETED
 
 DELIVERED:
-- Generic core/tasks orchestration boundary.
-- Durable task, job, and execution lifecycle state.
-- Queue discovery with worker lease.
-- Execution checkpoint support.
-- Bounded retry policy and exponential backoff.
-- Task cancellation.
-- Injected execution adapter boundary.
+- Generic core/sync boundary.
+- Durable synchronization records.
+- Normalized base/local/remote snapshots.
+- Deterministic snapshot diff.
+- Three-way reconciliation planning.
+- Explicit conflict detection.
+- Manual/local/remote strategy handling.
+- Dry-run apply.
+- Adapter-driven snapshot/apply integration.
 - Optimistic State Persistence conflict handling.
-- Bounded lifecycle history.
-- Task/job/execution contract test integrated into npm test.
+- Bounded synchronization history.
+- Sync/reconciliation capability registered at the platform boundary.
+- Synchronization contract test integrated into npm test.
 
 BOUNDARY:
-core/tasks owns orchestration lifecycle.
+core/sync owns synchronization and reconciliation semantics.
 core/storage owns durable state primitives.
-core/agent-engine owns reasoning and agent execution semantics.
+connectors own provider-specific transport and integration behavior.
+core/workspace owns workspace/change lifecycle.
+core/tasks owns execution orchestration.
 core/security owns authority and policy.
 Applications remain outside core.
 
@@ -51,4 +57,4 @@ npm test must be executed in the repository environment after applying
 the final roadmap ZIP.
 
 NEXT:
-01. Audit Existing Synchronization & Reconciliation
+01. Audit Existing External Connector & Integration Layer

@@ -9,10 +9,10 @@ CURRENT ROADMAP:
 13. Operations, Recovery & Production Readiness
 
 CURRENT STEP:
-01. Audit Existing Operations & Production Readiness
+08. Validation
 
 STATUS:
-READY — ROADMAP 13
+IMPLEMENTED — VALIDATION PENDING USER ENVIRONMENT
 
 COMPLETED ROADMAPS:
 - 01. Core Foundation & Runtime
@@ -28,38 +28,23 @@ COMPLETED ROADMAPS:
 - 11. API & System Interface
 - 12. Application / Product Layer
 
-ROADMAP 12 RESULT:
-COMPLETED
+ROADMAP 13 RESULT:
+IMPLEMENTED — NOT YET VERIFIED IN GITHUB
 
 DELIVERED:
-- New `apps/` application boundary.
-- Application layer handover documentation.
-- Application identity/composition contract.
-- Agentic application identity.
-- BukaOlshop CS application identity.
-- Capability access through injected platform registry.
-- No product identity embedded into core.
-- Application contract test integrated into npm test.
-
-BOUNDARY:
-core owns generic platform capabilities.
-apps owns product/application identity and composition.
-connectors owns external provider adapters.
-Application-specific business logic remains in its own app.
-
-INITIAL APPLICATION IDENTITIES:
-- agentic
-- bukaolshop-cs
+- Generic operations runtime.
+- Readiness contract.
+- Runtime operational snapshot.
+- Idempotent bounded graceful shutdown.
+- Production shutdown/body-limit configuration.
+- `platform.operations` capability.
+- `/api/ready` endpoint.
+- `/api/runtime/operations` endpoint.
+- Operations and configuration contract tests.
 
 IMPORTANT:
-BukaOlshop CS API integration, semantic scope gate, domain policy, and UI
-are not implemented by this roadmap. They belong to subsequent application
-work or connector-specific roadmaps as appropriate.
-
-VALIDATION NOTE:
-Source-level validation and test wiring are included in the roadmap batch.
-npm test must be executed in the repository environment after applying
-the final roadmap ZIP.
+Roadmap 13 is not marked COMPLETED until the applied ZIP is verified
+against GitHub and the repository environment runs the integrated tests.
 
 NEXT:
-01. Audit Existing Operations & Production Readiness
+After validation and DoD, move to final project completion review.

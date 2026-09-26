@@ -17,21 +17,22 @@ import { resumeExecution, getReliabilityMetrics, getReliabilityLimits } from "..
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-export function createServer({ configuration = {}, environment = {}, health = null, registry = null } = {}) {
-    const app = express();
-    const PORT = configuration.port ?? 3000;
-    const capabilities = registry
-      ? {
-          agentEngine: registry.resolve("agent-engine"),
-          reliability: registry.resolve("agent-reliability"),
-          security: registry.resolve("security-governance"),
-          workspace: registry.resolve("workspace"),
-          linuxTerminal: registry.resolve("linux-terminal"),
-          linuxGit: registry.resolve("linux-git")
-        }
-      : null;
 
-    app.use(express.json({ limit: "2mb" }));
+export function createServer({ configuration = {}, environment = {}, health = null, registry = null, operations = null } = {}) {
+  const app = express();
+  const PORT = configuration.port ?? 3000;
+  const capabilities = registry
+    ? {
+        agentEngine: registry.resolve("agent-engine"),
+        reliability: registry.resolve("agent-reliability"),
+        security: registry.resolve("security-governance"),
+        workspace: registry.resolve("workspace"),
+        linuxTerminal: registry.resolve("linux-terminal"),
+        linuxGit: registry.resolve("linux-git")
+      }
+    : null;
+
+  app.use(express.json({ limit: configuration.requestBodyLimit ?? "2mb" }));
   app.use(express.static(path.join(__dirname, "..", "..", "public")));
 
   function writeStreamEvent(res, event) {
@@ -149,6 +150,21 @@ export function createServer({ configuration = {}, environment = {}, health = nu
     const runtimeHealth = health?.status?.() ?? { status: "unknown", state: "unknown", dependencies: [] };
     const ok = runtimeHealth.status === "ready";
     res.status(ok ? 200 : 503).json({ ok, service: "ai-gabut", version: "m7.19-change-set-review", runtime: runtimeHealth });
+  });
+
+  app.get("/api/ready", (_req, res) => {
+    const readiness = operations?.readiness?.() ?? {
+      ready: health?.status?.()?.status === "ready",
+      state: health?.status?.()?.state ?? "unknown",
+      health: health?.status?.()?.status ?? "unknown",
+      shuttingDown: false
+    };
+    res.status(readiness.ready ? 200 : 503).json({ ok: readiness.ready, readiness });
+  });
+
+  app.get("/api/runtime/operations", (_req, res) => {
+    const snapshot = operations?.snapshot?.() ?? null;
+    res.json({ ok: Boolean(snapshot), operations: snapshot });
   });
 
   app.get("/api/capabilities", (_req, res) => {
@@ -314,7 +330,7 @@ export function createServer({ configuration = {}, environment = {}, health = nu
   });
 
   const server = app.listen(PORT, configuration.host ?? "localhost", () => {
-    console.log(`AI-Gabut M7.7 Capability / Integration Architecture running at http://${configuration.host ?? "localhost"}:${PORT}`);
+    console.log(`AI-Gabut runtime running at http://${configuration.host ?? "localhost"}:${PORT}`);
   });
 
   return server;

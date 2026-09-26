@@ -1,0 +1,143 @@
+AI-GABUT — ROADMAP 13
+OPERATIONS, RECOVERY & PRODUCTION READINESS
+===========================================
+
+TUJUAN
+------
+Membentuk operational boundary yang menggabungkan lifecycle, health,
+readiness, runtime snapshot, graceful shutdown, dan production-safe
+configuration tanpa mencampurkan operational concerns ke domain
+capabilities.
+
+AUDIT RESULT
+------------
+Baseline sudah memiliki:
+- Lifecycle state machine.
+- Bootstrap/runtime composition.
+- Health service.
+- Structured logger.
+- Diagnostics.
+- Environment/configuration.
+- SIGINT/SIGTERM shutdown hook.
+
+Gap yang ditemukan:
+- Tidak ada operations boundary khusus.
+- Tidak ada readiness endpoint yang membedakan health dari shutdown state.
+- Tidak ada runtime operational snapshot.
+- Shutdown timeout belum dikendalikan secara terpusat.
+- Production configuration belum mempunyai shutdown/body-limit contract.
+- Operational state belum diekspos melalui capability registry.
+
+ROADMAP STEPS
+-------------
+01. Audit Existing Operations & Production Readiness
+02. Define Operations Boundary
+03. Define Readiness & Runtime Snapshot Contracts
+04. Build Operations Runtime
+05. Integrate Graceful Shutdown
+06. Integrate Production Configuration
+07. Integrate API Readiness / Operations Surface
+08. Validation
+09. Definition of Done
+
+BOUNDARY
+--------
+core/platform/operations owns:
+- readiness state
+- runtime operational snapshot
+- shutdown coordination
+- shutdown timeout
+- operational diagnostics
+
+core/platform remains responsible for lifecycle/configuration primitives.
+
+core/api owns HTTP transport only.
+Domain subsystems remain responsible for their own domain health/reliability.
+Applications remain outside platform operations.
+
+READINESS
+---------
+`ready` requires:
+- health status is `ready`
+- runtime is not shutting down
+
+A process that is healthy but shutting down must not advertise readiness.
+
+RUNTIME SNAPSHOT
+----------------
+Operational snapshot contains:
+- runtime identity
+- version
+- environment
+- lifecycle state
+- health state
+- PID
+- process uptime
+- timestamp
+
+No credentials or sensitive environment variables are exposed.
+
+GRACEFUL SHUTDOWN
+-----------------
+Shutdown:
+- is idempotent
+- marks runtime as shutting down before stop work
+- invokes existing server stop callback
+- enforces a bounded timeout
+- records operational diagnostics
+- preserves existing lifecycle transitions
+
+PRODUCTION CONFIGURATION
+------------------------
+Added configuration:
+- SHUTDOWN_TIMEOUT_MS
+- REQUEST_BODY_LIMIT
+
+Existing PORT/HOST behavior remains compatible.
+
+Validation bounds:
+- port: 1–65535
+- shutdown timeout: 100–300000 ms
+
+API
+---
+Added:
+- GET `/api/ready`
+- GET `/api/runtime/operations`
+
+Existing `/api/health` behavior remains available.
+
+CAPABILITY
+----------
+Bootstrap registers:
+`platform.operations`
+
+The capability exposes the operations runtime without exposing internal
+implementation details.
+
+RECOVERY
+--------
+Existing Agent Engine execution checkpoint/resume remains the domain-level
+recovery mechanism. Roadmap 13 does not duplicate execution recovery or
+storage recovery in the platform operations layer.
+
+VALIDATION
+----------
+- Operations runtime contract test.
+- Production configuration contract test.
+- Existing test suite remains integrated.
+- Architecture validation must continue to pass.
+- npm test must include the new platform tests.
+
+DEFINITION OF DONE
+------------------
+1. Operations boundary exists.
+2. Readiness contract exists.
+3. Runtime snapshot exists.
+4. Graceful shutdown is coordinated and bounded.
+5. Production configuration contract exists.
+6. `platform.operations` is registered.
+7. API exposes readiness and operations snapshot.
+8. Existing lifecycle and domain recovery remain intact.
+9. New tests are integrated into npm test.
+10. Documentation and status identify Roadmap 13 as completed.

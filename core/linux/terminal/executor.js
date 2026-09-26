@@ -1,15 +1,14 @@
 import { spawn } from "node:child_process";
 import { classifyCommand } from "../../security/policies/terminal-command.js";
+import { sanitizeEnvironment } from "../../security/secrets/manager.js";
+import { assertSandboxPath } from "../../security/sandbox/policy.js";
 import { resolveWorkspacePath } from "./workspace.js";
 
 const TIMEOUT_MS = Number(process.env.TERMINAL_TIMEOUT_MS || 10000);
 const MAX_OUTPUT = Number(process.env.TERMINAL_MAX_OUTPUT || 20000);
 
 function sanitizeEnv() {
-  const blocked = /KEY|TOKEN|SECRET|PASSWORD|PASSWD|CREDENTIAL|AUTH/i;
-  return Object.fromEntries(
-    Object.entries(process.env).filter(([key]) => !blocked.test(key))
-  );
+  return sanitizeEnvironment(process.env);
 }
 
 export async function executeTerminal({ command, cwd = "." }) {
@@ -21,7 +20,8 @@ export async function executeTerminal({ command, cwd = "." }) {
     throw error;
   }
 
-  const workingDirectory = resolveWorkspacePath(cwd);
+  const safeCwd = assertSandboxPath(cwd);
+  const workingDirectory = resolveWorkspacePath(safeCwd);
 
   return new Promise((resolve, reject) => {
     const shell = process.platform === "win32" ? "cmd.exe" : "/bin/sh";

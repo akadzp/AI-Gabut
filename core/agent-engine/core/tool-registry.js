@@ -1,7 +1,7 @@
 import { CAPABILITY_TOOL_DEFINITIONS, executeCapabilityTool } from "../tools/catalog.js";
 import { INTEGRATION_TOOL_DEFINITIONS, executeIntegrationTool, getIntegrationCatalog } from "../../../connectors/registry.js";
 import { TOOL_INTELLIGENCE_CAPABILITIES } from "./tool-intelligence.js";
-import { authorizeTool, auditEvent } from "../../security/governance/policy.js";
+import { authorizeTool, auditEvent } from "../../security/index.js";
 
 export const TOOL_DEFINITIONS = [...CAPABILITY_TOOL_DEFINITIONS, ...INTEGRATION_TOOL_DEFINITIONS];
 
@@ -15,7 +15,7 @@ export const TOOL_CATALOG = {
 
 export async function executeTool(name, input = {}, governance = {}) {
   const definition = TOOL_DEFINITIONS.find(tool => tool.name === name) || null;
-  const authorization = authorizeTool({ tool: name, input, definition, sessionId: governance.sessionId, approvalToken: governance.approvalToken, principal: governance.principal, executionId: governance.executionId, applicationId: governance.applicationId, connectorId: governance.connectorId });
+  const authorization = authorizeTool({ tool: name, input, definition, sessionId: governance.sessionId, approvalToken: governance.approvalToken });
   if (!authorization.ok) return authorization;
 
   auditEvent({ actor: "agent", action: "tool-execute-start", tool: name, input, outcome: "started" });

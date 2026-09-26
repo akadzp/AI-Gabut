@@ -8,39 +8,54 @@ CURRENT ROADMAP:
 03. Security, Authority & Governance
 
 CURRENT STEP:
-04. Build Identity, Authorization & Policy Enforcement
+08. Definition of Done
 
 STATUS:
-IN PROGRESS — SECURITY, AUTHORITY & GOVERNANCE
+ROADMAP 03 COMPLETED
 
 COMPLETED:
-- Roadmap 01 Core Foundation & Runtime.
-- Roadmap 02 AI / Agent Intelligence Engine.
-- Roadmap 03 Step 01 audit completed.
-- Roadmap 03 Step 02 security boundary defined.
-- Roadmap 03 Step 03 authority and permission contracts defined.
-- Roadmap 03 Step 04 identity, authorization, and policy enforcement completed.
+- Roadmap 01 — Core Foundation & Runtime
+- Roadmap 02 — AI / Agent Intelligence Engine
+- Roadmap 03 — Security, Authority & Governance
 
-STEP 03 CONTRACTS:
-- Principal/identity vocabulary defined.
-- Action/operation contract defined.
-- Resource and scope contract defined.
-- Permission relationship defined.
-- Authorization request and security context defined.
-- Policy decision and denial semantics defined.
-- Approval binding contract defined.
-- Security invariants and fail-closed defaults defined.
+ROADMAP 03 COMPLETION:
+- Step 01 — Audit Existing Security & Governance
+- Step 02 — Define Security Boundary
+- Step 03 — Define Authority & Permission Contracts
+- Step 04 — Build Identity, Authorization & Policy Enforcement
+- Step 05 — Build Secret Protection & Sandbox Controls
+- Step 06 — Build Audit & Security Observability
+- Step 07 — Validation
+- Step 08 — Definition of Done
 
-VALIDATION:
-- Contract documentation: PASS.
-- Existing runtime governance remains unchanged in Step 03.
-- No production source changed in Step 03.
+CURRENT SECURITY CAPABILITIES:
+- Canonical security principals and authorization contracts.
+- Explicit action/resource/scope permission decisions.
+- Approval-bound high-risk operations.
+- Fail-closed authorization semantics.
+- Secret detection/redaction and private-key protection.
+- Sensitive environment filtering.
+- Workspace-only sandbox path validation.
+- Terminal command policy enforcement.
+- Workspace-owned sensitive file protection.
+- Security-owned structured immutable audit trail.
+- Audit filtering and security metrics.
+- Execution/session/application/connector audit context.
 
-KNOWN VALIDATION NOTES:
-- Full npm test requires installed dependencies. The validation environment does
-  not contain node_modules and npm install previously timed out on registry access.
-- Historical V1 milestone checks retain backend assumptions and are not treated as
-  current V2 regressions.
+FINAL VALIDATION:
+- Architecture check: PASS — 72 JavaScript files.
+- Platform contracts: PASS.
+- Security authorization contract: PASS.
+- Secret/sandbox contract: PASS.
+- Audit observability contract: PASS.
+- Roadmap 03 validation: PASS.
+- npm test: PASS for the available dependency-backed suite.
+- Legacy static milestones: 38 PASS / 2 historical V1 path failures.
+
+KNOWN HISTORICAL EXCEPTIONS:
+- check-project-intelligence.mjs retains a V1 backend-oriented path assumption.
+- check-test-intelligence.mjs retains a V1 backend workspace test-path assumption.
+These are historical migration checks and are not current Security/Governance regressions.
 
 NEXT:
-05. Build Secret Protection & Sandbox Controls.
+Roadmap 04 — State, Storage & Persistence.

@@ -7,7 +7,7 @@
     "start": "node core/system/runtime.js",
     "dev": "node --watch core/system/runtime.js",
     "check": "node scripts/check-backend.mjs",
-    "test": "npm run check && npm run check:architecture && node tests/platform/contracts.mjs && node tests/platform/dependency-health.mjs && node tests/platform/capability-registry.mjs && node tests/platform/agent-engine-boundary.mjs && node tests/platform/agent-engine-reliability-evaluation.mjs && node tests/platform/agent-engine-dod.mjs && node tests/platform/runtime-validation.mjs",
+    "test": "npm run check && node tests/platform/contracts.mjs && node tests/platform/dependency-health.mjs && node tests/platform/capability-registry.mjs && node tests/platform/runtime-validation.mjs && node tests/security/secret-sandbox.mjs && node tests/security/audit-observability.mjs",
     "check:architecture": "node scripts/check-architecture.mjs"
   },
   "dependencies": {

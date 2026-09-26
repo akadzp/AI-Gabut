@@ -1,5 +1,6 @@
-import { runAgent, resumeExecution, getReliabilityMetrics, getReliabilityLimits } from "../agent-engine/index.js";
-import { getGovernancePolicy, issueApproval, getAuditTrail, authorizeTool, consumeApproval } from "../security/index.js";
+import { runAgent } from "../agent-engine/core/agent.js";
+import { resumeExecution, getReliabilityMetrics, getReliabilityLimits } from "../agent-engine/reliability/runtime.js";
+import { getGovernancePolicy, issueApproval, getAuditTrail, getAuditMetrics, getAuditPolicy } from "../security/index.js";
 import { readWorkspaceFile, writeWorkspaceFile, listWorkspaceFiles } from "../workspace/manager.js";
 import { executeTerminal } from "../linux/terminal/executor.js";
 import { gitStatus, gitDiff, gitChanges, gitLog } from "../linux/git/manager.js";
@@ -15,9 +16,9 @@ export function registerCoreCapabilities(registry) {
     .register("security-governance", Object.freeze({
       getGovernancePolicy,
       issueApproval,
-      consumeApproval,
-      authorizeTool,
-      getAuditTrail
+      getAuditTrail,
+      getAuditMetrics,
+      getAuditPolicy
     }), { domain: "security", type: "governance" })
     .register("workspace", Object.freeze({
       readWorkspaceFile,

@@ -1,24 +1,16 @@
+STATUS DOCUMENTATION
 KNOWN GAPS
 
-ROADMAP 03 — SECURITY, AUTHORITY & GOVERNANCE
+1. Legacy test gap
+   Some historical milestone tests still assume old V1 paths or old
+   architecture. They are retained as regression evidence, not as the
+   canonical architecture contract.
 
-1. Identity is not yet a first-class security contract.
-2. Permission definitions are embedded in governance tool policy rather than a
-   dedicated permission model.
-3. Security policy definition and policy decision logic are not yet separated.
-4. Sandbox controls are currently limited to command classification and workspace
-   path resolution; there is no general execution sandbox abstraction.
-5. Secret handling has redaction and environment filtering but no dedicated secret
-   service or secret lifecycle.
-6. Audit records are process-local memory and are not durable.
-7. Security lacks a stable public facade for future consumers.
-8. External connector resources do not yet have an explicit authority/scope model.
+2. Runtime integration environment
+   Full npm test requires project dependencies such as Express/OpenAI to
+   be installed. The current validation environment may not have those
+   dependencies available.
 
-NON-GAPS / EXISTING CONTROLS
-- deny-by-default for unknown tools
-- approval token expiry
-- approval session/tool/input binding
-- audit redaction
-- private-key input rejection
-- terminal command allowlist/risk classification
-- authorization before Agent Engine tool execution
+3. Security observability
+   Audit storage is still process-local and will be addressed in Roadmap 03
+   Step 06 with a dedicated security observability boundary.

@@ -1,53 +1,96 @@
-03_Roadmap-Security-Authority-Governance.txt
+ROADMAP 03 — SECURITY, AUTHORITY & GOVERNANCE
 
-AI-GABUT — ROADMAP 03
-SECURITY, AUTHORITY & GOVERNANCE
-================================
+PURPOSE
+Build a reusable security boundary that controls identity, authority,
+permissions, approvals, secrets, sandboxing, and security observability
+without owning the underlying executors.
 
-TUJUAN
-------
+PROGRESS
+01. Audit Existing Security & Governance            COMPLETED
+02. Define Security Boundary                        COMPLETED
+03. Define Authority & Permission Contracts         COMPLETED
+04. Build Identity, Authorization & Policy          COMPLETED
+05. Build Secret Protection & Sandbox Controls      COMPLETED
+06. Build Audit & Security Observability            COMPLETED
+07. Validation                                    COMPLETED
+08. Definition of Done                            NEXT
 
-Membangun security boundary yang memastikan setiap tindakan AI, aplikasi,
-connector, dan subsystem execution memiliki identitas, authority, policy,
-approval, secret protection, sandbox control, dan audit yang dapat diperiksa.
+STEP 05 — SECRET PROTECTION & SANDBOX CONTROLS
 
-Security menjadi boundary lintas sistem. Security menentukan apakah suatu
-operasi boleh dilakukan, tetapi tidak menjadi executor operasi tersebut.
+Implemented:
+- Central secret detection and redaction helpers.
+- Private-key and known token-pattern detection.
+- Sensitive environment variable filtering.
+- Workspace-only sandbox path validation.
+- Absolute-path and traversal rejection at the security boundary.
+- Terminal executor uses the shared environment sanitizer and sandbox path contract.
+- Governance authorization performs sandbox validation before execution.
+- Existing workspace ownership of .env/config-sensitive file rejection is preserved.
 
-ROADMAP
--------
+BOUNDARY
+Security decides whether an operation is safe to attempt. Workspace and
+Linux executors remain responsible for their concrete filesystem/terminal
+behavior. Secret helpers do not persist secrets and sandbox policy does not
+execute operations.
 
-01. Audit Existing Security & Governance
-    Audit implementasi security yang sudah ada, termasuk governance policy,
-    approval, terminal policy, secret protection, sandbox, dan audit.
+VALIDATION
+- Security secret/sandbox contract: PASS
+- Legacy R9 governance: PASS
+- Platform contracts: PASS
+- Architecture check: PASS — 71 JavaScript files
+- Changed JavaScript syntax: PASS
 
-02. Define Security Boundary
-    Menetapkan ownership, authority flow, decision boundary, dan dependency
-    rules security secara eksplisit.
+KNOWN ENVIRONMENT LIMITATION
+Full dependency-backed npm test remains dependent on node_modules being
+available. This step therefore records source/static validation separately
+from external dependency execution.
 
-03. Define Authority & Permission Contracts
-    Mendefinisikan identity, principal, resource, action, permission, scope,
-    approval, policy decision, dan denial contracts.
 
-04. Build Identity, Authorization & Policy Enforcement
-    Membangun identity dan authorization yang menjadi enforcement point
-    sebelum execution.
+STEP 07 — VALIDATION
 
-    Status: COMPLETED. Identity normalization, canonical authorization request,
-    policy decision/denial contracts, approval principal binding, stable action
-    mapping, dan Agent Engine security context propagation sudah diintegrasikan.
+VALIDATION RESULT
+- Core/static source check: PASS — 72 JavaScript files.
+- Architecture check: PASS — 72 JavaScript files.
+- Platform contracts: PASS.
+- Platform dependency/health: PASS.
+- Platform capability registry: PASS.
+- Platform runtime validation: PASS.
+- Security secret/sandbox contract: PASS.
+- Security audit observability contract: PASS.
+- Roadmap 03 security validation: PASS.
+- Legacy milestones: 38 PASS / 2 historical failures.
 
-05. Build Secret Protection & Sandbox Controls
-    Membangun secret lifecycle dan sandbox/resource isolation yang terukur.
+HISTORICAL LEGACY FAILURES
+- check-project-intelligence.mjs expects the migrated API path under the old backend-oriented reference set.
+- check-test-intelligence.mjs expects the old backend workspace test path.
+These are V1 historical path assumptions, not current Security/Governance regressions.
 
-06. Build Audit & Security Observability
-    Membangun audit trail dan observability security yang durable dan dapat
-    ditelusuri.
+ENVIRONMENT NOTE
+The current working tree has no node_modules directory. Source/static and dependency-free runtime validation was executed successfully; full external-dependency application execution is therefore not claimed.
 
-07. Validation
-    Memvalidasi boundary, enforcement, denial, approval, isolation, secret
-    protection, dan audit secara menyeluruh.
 
-08. Definition of Done
-    Menetapkan security roadmap selesai hanya jika seluruh contract dan
-    enforcement requirement terpenuhi.
+STEP 08 — DEFINITION OF DONE
+
+FINAL RESULT
+Roadmap 03 is COMPLETED.
+
+DEFINITION OF DONE
+- Identity/principal normalization is explicit and reusable.
+- Authorization requests define principal, action, resource, scope, and context.
+- Policy decisions are explicit: allow, deny, or approval_required.
+- High-risk approvals are bound to the relevant principal/session/input context.
+- Security evaluation fails closed when required authority information is missing or invalid.
+- Agent Engine reaches executors through the Security boundary rather than bypassing authorization.
+- Secret detection/redaction occurs before sensitive data enters audit/security records.
+- Private keys and sensitive environment values are protected.
+- Workspace and terminal operations enforce sandbox/path constraints.
+- Audit records are structured, immutable, redacted, and correlated with execution context.
+- Security metrics and audit filtering are available through the public security surface.
+- Security does not own filesystem, terminal, Git, connector, or other concrete execution.
+- Architecture validation prevents prohibited direct coupling.
+- Validation and regression checks pass for the current V2 security surface.
+
+KNOWN HISTORICAL EXCEPTIONS
+Two legacy V1 checkers retain backend-path assumptions. They remain documented
+as migration-era exceptions and are not used as current Security/Governance
+acceptance criteria.

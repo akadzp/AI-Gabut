@@ -1,18 +1,4 @@
-export {
-  getGovernancePolicy,
-  getToolPolicy,
-  issueApproval,
-  consumeApproval,
-  authorizeTool,
-  assertSecretSafeInput,
-  auditEvent,
-  getAuditTrail
-} from "./governance/policy.js";
-
-export { normalizePrincipal, isKnownPrincipal } from "./identity/principal.js";
-export {
-  normalizeAuthorizationRequest,
-  createPolicyDecision,
-  denyDecision,
-  validateAuthorizationRequest
-} from "./authorization/decision.js";
+export { getGovernancePolicy, getToolPolicy, authorizeTool, issueApproval, consumeApproval } from "./governance/policy.js";
+export { auditEvent, getAuditTrail, getAuditMetrics, getAuditPolicy } from "./audit/index.js";
+export { isSensitiveKey, containsSecret, assertSecretSafe, redactSecrets, isSensitivePath, sanitizeEnvironment } from "./secrets/manager.js";
+export { assertSandboxPath, getSandboxPolicy } from "./sandbox/policy.js";

@@ -1,37 +1,19 @@
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  runAgent,
-  getOrCreateSession,
-  addMessage,
-  getRecentMessages,
-  getMemories,
-  extractMemoryCandidates,
-  addMemories,
-  retrieveMemories,
-  getActiveMemories,
-  resolveMemoryConflicts,
-  runGitTool,
-  TOOL_CATALOG,
-  TOOL_DEFINITIONS,
-  buildToolIntelligence,
-  discoverTools,
-  listModels,
-  routeModel,
-  getModelCandidates,
-  getEvaluationCases,
-  scoreTrajectory,
-  analyzeFailures,
-  getSpecialists,
-  buildSpecialistPlan,
-  createSpecialistHandoff,
-  coordinateSpecialists,
-  resumeExecution,
-  getReliabilityMetrics,
-  getReliabilityLimits
-} from "../agent-engine/index.js";
-import { getGovernancePolicy, issueApproval, getAuditTrail } from "../security/governance/policy.js";
+import { runAgent } from "../agent-engine/core/agent.js";
+import { getOrCreateSession, addMessage, getRecentMessages, getMemories } from "../agent-engine/context/session.js";
+import { extractMemoryCandidates, addMemories, retrieveMemories, getActiveMemories, resolveMemoryConflicts } from "../agent-engine/context/memory.js";
+import { runGitTool } from "../agent-engine/tools/git.js";
+import { TOOL_CATALOG, TOOL_DEFINITIONS } from "../agent-engine/core/tool-registry.js";
+import { buildToolIntelligence, discoverTools } from "../agent-engine/core/tool-intelligence.js";
+import { listModels } from "../agent-engine/models/index.js";
+import { routeModel, getModelCandidates } from "../agent-engine/models/model-router.js";
+import { getEvaluationCases } from "../agent-engine/evaluation/benchmarks.js";
+import { scoreTrajectory, analyzeFailures } from "../agent-engine/evaluation/evaluator.js";
+import { getSpecialists, buildSpecialistPlan, createSpecialistHandoff, coordinateSpecialists } from "../agent-engine/specialists/orchestrator.js";
+import { getGovernancePolicy, issueApproval, getAuditTrail, getAuditMetrics, getAuditPolicy } from "../security/index.js";
+import { resumeExecution, getReliabilityMetrics, getReliabilityLimits } from "../agent-engine/reliability/runtime.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,7 +43,12 @@ export function createServer({ configuration = {}, environment = {}, health = nu
   });
 
   app.get("/api/governance/audit", (req, res) => {
-    res.json({ ok: true, entries: (capabilities?.security ?? { getAuditTrail }).getAuditTrail({ limit: req.query.limit }) });
+    res.json({ ok: true, entries: (capabilities?.security ?? { getAuditTrail }).getAuditTrail({ limit: req.query.limit, action: req.query.action, outcome: req.query.outcome, tool: req.query.tool, executionId: req.query.executionId }) });
+  });
+
+  app.get("/api/governance/audit/metrics", (_req, res) => {
+    const security = capabilities?.security ?? { getAuditMetrics, getAuditPolicy };
+    res.json({ ok: true, metrics: security.getAuditMetrics(), policy: security.getAuditPolicy() });
   });
 
   app.post("/api/governance/approvals", (req, res) => {

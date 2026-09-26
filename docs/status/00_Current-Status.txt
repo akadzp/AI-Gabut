@@ -7,7 +7,7 @@ ACTIVE ROADMAP: V3 — Agentic Activation
 V1: fase awal; dokumentasi lengkap tidak tersedia.
 V2: roadmap besar 00–13; foundation completed/validated dan dipertahankan sebagai historical baseline.
 
-V3 CURRENT BATCH: Agentic Activation — Batch 01.
+V3 CURRENT BATCH: Agentic Activation — Batch 01 Finalization.
 
 IMPLEMENTED IN THIS BATCH:
 - Agentic application backend boundary.
@@ -22,7 +22,12 @@ IMPLEMENTED IN THIS BATCH:
 - Agentic frontend shell: sidebar, sessions, Chat, Connections, Files.
 - Agent Engine integration through public boundary.
 - Agentic-specific crypto/auth/isolation tests.
-- start:agentic and test:agentic scripts.
+- Agentic npm start/test scripts.
+
+BATCH 01 FINALIZATION:
+- npm start:agentic launches the Agentic backend.
+- npm test includes the Agentic test suite.
+- package version advanced to 0.17.0 for this application activation baseline.
 
 NOT YET COMPLETE:
 - GitHub write/mutation workflow.
@@ -35,4 +40,4 @@ NOT YET COMPLETE:
 - full V3 end-to-end Definition of Done.
 
 STATUS: IN PROGRESS — Agentic Activation
-NEXT: V3 hardening and end-to-end validation from actual source state.
+NEXT: Apply Batch 01 finalization delta, then verify the resulting GitHub source and run the complete Batch 01 validation before starting V3 Batch 02.

@@ -63,26 +63,57 @@ export function createSyncManager({ stateService = null, adapter = null } = {}) 
   }
 
   async function apply(syncId, { plan: suppliedPlan = null, readOnly = false } = {}) {
-    const record = await get(syncId);
-    if (!record) throw new SyncError(SYNC_ERRORS.NOT_FOUND, "Sync tidak ditemukan");
-    const plan = suppliedPlan || record.lastPlan;
-    if (!plan) throw new SyncError(SYNC_ERRORS.VALIDATION, "Reconciliation plan belum tersedia");
-    if (record.status === "applying") throw new SyncError(SYNC_ERRORS.INVALID_STATE, "Sync sedang applying");
-    record.status = "applying"; record.updatedAt = now();
-    await save(record, { expectedVersion: record._storage?.version });
-    try {
-      const result = applyReconciliationPlan(plan, { readOnly, apply: adapter?.apply });
-      record.lastResult = result;
-      record.status = result.ok ? "completed" : "conflicted";
-      record.updatedAt = now(); record.history = history(record, result.ok ? "applied" : "blocked", { applied: result.applied?.length || 0 });
-      return await save(record, { expectedVersion: record._storage?.version });
-    } catch (error) {
-      record.status = "failed"; record.error = error instanceof Error ? error.message : String(error);
-      record.updatedAt = now(); record.history = history(record, "failed");
-      await save(record, { expectedVersion: record._storage?.version });
-      throw new SyncError(SYNC_ERRORS.APPLY_FAILED, "Reconciliation apply gagal", { cause: record.error });
-    }
+  let record = await get(syncId);
+  if (!record) throw new SyncError(SYNC_ERRORS.NOT_FOUND, "Sync tidak ditemukan");
+
+  const plan = suppliedPlan || record.lastPlan;
+  if (!plan) throw new SyncError(SYNC_ERRORS.VALIDATION, "Reconciliation plan belum tersedia");
+  if (record.status === "applying") {
+    throw new SyncError(SYNC_ERRORS.INVALID_STATE, "Sync sedang applying");
   }
+
+  record.status = "applying";
+  record.updatedAt = now();
+
+  record = await save(record, {
+    expectedVersion: record._storage?.version
+  });
+
+  try {
+    const result = applyReconciliationPlan(plan, {
+      readOnly,
+      apply: adapter?.apply
+    });
+
+    record.lastResult = result;
+    record.status = result.ok ? "completed" : "conflicted";
+    record.updatedAt = now();
+    record.history = history(
+      record,
+      result.ok ? "applied" : "blocked",
+      { applied: result.applied?.length || 0 }
+    );
+
+    return await save(record, {
+      expectedVersion: record._storage?.version
+    });
+  } catch (error) {
+    record.status = "failed";
+    record.error = error instanceof Error ? error.message : String(error);
+    record.updatedAt = now();
+    record.history = history(record, "failed");
+
+    await save(record, {
+      expectedVersion: record._storage?.version
+    });
+
+    throw new SyncError(
+      SYNC_ERRORS.APPLY_FAILED,
+      "Reconciliation apply gagal",
+      { cause: record.error }
+    );
+  }
+}
 
   async function refresh(syncId, { base, local, remote } = {}) {
     const record = await get(syncId);

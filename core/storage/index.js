@@ -4,6 +4,7 @@ import { createObjectStore } from "./object/index.js";
 export { StorageError, STORAGE_ERRORS } from "./errors.js";
 export { createRecordStore } from "./record/index.js";
 export { createObjectStore } from "./object/index.js";
+export { createStateService } from "./state/index.js";
 
 export const DEFAULT_STORAGE_ROOT = path.resolve(process.env.AI_STORAGE_DIR || path.join(process.cwd(), "data", "storage"));
 

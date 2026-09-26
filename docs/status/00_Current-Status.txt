@@ -9,10 +9,10 @@ CURRENT ROADMAP:
 13. Operations, Recovery & Production Readiness
 
 CURRENT STEP:
-08. Validation
+09. Definition of Done
 
 STATUS:
-IMPLEMENTED — VALIDATION PENDING USER ENVIRONMENT
+COMPLETED
 
 COMPLETED ROADMAPS:
 - 01. Core Foundation & Runtime
@@ -27,24 +27,47 @@ COMPLETED ROADMAPS:
 - 10. Media & Advanced Capabilities
 - 11. API & System Interface
 - 12. Application / Product Layer
+- 13. Operations, Recovery & Production Readiness
 
 ROADMAP 13 RESULT:
-IMPLEMENTED — NOT YET VERIFIED IN GITHUB
+COMPLETED — VALIDATED
 
-DELIVERED:
-- Generic operations runtime.
-- Readiness contract.
-- Runtime operational snapshot.
-- Idempotent bounded graceful shutdown.
-- Production shutdown/body-limit configuration.
-- `platform.operations` capability.
-- `/api/ready` endpoint.
-- `/api/runtime/operations` endpoint.
-- Operations and configuration contract tests.
+VALIDATION RESULT:
+- Core check: PASS — 119 JavaScript files.
+- Platform contracts: PASS.
+- Platform dependency/health: PASS.
+- Platform runtime validation: PASS.
+- Operations runtime contract: PASS.
+- Production configuration contract: PASS.
+- Security secret/sandbox contract: PASS.
+- Security audit observability: PASS.
+- Storage record/object: PASS.
+- Storage state service: PASS.
+- Local system capability contract: PASS.
+- Workspace change-system contract: PASS.
+- Task/job/execution orchestration contract: PASS.
+- Synchronization/reconciliation contract: PASS.
+- Connector registry/runtime contract: PASS.
+- Media registry/runtime contract: PASS.
+- API contract: PASS.
+- Application layer contract: PASS.
 
-IMPORTANT:
-Roadmap 13 is not marked COMPLETED until the applied ZIP is verified
-against GitHub and the repository environment runs the integrated tests.
+DEFINITION OF DONE:
+- Operations boundary exists.
+- Readiness contract exists.
+- Runtime operational snapshot exists.
+- Graceful shutdown is coordinated and bounded.
+- Production configuration contract exists.
+- `platform.operations` is registered.
+- API exposes readiness and operations snapshot.
+- Existing lifecycle and domain recovery remain intact.
+- Roadmap 13 tests are integrated into `npm test`.
+- Integrated test suite passes in the user environment.
+- Documentation identifies Roadmap 13 as completed.
+
+PROJECT FOUNDATION STATUS:
+Roadmaps 01–13 are completed and validated.
 
 NEXT:
-After validation and DoD, move to final project completion review.
+Final project completion review and baseline audit before defining
+any subsequent roadmap.

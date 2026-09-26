@@ -6,13 +6,13 @@ PROJECT:
 AI-Gabut
 
 CURRENT ROADMAP:
-10. Media & Advanced Capabilities
+11. API & System Interface
 
 CURRENT STEP:
-01. Audit Existing Media & Advanced Capabilities
+01. Audit Existing API & System Interface
 
 STATUS:
-READY — ROADMAP 10
+READY — ROADMAP 11
 
 COMPLETED ROADMAPS:
 - 01. Core Foundation & Runtime
@@ -24,27 +24,29 @@ COMPLETED ROADMAPS:
 - 07. Task, Job & Execution Orchestration
 - 08. Synchronization & Reconciliation
 - 09. External Connector & Integration Layer
+- 10. Media & Advanced Capabilities
 
-ROADMAP 09 RESULT:
+ROADMAP 10 RESULT:
 COMPLETED
 
 DELIVERED:
-- Generic provider-agnostic core/connectors boundary.
-- Connector definition and operation contracts.
-- Connector registry with lookup/list/seal lifecycle.
-- Adapter-driven connector runtime.
-- Bounded timeout and retry behavior.
-- Connector operation observability events.
-- Connector capability registered at the platform boundary.
-- No provider-specific connector implementation embedded in core.
-- Connector contract test integrated into npm test.
+- Generic core/media boundary.
+- Media descriptor and operation contracts.
+- Processor registry with lookup/list/seal lifecycle.
+- Adapter-driven media runtime.
+- Bounded processing timeout.
+- Media lifecycle/operation observability events.
+- Processor/media compatibility validation.
+- No provider-specific media implementation embedded in core.
+- Media contract test integrated into npm test.
 
 BOUNDARY:
-core/connectors owns generic connector runtime semantics.
-Provider-specific implementations belong under connectors/<provider>.
-core/security owns authority, approvals, credentials, and audit policy.
-core/sync owns synchronization and reconciliation.
-core/tasks owns execution orchestration.
+core/media owns generic media processing semantics.
+Provider/tool-specific implementations remain outside core/media.
+core/storage owns durable persistence.
+core/security owns authority and credentials.
+core/tasks owns orchestration.
+Agent intelligence owns higher-level AI semantics.
 Applications remain outside core.
 
 VALIDATION NOTE:
@@ -53,4 +55,4 @@ npm test must be executed in the repository environment after applying
 the final roadmap ZIP.
 
 NEXT:
-01. Audit Existing Media & Advanced Capabilities
+01. Audit Existing API & System Interface

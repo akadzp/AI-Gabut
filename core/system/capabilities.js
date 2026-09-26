@@ -5,6 +5,7 @@ import { readWorkspaceFile, writeWorkspaceFile, listWorkspaceFiles, createWorksp
 import { createTaskOrchestrator, taskOrchestrator } from "../tasks/index.js";
 import { createSyncManager, syncManager } from "../sync/index.js";
 import { createConnectorRegistry, createConnectorRuntime } from "../connectors/index.js";
+import { createMediaRegistry, createMediaRuntime } from "../media/index.js";
 import { executeTerminal } from "../linux/terminal/executor.js";
 import { gitStatus, gitDiff, gitChanges, gitLog } from "../linux/git/manager.js";
 import { getEnvironmentSnapshot, getSystemInfo, getResourceSnapshot, getCurrentProcessInfo, isProcessAlive, statWorkspacePath, listWorkspaceDirectory, detectPackageManagers, readPackageManifest, getServiceManager } from "../linux/index.js";
@@ -19,6 +20,7 @@ export function registerCoreCapabilities(registry) {
     .register("task-orchestration", Object.freeze({ createTaskOrchestrator, taskOrchestrator }), { domain: "tasks", type: "orchestration" })
     .register("sync-reconciliation", Object.freeze({ createSyncManager, syncManager }), { domain: "sync", type: "reconciliation" })
     .register("connector-runtime", Object.freeze({ createConnectorRegistry, createConnectorRuntime }), { domain: "connectors", type: "runtime" })
+    .register("media-runtime", Object.freeze({ createMediaRegistry, createMediaRuntime }), { domain: "media", type: "runtime" })
     .register("linux-terminal", Object.freeze({ executeTerminal }), { domain: "linux", type: "terminal" })
     .register("linux-git", Object.freeze({ gitStatus, gitDiff, gitChanges, gitLog }), { domain: "linux", type: "git" })
     .register("linux-local-system", Object.freeze({ getEnvironmentSnapshot, getSystemInfo, getResourceSnapshot, getCurrentProcessInfo, isProcessAlive, statWorkspacePath, listWorkspaceDirectory, detectPackageManagers, readPackageManifest, getServiceManager }), { domain: "linux", type: "local-system" });

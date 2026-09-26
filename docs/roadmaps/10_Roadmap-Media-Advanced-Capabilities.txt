@@ -1,0 +1,138 @@
+AI-GABUT — ROADMAP 10
+MEDIA & ADVANCED CAPABILITIES
+=============================
+
+TUJUAN
+------
+Membentuk boundary generik untuk kemampuan media tanpa mengikat core
+AI-Gabut pada FFmpeg, ImageMagick, provider AI, atau implementasi vendor
+tertentu.
+
+ROADMAP STEPS
+-------------
+01. Audit Existing Media & Advanced Capabilities
+02. Define Media Boundary
+03. Define Media Descriptor & Operation Contracts
+04. Build Media Registry
+05. Build Media Runtime
+06. Integrate Platform Capability Boundary
+07. Validation
+08. Definition of Done
+
+AUDIT RESULT
+------------
+- Tidak ditemukan core/media pada baseline.
+- Tidak ditemukan implementasi image/audio/video/FFmpeg/ImageMagick.
+- Tidak ditemukan media capability pada core/system/capabilities.js.
+- Tidak ditemukan media-specific tests atau technical documentation.
+- Karena baseline kosong, Roadmap 10 membangun boundary baru dan bukan
+  memindahkan atau mengganti implementasi media lama.
+
+BOUNDARY
+--------
+core/media owns:
+- media type/descriptor normalization
+- media operation contracts
+- processor registry
+- generic media execution runtime
+- lifecycle/operation observability
+- bounded processing timeout
+
+core/media does not own:
+- FFmpeg/ImageMagick implementation
+- codec implementation
+- cloud media provider implementation
+- AI vision/transcription/generation provider implementation
+- filesystem persistence
+- user upload policy
+- security authorization
+- task scheduling
+- application/product behavior
+
+Provider/tool-specific implementations belong outside core/media and
+must be adapted through the processor boundary.
+
+CONTRACT
+--------
+Media descriptor:
+- id
+- mediaType
+- mimeType
+- size
+- name
+- source
+- checksum
+- metadata
+
+Supported media types:
+- image
+- audio
+- video
+- document
+- binary
+
+Supported generic operations:
+- inspect
+- transform
+- transcode
+- extract
+
+Processor contract:
+- id
+- name
+- version
+- supported mediaTypes
+- supported operations
+- metadata
+- execute({ operation, media })
+
+SECURITY
+--------
+Media runtime does not store credentials and does not authorize external
+operations. Authorization remains the responsibility of security and
+the application/task boundary.
+
+RELIABILITY
+-----------
+- Processor registry can be sealed after bootstrap.
+- Disabled processors are rejected.
+- Media operation and processor compatibility are validated before
+  execution.
+- Processing timeout is bounded.
+- Processor failures are normalized to MediaError.
+- Events expose lifecycle state without copying media bytes or secrets.
+
+STORAGE
+-------
+Media runtime does not duplicate the storage subsystem. Binary persistence
+must use the existing core/storage boundary or an external adapter.
+The runtime operates on descriptors and delegates actual processing to
+registered processors.
+
+AI / ADVANCED CAPABILITIES
+--------------------------
+Vision, OCR, transcription, synthesis, generation, embedding, and other
+AI media capabilities are not hard-coded into core/media. They should be
+implemented as adapters or higher-level intelligence capabilities using
+the generic media boundary where appropriate.
+
+VALIDATION
+----------
+- Media registry/runtime contract test is integrated into npm test.
+- Test covers descriptor normalization through runtime execution,
+  processor/media compatibility, lifecycle events, and registry sealing.
+- Architecture must not introduce dependencies from core/media to apps
+  or provider-specific implementations.
+
+DEFINITION OF DONE
+------------------
+1. core/media exists as a generic boundary.
+2. Media descriptors are normalized.
+3. Media operations have explicit contracts.
+4. Processor registry supports registration, lookup, listing, and sealing.
+5. Runtime dispatches operations through adapters.
+6. Processing timeout is bounded.
+7. Media bytes are not persisted by the runtime.
+8. Provider-specific implementations remain outside core/media.
+9. Tests are integrated into npm test.
+10. Documentation and status identify Roadmap 10 as completed.

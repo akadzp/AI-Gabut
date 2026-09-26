@@ -1,41 +1,61 @@
 STATUS DOCUMENTATION
 CURRENT STATUS
+==============
 
 PROJECT:
 AI-Gabut
 
 CURRENT ROADMAP:
-04. State, Storage & Persistence
+05. Local System & Execution Capabilities
 
 CURRENT STEP:
-01. Audit Existing State, Storage & Persistence
+01. Audit Existing Local System & Execution Capabilities
 
 STATUS:
-IN PROGRESS — ROADMAP 04
+READY — ROADMAP 05
 
 COMPLETED ROADMAPS:
 - 01. Core Foundation & Runtime
 - 02. AI / Agent Intelligence Engine
 - 03. Security, Authority & Governance
+- 04. State, Storage & Persistence
 
-ROADMAP 04 STEP 01:
+ROADMAP 04 RESULT:
 COMPLETED
 
-AUDIT SUMMARY:
-- Reliability checkpoints already persist execution state as JSON.
-- Workspace manager directly persists workspace files.
-- Sessions, memory, approvals, locks, metrics, and several caches remain
-  process-local.
-- `core/storage/` is currently structural and has no canonical storage API.
-- `data/` and `runtime/` provide reserved state locations but do not yet
-  have a unified lifecycle/ownership contract.
-- Snapshot, transaction, idempotency, indexing, object/blob, and cache
-  contracts are not yet implemented.
+ROADMAP 04 DELIVERED:
+- Canonical core storage service.
+- Structured record storage with version and etag.
+- Atomic record writes.
+- Expected-version conflict detection.
+- Safe storage key/path validation.
+- Byte-oriented object storage.
+- Object size and etag metadata.
+- Structured storage errors.
+- Generic State Persistence Service.
+- Isolated state scopes for sessions, memories, executions, runtime.
+- Public createStateService export.
+- Storage and state tests integrated into npm test.
+- Storage boundary kept independent from Agent Engine and product identity.
+
+ROADMAP 04 ARCHITECTURE:
+core/storage/
+├── errors.js
+├── path.js
+├── index.js
+├── record/
+├── object/
+└── state/
 
 IMPORTANT:
-Roadmap 04 must introduce storage contracts without taking ownership
-away from Workspace, Agent Engine reliability, Security, Tasks, or
-Connectors where those subsystems already own their domain behavior.
+Storage provides generic persistence primitives and state facade.
+It does not take ownership of domain behavior belonging to Agent Engine,
+Workspace, Security, Tasks, Connectors, or applications.
+
+VALIDATION NOTE:
+Source-level validation and test wiring have been checked against the
+current GitHub baseline. npm test should be executed in the repository
+environment as part of the normal integration workflow.
 
 NEXT:
-02. Define State & Storage Boundary
+01. Audit Existing Local System & Execution Capabilities

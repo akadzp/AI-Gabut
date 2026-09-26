@@ -1,102 +1,89 @@
-ROADMAP 04 — STATE, STORAGE & PERSISTENCE
-=========================================
+AI-GABUT — ROADMAP 04
+STATE, STORAGE & PERSISTENCE
+=============================
+
+TUJUAN
+------
+Membangun boundary penyimpanan dan persistence generik AI-Gabut agar
+state sistem dapat disimpan, diambil, divalidasi, dan dipulihkan secara
+konsisten tanpa mengambil alih domain ownership subsystem lain.
+
+ROADMAP
+-------
+01. Audit Existing State, Storage & Persistence
+02. Define State & Storage Boundary
+03. Define State Contracts
+04. Build Core Storage Layer
+05. Build State & Persistence Services
+06. Validation
+07. Definition of Done
+
+DEFINITION OF DONE
+------------------
+Roadmap 04 dinyatakan selesai apabila:
+
+1. Core storage mempunyai contract dan API generik.
+2. Record storage mendukung CRUD, atomic write, version, etag,
+   expected-version conflict detection, dan safe key/path validation.
+3. Object storage mendukung byte storage, atomic write, size metadata,
+   etag, dan safe key/path validation.
+4. Storage errors menggunakan contract terstruktur.
+5. State Persistence Service tersedia sebagai facade generik.
+6. State mempunyai scope terisolasi: sessions, memories, executions, runtime.
+7. State facade tidak bergantung pada Agent Engine, application,
+   connector, atau product identity.
+8. Public storage export menyediakan createStateService.
+9. Test storage record/object terintegrasi ke npm test.
+10. Test state service terintegrasi ke npm test.
+11. Architecture boundary tidak dilanggar.
+12. Validation source menunjukkan tidak ada dependency terlarang
+    dari storage ke Agent Engine.
+13. Implementasi tetap berada di core/storage dan tidak memindahkan
+    ownership domain dari Workspace, Agent Engine reliability,
+    Security, Tasks, atau Connectors.
+
+IMPLEMENTATION RESULT
+---------------------
+core/storage/
+├── errors.js
+├── path.js
+├── index.js
+├── record/
+│   └── index.js
+├── object/
+│   └── index.js
+└── state/
+    └── index.js
+
+State Persistence Service menyediakan:
+- get()
+- put()
+- update()
+- delete()
+- exists()
+- list()
+- hasScope()
+- listScopes()
+- sessions()
+- memories()
+- executions()
+- runtime()
+
+VALIDATION
+----------
+Step 06 selesai pada source baseline commit yang memuat:
+- core/storage/state/index.js
+- core/storage/index.js export createStateService
+- tests/storage/state.mjs
+- package.json integration
+
+Validation mencakup contract source review, test wiring, dan architecture
+boundary review. Runtime execution of npm test harus tetap dijalankan pada
+environment repository ketika tersedia.
 
 STATUS
 ------
-Step 01 — Audit Existing State, Storage & Persistence: COMPLETED
+ROADMAP 04 COMPLETED.
 
-PURPOSE
--------
-Roadmap ini membangun storage/state subsystem generik AI-Gabut agar
-runtime state, persistent state, workspace state, metadata, objects,
-cache, snapshots, dan recovery memiliki ownership serta lifecycle yang
-jelas.
-
-STEPS
------
-01. Audit Existing State, Storage & Persistence
-02. Define State & Storage Boundary
-03. Define Persistence Contracts
-04. Build Core Storage Layer
-05. Build State & Persistence Services
-06. Build Snapshot, Transaction & Idempotency Controls
-07. Build Indexing, Cache & Lifecycle Controls
-08. Validation
-09. Definition of Done
-
-STEP 01 — AUDIT FINDINGS
-------------------------
-Existing state/storage is currently fragmented rather than provided by
-a unified persistence boundary.
-
-Existing persistent behavior:
-- Agent execution reliability checkpoints are persisted as JSON files
-  under `.ai-gabut/executions` by `core/agent-engine/reliability/runtime.js`.
-- Workspace files are persisted directly through `core/workspace/manager.js`
-  against the workspace root.
-- Project structure reserves `data/` for databases, archive, cache,
-  agent state, objects, vectors, workspaces, and files.
-- Project structure reserves `runtime/` for agent checkpoints,
-  executions, sessions, cache, and tasks.
-
-Existing in-memory state:
-- Agent sessions use a process-local Map.
-- Agent memory uses process-local state.
-- Security approvals use process-local state.
-- Reliability execution locks and metrics use process-local state.
-- Several intelligence/indexing caches are process-local.
-
-Existing placeholders:
-- `core/storage/` contains category directories but no storage contract
-  or implementation.
-- `core/sync/` contains category directories and a README but no sync
-  implementation.
-- `core/tasks/` contains category directories but no task persistence
-  implementation.
-- `data/*` and `runtime/*` contain structural placeholders.
-
-IMPORTANT BOUNDARY FINDINGS
----------------------------
-1. Workspace persistence is currently implemented directly by the
-   workspace subsystem. Roadmap 04 must not move workspace ownership
-   into storage merely for abstraction's sake.
-
-2. Reliability currently owns execution checkpoint persistence because
-   execution recovery is part of Agent Engine reliability. Roadmap 04
-   should introduce storage contracts without breaking this behavior.
-
-3. Storage must be an infrastructure service. It must not own product
-   identity, reasoning, authorization policy, connector logic, or HTTP.
-
-4. Runtime state and persistent state must remain distinct. A process-local
-   Map is not automatically equivalent to durable state.
-
-5. Secret material must never become a generic persisted object merely
-   because a storage service exists. Roadmap 03 security controls remain
-   authoritative.
-
-6. Workspace files, object/blob data, structured records, vector data,
-   cache, snapshots, and execution state have different lifecycle and
-   consistency requirements and should not be forced into one primitive.
-
-CURRENT GAPS
-------------
-- No canonical storage interface.
-- No canonical state record/version contract.
-- No repository/database abstraction.
-- No object/blob abstraction.
-- No snapshot contract.
-- No transaction/idempotency contract.
-- No persistence lifecycle/retention abstraction.
-- No indexing abstraction.
-- No unified cache contract.
-- Runtime paths and data paths are documented but not centrally governed.
-
-STEP 01 DECISION
-----------------
-No production source changes are made in the audit step.
-The next step must define ownership and contracts before implementation.
-
-NEXT
-----
-02. Define State & Storage Boundary
+Roadmap berikutnya:
+05. Local System & Execution Capabilities

@@ -1,0 +1,72 @@
+AI-GABUT — ROADMAP 06
+WORKSPACE & CHANGE SYSTEM
+=========================
+
+TUJUAN
+------
+Menyatukan workspace inspection, dependency/impact analysis, change planning,
+safe editing, change-set review, dan durable change lifecycle ke boundary
+Workspace yang jelas tanpa mengambil alih ownership Security, Agent Engine,
+Git, atau Storage.
+
+STEPS
+-----
+01. Audit Existing Workspace & Change System
+02. Define Workspace Boundary
+03. Define Change Contracts
+04. Build Workspace Facade
+05. Build Change Lifecycle
+06. Security, Consistency & Reliability
+07. Validation
+08. Definition of Done
+
+IMPLEMENTATION RESULT
+---------------------
+- Public core/workspace facade.
+- Durable Workspace Change System backed by State Persistence.
+- Read-only change planning.
+- Baseline SHA-256 capture and stale-write protection.
+- Safe edit lifecycle with existing JavaScript syntax validation.
+- Project-index invalidation after successful edits.
+- Evidence-based change-set review.
+- Bounded change history.
+- Workspace Change capability registered at platform boundary.
+
+BOUNDARY
+--------
+Workspace owns workspace structure and change lifecycle.
+Storage owns durable state primitives.
+Security owns authority and policy.
+Agent Engine decides when workspace capabilities are used.
+Git remains version-control infrastructure and is not moved into Workspace.
+Applications and connectors remain outside core/workspace.
+
+CONSISTENCY & SECURITY
+----------------------
+- File edits require SHA-256 baseline protection.
+- Existing sensitive-file and sandbox protections remain authoritative.
+- No arbitrary shell execution is introduced by the change system.
+- Commit/push approval remains under Security Governance.
+- Change history is bounded to prevent unbounded state growth.
+- Storage remains generic and does not depend on Workspace.
+
+VALIDATION
+----------
+- Workspace change lifecycle test covers planning, capture, safe edit,
+  durable reload, close, and list operations.
+- npm test integration is required.
+- Architecture validation must show no Storage -> Workspace or
+  Storage -> Agent Engine dependency.
+
+DEFINITION OF DONE
+------------------
+1. Workspace has a public facade.
+2. Change planning remains read-only.
+3. Safe editing retains stale-write and syntax protections.
+4. Change sets have durable lifecycle state.
+5. Baseline and resulting hashes are recorded.
+6. Change review remains evidence-based and read-only.
+7. Workspace does not own Git commit/push policy.
+8. Storage remains below the Workspace boundary.
+9. Tests are integrated into npm test.
+10. Documentation and status identify Roadmap 06 as completed.

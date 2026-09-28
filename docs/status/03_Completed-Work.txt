@@ -1,61 +1,18 @@
 COMPLETED WORK
 
-ROADMAP 01 — CORE FOUNDATION & RUNTIME
-- Platform bootstrap, configuration, environment, lifecycle, dependency,
-  health/readiness, contracts, capability registry, logging, diagnostics,
-  and runtime identity completed.
-
-ROADMAP 02 — AI / AGENT INTELLIGENCE ENGINE
-- Existing Agent Engine audited and bounded.
-- Intelligence contracts defined for context, reasoning, planning, model
-  routing, tools, specialists, reliability, and evaluation.
-- Public Agent Engine facade established at core/agent-engine/index.js.
-- API and core capability registration routed through the public engine
-  surface.
-- Architecture guard blocks direct external imports of Agent Engine internals.
-- Execution lock cleanup and timeout metrics hardened.
-- Evaluation tool-efficiency and expected-tool checks hardened.
-- Async evaluation case/suite APIs added.
-- Step 06 validation completed.
-- Step 07 Definition of Done completed; Roadmap 02 is complete.
-
-VALIDATED CHECKS
-- Core check: PASS — 69 JavaScript files
-- Architecture check: PASS — 69 JavaScript files
-- Platform contracts: PASS
-- Dependency/health validation: PASS
-- Agent Engine public boundary: PASS
-- Agent Engine reliability/evaluation: PASS
-- Legacy R7 evaluation: PASS
-- Legacy R10 reliability: PASS
-
-NEXT
-Roadmap 03 — Security, Authority & Governance.
-
-
-VERSION HISTORY
-===============
-
-V2 — ROADMAP BESAR 00–13
-------------------------
-Roadmaps 01–13 completed and validated as the V2 platform foundation.
-This history is preserved and is not replaced by V3.
-
 V3 BATCH 05 — CONNECTIONS FRAMEWORK
 - Generic user-owned connection lifecycle is implemented under apps/agentic.
 - Ownership, public credential reference, validation, health, disconnect, and revoke boundaries are explicit.
 - Provider-specific authentication remains outside the generic framework.
-- Batch 05 regression coverage validates ownership, lifecycle, provider adapters, and secret opacity.
 
 V3 BATCH 06 — GITHUB PROVIDER
 - GitHub provider operations are routed through connectors/github.
 - Account authentication, repository listing/metadata, branches, tree, file read, and repository-scoped code search are implemented.
 - GitHub rate-limit and authentication errors are normalized at the connector boundary.
-- Agentic retains user-owned connection lifecycle and encrypted credential storage.
 
-
-V3 — AGENTIC ACTIVATION
------------------------
-V3 roadmap definition is established. V3 implementation is not yet marked
-completed. The active objective is to turn `apps/agentic` into a usable,
-multi-user AI application on top of V2.
+V3 BATCH 07 — WORKSPACE & PROJECT CONTEXT
+- User-owned workspace service is implemented under apps/agentic.
+- Workspace explicitly binds connection, repository, and branch.
+- Provider-backed project context can be refreshed without exposing provider credentials.
+- Current file and workspace lifecycle are explicit.
+- Workspace context is exposed as application-owned context for later Agentic execution integration.

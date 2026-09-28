@@ -1,9 +1,8 @@
 CURRENT STATUS
 
 PROJECT: AI-Gabut
-
 CURRENT PHASE: V3 — Agentic Activation
-CURRENT BATCH: 06 — GitHub Provider
+CURRENT BATCH: 07 — Workspace & Project Context
 
 COMPLETED BATCHES
 -----------------
@@ -12,44 +11,23 @@ COMPLETED BATCHES
 - Batch 03 — Sessions & Conversation
 - Batch 04 — Memory & Context
 - Batch 05 — Connections Framework
+- Batch 06 — GitHub Provider
 
-BATCH 05 RESULT
+BATCH 07 RESULT
 ---------------
-COMPLETED + VALIDATED
+IMPLEMENTED — awaiting repository validation.
 
-VALIDATION
-----------
-- Core/platform validation: PASS
-- Agentic regression: 13/13 PASS
-- Connection ownership/lifecycle/validation/health contracts: PASS
-- Credential opacity and cross-user isolation: PASS
-
-BATCH 06 — GITHUB PROVIDER
----------------------------
-IMPLEMENTED — repository validation pending
-
-DELIVERED
----------
-- GitHub authentication through the user-owned Connection Framework.
-- GitHub account metadata.
-- Repository listing and repository metadata.
-- Branch listing and branch metadata.
-- Repository file tree.
-- File read.
-- Repository-scoped code search.
-- Rate-limit inspection and explicit rate-limit error mapping.
-- GitHub authentication/error normalization.
-- GitHub operations routed through the connector boundary.
-- No raw credential is exposed through connector results or public connection data.
-
-NON-GOALS
----------
-- Repository write operations.
-- Pull request/issue mutation workflows.
-- Workspace/project binding.
-- Realtime frontend UX.
-- OAuth provider flow beyond the existing token-based connection path.
+BATCH 07 DELIVERED
+------------------
+- Explicit user-owned workspace service under apps/agentic.
+- Connection/repository/branch binding.
+- Provider-backed repository context refresh.
+- Current-file context.
+- Workspace active/archived lifecycle.
+- Workspace context endpoint.
+- Cross-user workspace isolation.
+- GitHub repository context adapter using the existing GitHub provider boundary.
 
 NEXT
 ----
-Batch 07 — Workspace & Project Context
+Batch 08 — Agentic Frontend.

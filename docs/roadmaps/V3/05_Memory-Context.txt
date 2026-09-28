@@ -1,11 +1,70 @@
 V3 — MEMORY & CONTEXT
 
+STATUS
+------
+BATCH 04 — COMPLETED
+
 Tujuan: memisahkan conversation, execution context, user memory,
 project/workspace context, task memory, dan execution history.
 
-Scope: - retrieval - relevance - lifecycle - deletion - isolation
+Scope:
+- retrieval
+- relevance
+- lifecycle
+- deletion
+- isolation
 
-Credential/token/password/API key bukan memory biasa.
+BOUNDARY
+--------
+Conversation tetap dimiliki oleh session subsystem.
+Execution context tetap dimiliki oleh execution subsystem.
+User memory menjadi state milik user dan tidak boleh menjadi tempat
+penyimpanan credential/token/password/API key.
+Project/workspace context akan diintegrasikan oleh roadmap workspace.
+Task memory dan execution history tetap mengikuti ownership task/execution.
 
-DoD: Context relevan dapat digunakan tanpa cross-user atau credential
-leakage.
+IMPLEMENTATION — BATCH 04
+--------------------------
+- Agentic store memiliki scope `memories` yang user-owned.
+- Memory service menyediakan create, get, list, remove, search, dan
+  buildContext.
+- Retrieval dibatasi per user dan dapat dibatasi berdasarkan scope.
+- Retrieval menggunakan relevance sederhana berbasis token overlap dan
+  memiliki bounded result count.
+- Memory records mempunyai lifecycle metadata createdAt/updatedAt.
+- Credential/secret/password/token/api-key material ditolak sebagai memory.
+- Credential-like content pattern ditolak sebelum persistence.
+- Memory context tidak dapat membaca memory user lain melalui store API.
+- Agentic test memvalidasi relevance, user isolation, lifecycle, dan
+  credential leakage prevention.
+
+DATA CONTRACT
+-------------
+Memory:
+- id
+- type
+- content
+- scope
+- tags[]
+- metadata{}
+- createdAt
+- updatedAt
+- ownerId
+
+Credential/token/password/API key bukan memory biasa dan tidak boleh
+disimpan melalui memory service.
+
+DoD
+---
+Context relevan dapat digunakan tanpa cross-user atau credential leakage.
+
+VALIDATION
+----------
+- Agentic memory/context regression test: PASS.
+- Existing Batch 02/03 regression baseline remains required.
+- Full `npm test` is the repository-level integration validation after
+  this delta is applied.
+
+NEXT
+----
+05. Connections Framework

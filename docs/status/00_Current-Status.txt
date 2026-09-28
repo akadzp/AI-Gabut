@@ -1,38 +1,43 @@
-# CURRENT STATUS
+CURRENT STATUS
 
 PROJECT: AI-Gabut
-ACTIVE VERSION: V3
-ACTIVE ROADMAP: V3 — Agentic Activation
 
-V1: fase awal; dokumentasi lengkap tidak tersedia.
-V2: roadmap besar 00–13; foundation completed/validated dan dipertahankan sebagai historical baseline.
+CURRENT PHASE: V3 — Agentic Activation
+CURRENT BATCH: 04 — Memory & Context
 
-CURRENT BATCH: V3 Agentic Activation — Batch 03.
+COMPLETED BATCHES
+-----------------
+- Batch 01 — Application Runtime
+- Batch 02 — Agent Execution Activation
+- Batch 03 — Sessions & Conversation
+- Batch 04 — Memory & Context
 
-BATCH 01 CLOSED
-- Agentic runtime, authentication, sessions baseline, connections, GitHub read baseline, workspace context, frontend shell, Agent Engine integration.
-- package 0.17.0.
+BATCH 04 RESULT
+---------------
+COMPLETED
 
-BATCH 02 CLOSED
-- User-owned executions, tasks, activities; execution status mapping; approval bridge; cancellation; execution APIs.
-- package 0.18.0.
+DELIVERED
+---------
+- User-owned Agentic memory scope.
+- Memory lifecycle: create, get, list, delete.
+- Bounded relevance retrieval.
+- Context assembly from relevant memory.
+- Cross-user isolation.
+- Credential/secret/token/password/API-key leakage prevention at the
+  memory boundary.
+- Agentic memory/context regression test.
 
-BATCH 03 SCOPE
-- Durable session lifecycle: active, archived, deleted, restored.
-- Session rename and ownership enforcement.
-- Dedicated user-owned chat-message records.
-- Reopenable conversation history with bounded retrieval.
-- Session ↔ task ↔ execution relationship preserved.
-- Session APIs for open/list/rename/archive/delete/restore/message history.
-- Frontend session switching and lifecycle controls.
+VALIDATION BASELINE
+-------------------
+Batch 02 and Batch 03 regression fixes have been validated:
+- architecture check: PASS
+- full npm test: PASS
+- Agentic tests: 9/9 PASS
 
-NOT YET COMPLETE
-- Realtime SSE/WebSocket transport.
-- Full approval UI.
-- GitHub write/mutation workflow.
-- OAuth provider flow.
-- Production deployment validation.
-- Full V3 end-to-end Definition of Done.
+Batch 04 adds its own memory/context regression test. Repository-level
+`npm test` remains the final integration validation after applying the
+Batch 04 ZIP.
 
-STATUS: IN PROGRESS — Agentic Activation
-NEXT: Apply and verify the single Batch 03 delta, then proceed to V3 Batch 04 — Agent Execution.
+NEXT
+----
+Batch 05 — Connections Framework

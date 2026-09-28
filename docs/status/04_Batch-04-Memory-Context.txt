@@ -1,0 +1,15 @@
+BATCH 04 — MEMORY & CONTEXT
+===========================
+
+STATUS: COMPLETED
+
+Delivered user-owned memory persistence and bounded retrieval for
+Agentic. Memory is isolated by user identity, supports lifecycle
+operations, and can assemble relevant context without treating
+credential material as ordinary memory.
+
+Validation:
+- memory/context regression test: PASS
+- Batch 02/03 regression baseline: PASS
+
+Next batch: Connections Framework.

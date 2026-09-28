@@ -29,14 +29,40 @@ DELIVERED
 
 VALIDATION BASELINE
 -------------------
-Batch 02 and Batch 03 regression fixes have been validated:
-- architecture check: PASS
-- full npm test: PASS
-- Agentic tests: 9/9 PASS
+Repository validation after Batch 04:
+- architecture check: PASS — 119 JavaScript files
+- core/backend check: PASS — 119 JavaScript files
+- platform contracts: PASS
+- platform dependency/health: PASS
+- platform runtime validation: PASS
+- operations runtime contract: PASS
+- production configuration contract: PASS
+- security secret/sandbox contract: PASS
+- security audit observability: PASS
+- storage record/object: PASS
+- storage state service: PASS
+- local system capability contract: PASS
+- workspace change-system contract: PASS
+- task/job/execution orchestration contract: PASS
+- synchronization/reconciliation contract: PASS
+- connector registry/runtime contract: PASS
+- media registry/runtime contract: PASS
+- API contract: PASS
+- application layer contract: PASS
+- Agentic tests: 10/10 PASS
 
-Batch 04 adds its own memory/context regression test. Repository-level
-`npm test` remains the final integration validation after applying the
-Batch 04 ZIP.
+The Agentic regression suite currently covers execution lifecycle,
+approval/resume, cancellation, session ownership/lifecycle, message
+history pagination, credential crypto, cross-user isolation, auth session
+lifecycle, and memory/context boundaries.
+
+BATCH 04 INTEGRATION NOTE
+-------------------------
+The dedicated memory service is implemented and validated. The Agentic
+chat application still has session-local memory/context handling in its
+chat path. Full first-class memory integration across application context,
+execution continuity, and later workspace/connection context remains part
+of the subsequent V3 integration work.
 
 NEXT
 ----

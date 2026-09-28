@@ -1,37 +1,70 @@
 COMPLETED WORK
 
-ROADMAP 01 — CORE FOUNDATION & RUNTIME
+V2 FOUNDATION / PLATFORM
 - Platform bootstrap, configuration, environment, lifecycle, dependency,
   health/readiness, contracts, capability registry, logging, diagnostics,
   and runtime identity completed.
-
-ROADMAP 02 — AI / AGENT INTELLIGENCE ENGINE
 - Existing Agent Engine audited and bounded.
 - Intelligence contracts defined for context, reasoning, planning, model
   routing, tools, specialists, reliability, and evaluation.
 - Public Agent Engine facade established at core/agent-engine/index.js.
 - API and core capability registration routed through the public engine
   surface.
-- Architecture guard blocks direct external imports of Agent Engine internals.
-- Execution lock cleanup and timeout metrics hardened.
-- Evaluation tool-efficiency and expected-tool checks hardened.
-- Async evaluation case/suite APIs added.
-- Step 06 validation completed.
-- Step 07 Definition of Done completed; Roadmap 02 is complete.
+- Architecture guard blocks direct external imports of Agent Engine
+  internals.
+- Security, storage/state, Linux capabilities, workspace/change system,
+  task orchestration, synchronization, connector runtime, media runtime,
+  and API/runtime foundation established.
 
-VALIDATED CHECKS
-- Core check: PASS — 69 JavaScript files
-- Architecture check: PASS — 69 JavaScript files
-- Platform contracts: PASS
-- Dependency/health validation: PASS
-- Agent Engine public boundary: PASS
-- Agent Engine reliability/evaluation: PASS
-- Legacy R7 evaluation: PASS
-- Legacy R10 reliability: PASS
+V3 — AGENTIC ACTIVATION
+- Batch 01 — Application Runtime completed.
+  - Agentic backend/frontend boundary.
+  - Registration/login/logout and auth sessions.
+  - User-owned durable chat sessions.
+  - Encrypted provider credential storage.
+  - GitHub read context and workspace records.
+  - Agentic chat delegation to the public Agent Engine boundary.
+  - Initial frontend application shell.
+  - Targeted authentication/crypto/isolation tests.
+- Batch 02 — Agent Execution Activation completed.
+  - User-owned execution records.
+  - Agent Engine activity persistence.
+  - Execution inspection, approval, resume, and cancellation APIs.
+  - Bounded/stopped/max-turns/failed/cancelled status mapping.
+  - Same-execution approval resume.
+  - Cooperative cancellation observation.
+- Batch 03 — Sessions & Conversation completed.
+  - Session lifecycle and ownership validation.
+  - Reopen/archive/restore/delete behavior.
+  - Paged message history.
+  - Cross-user session isolation.
+- Batch 04 — Memory & Context completed.
+  - User-owned memory service.
+  - Memory lifecycle and bounded relevance retrieval.
+  - Context assembly.
+  - Cross-user isolation.
+  - Credential/secret/token/password/API-key protection at the memory
+    boundary.
+  - Dedicated memory/context regression test.
 
-NEXT
-Roadmap 03 — Security, Authority & Governance.
+CURRENT VALIDATION
+------------------
+- Architecture check: PASS — 119 JavaScript files
+- Core/backend check: PASS — 119 JavaScript files
+- Full npm test: PASS
+- Agentic tests: 10/10 PASS
 
+The current Agentic suite validates execution ownership/status semantics,
+approval/resume, cancellation, sessions, message history pagination,
+credential crypto, cross-user isolation, auth sessions, and memory/context.
+
+CURRENT V3 POSITION
+-------------------
+Batches 01–04 are complete. Batch 05 — Connections Framework is next.
+
+GitHub should not be treated as a finished generic provider yet: the current
+Agentic GitHub read integration and connector scaffold precede the generic
+Connections Framework work.
 
 VERSION HISTORY
 ===============
@@ -43,6 +76,7 @@ This history is preserved and is not replaced by V3.
 
 V3 — AGENTIC ACTIVATION
 -----------------------
-V3 roadmap definition is established. V3 implementation is not yet marked
-completed. The active objective is to turn `apps/agentic` into a usable,
-multi-user AI application on top of V2.
+V3 is the active implementation phase. Its objective is to turn
+apps/agentic into a usable, multi-user AI application on top of V2 and then
+complete connections, workspace context, realtime UX, governance UX,
+recovery/continuity, deployment, and final validation.

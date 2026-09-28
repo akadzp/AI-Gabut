@@ -1,19 +1,24 @@
 # CURRENT KNOWN GAPS — V3
 
-1. Agentic is not yet a complete end-user application.
-2. Application-level authentication is not yet the complete user flow.
-3. Multi-user isolation needs end-to-end implementation and validation.
-4. Session/conversation persistence and resume need implementation.
-5. Agentic-to-Agent-Engine execution needs end-to-end activation.
-6. Application-level connection lifecycle/ownership needs implementation.
-7. GitHub needs to become the first fully usable provider.
-8. Workspace/project binding needs to connect provider resource to Agentic.
-9. Agentic frontend is not yet a complete backend client.
-10. Realtime activity/progress UX is not yet complete.
-11. Approval and credential governance need end-to-end integration.
-12. Restart/resume continuity needs end-to-end validation.
-13. Separate frontend/backend deployment needs validation.
-14. V3 end-to-end and production readiness tests remain.
+1. Agentic is not yet a complete end-user application/product surface.
+2. The frontend shell is not yet a complete production backend client.
+3. Realtime activity/progress transport and UX are not yet complete.
+4. Application-level connection lifecycle, ownership, credential reference,
+   validation, health, and revocation need a generic Connections Framework.
+5. GitHub currently exists as an Agentic read integration and connector
+   scaffold; it is not yet the first fully integrated generic provider.
+6. Workspace/project binding is not yet fully connected to provider resources,
+   Agentic context, and execution.
+7. Approval/cancellation backend lifecycle exists, but complete frontend
+   approval UX and end-to-end governance integration remain.
+8. Restart/resume continuity is not yet validated as a complete user
+   workflow across process restart and persisted execution state.
+9. Separate frontend/backend deployment and production operations remain to
+   be validated.
+10. V3 end-to-end and final production-readiness validation remain.
+11. Memory service integration is not yet the final cross-subsystem context
+    model; execution, workspace, and connection context still need a unified
+    first-class integration path.
 
 HISTORICAL V2 NOTES
 ===================
@@ -29,9 +34,9 @@ KNOWN GAPS
    validation contract.
 
 2. Runtime integration environment
-   Full HTTP startup requires project dependencies such as Express to
-   be installed in the execution environment. Foundation/runtime
-   validation is performed independently when dependencies are absent.
+   Full HTTP startup requires project dependencies such as Express to be
+   installed in the execution environment. Foundation/runtime validation
+   is performed independently when dependencies are absent.
 
 3. State/storage gap
    Roadmap 04 has started. Storage directories exist as structural
@@ -39,8 +44,8 @@ KNOWN GAPS
 
 4. In-memory state gap
    Sessions, memory, approvals, reliability locks/metrics, and several
-   caches are process-local. Durability and lifecycle requirements must
-   be decided per state category rather than globally.
+   caches are process-local. Durability and lifecycle requirements must be
+   decided per state category rather than globally.
 
 5. Persistence ownership gap
    Reliability checkpoint persistence and Workspace file persistence

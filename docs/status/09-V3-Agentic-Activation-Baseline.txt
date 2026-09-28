@@ -1,18 +1,55 @@
-V3 AGENTIC ACTIVATION — BASELINE STATUS
+V3 AGENTIC ACTIVATION — BASELINE / HISTORICAL HANDOVER
 
-WHAT EXISTS FROM V2: - core platform foundation - Agent Engine public
-boundary - security - storage/state - linux capabilities -
-workspace/change system - task orchestration - sync/reconciliation -
-connector runtime - media runtime - API/system interface - application
-layer - operations/readiness - apps/agentic application identity
+The original V3 activation baseline is preserved here as a historical
+starting point. It must not be read as the current implementation status.
 
-V3 NOT YET CLAIMED: - full Agentic authentication - full multi-user
-isolation - complete session/chat product flow - end-to-end Agent
-execution from UI - user-owned provider connections - fully usable
-GitHub workflow - Agentic workspace binding - complete frontend -
-realtime activity UX - end-to-end approval/credential flow -
-restart/resume user workflow - V3 production readiness
+WHAT EXISTED FROM V2
+--------------------
+- core platform foundation
+- Agent Engine public boundary
+- security
+- storage/state
+- linux capabilities
+- workspace/change system
+- task orchestration
+- sync/reconciliation
+- connector runtime
+- media runtime
+- API/system interface
+- operations/readiness
+- initial apps/agentic application identity
 
-HANDOVER RULE: Roadmap = target. Status = current condition. Source code
-= implementation authority. Do not mark a feature completed merely
-because a contract or placeholder UI exists.
+ORIGINAL V3 GAPS AT ACTIVATION START
+------------------------------------
+- full Agentic authentication
+- full multi-user isolation
+- complete session/chat product flow
+- end-to-end Agent execution from UI
+- user-owned provider connections
+- fully usable GitHub workflow
+- Agentic workspace binding
+- complete frontend
+- realtime activity UX
+- end-to-end approval/credential flow
+- restart/resume user workflow
+- V3 production readiness
+
+CURRENT HANDOVER
+----------------
+The gaps above were the activation baseline, not the current state.
+Batches 01–04 have since delivered application authentication/session
+ownership, Agent execution lifecycle, approval/resume and cancellation
+backend flows, and the Memory & Context foundation.
+
+Use docs/status/00_Current-Status.txt as the authoritative current-status
+handover document. Use source code and the current test suite as the
+implementation authority when documentation conflicts with code.
+
+HANDOVER RULE
+-------------
+Roadmap = target.
+Status = current condition.
+Source code = implementation authority.
+Tests = validation evidence.
+Do not mark a feature completed merely because a contract or placeholder
+UI exists.

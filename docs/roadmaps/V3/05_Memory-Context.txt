@@ -1,70 +1,371 @@
-V3 — MEMORY & CONTEXT
+V3 BATCH 05 — CONNECTIONS FRAMEWORK
 
-STATUS
-------
-BATCH 04 — COMPLETED
+Boundary & Contract
 
-Tujuan: memisahkan conversation, execution context, user memory,
-project/workspace context, task memory, dan execution history.
+1. Purpose
 
-Scope:
-- retrieval
-- relevance
-- lifecycle
-- deletion
-- isolation
+Batch 05 membentuk application-level Connections Framework pada apps/agentic.
 
-BOUNDARY
---------
-Conversation tetap dimiliki oleh session subsystem.
-Execution context tetap dimiliki oleh execution subsystem.
-User memory menjadi state milik user dan tidak boleh menjadi tempat
-penyimpanan credential/token/password/API key.
-Project/workspace context akan diintegrasikan oleh roadmap workspace.
-Task memory dan execution history tetap mengikuti ownership task/execution.
+Framework menyediakan lifecycle dan ownership abstraction untuk koneksi ke external provider tanpa mengikat application layer kepada provider tertentu.
 
-IMPLEMENTATION — BATCH 04
---------------------------
-- Agentic store memiliki scope `memories` yang user-owned.
-- Memory service menyediakan create, get, list, remove, search, dan
-  buildContext.
-- Retrieval dibatasi per user dan dapat dibatasi berdasarkan scope.
-- Retrieval menggunakan relevance sederhana berbasis token overlap dan
-  memiliki bounded result count.
-- Memory records mempunyai lifecycle metadata createdAt/updatedAt.
-- Credential/secret/password/token/api-key material ditolak sebagai memory.
-- Credential-like content pattern ditolak sebelum persistence.
-- Memory context tidak dapat membaca memory user lain melalui store API.
-- Agentic test memvalidasi relevance, user isolation, lifecycle, dan
-  credential leakage prevention.
+Batch ini tidak mengimplementasikan provider baru.
 
-DATA CONTRACT
--------------
-Memory:
-- id
-- type
-- content
-- scope
-- tags[]
-- metadata{}
-- createdAt
-- updatedAt
-- ownerId
+GitHub Provider menjadi consumer/provider implementation pada Batch 06.
 
-Credential/token/password/API key bukan memory biasa dan tidak boleh
-disimpan melalui memory service.
+2. Boundary
 
-DoD
----
-Context relevan dapat digunakan tanpa cross-user atau credential leakage.
+Connection Framework berada di:
 
-VALIDATION
-----------
-- Agentic memory/context regression test: PASS.
-- Existing Batch 02/03 regression baseline remains required.
-- Full `npm test` is the repository-level integration validation after
-  this delta is applied.
+apps/agentic/backend 
 
-NEXT
-----
-05. Connections Framework
+Connection Framework boleh menggunakan:
+
+apps/agentic/backend/store.js core/security 
+
+Connection Framework tidak memiliki:
+
+provider API implementation
+
+GitHub-specific repository operations
+
+workspace implementation
+
+agent reasoning
+
+connector runtime implementation
+
+authorization policy implementation
+
+raw credential policy implementation
+
+3. Connection Object
+
+Canonical application-level connection:
+
+{ id, ownerId, provider, name, status, account, credentialRef, capabilities, health, createdAt, updatedAt, lastValidatedAt } 
+
+Catatan:
+
+credentialRef adalah reference terhadap credential material.
+
+Credential plaintext tidak boleh menjadi bagian dari object yang dikembalikan kepada frontend, conversation, memory, activity, atau normal application response.
+
+Existing encrypted credential storage boleh dipertahankan selama migration Batch 05.
+
+4. Ownership
+
+Setiap connection wajib dimiliki tepat oleh satu authenticated user.
+
+Semua operasi harus menggunakan:
+
+(userId, connectionId) 
+
+Cross-user lookup harus menghasilkan:
+
+not found 
+
+bukan connection milik user lain.
+
+Existing store.getConnection(userId, connectionId) dan ownership primitive menjadi dasar contract ini.
+
+Tidak membuat ownership mechanism kedua.
+
+5. Lifecycle
+
+Minimum canonical lifecycle:
+
+created ↓ authenticating ↓ active ↓ expired / requires_reauth ↓ revoked / disconnected 
+
+Provider implementation boleh melakukan transisi yang lebih spesifik, tetapi application contract harus menormalisasi status ke lifecycle tersebut.
+
+Status tidak boleh digunakan sebagai implicit authorization.
+
+Contoh:
+
+active 
+
+berarti connection lifecycle aktif.
+
+Itu tidak otomatis berarti setiap operation terhadap provider diizinkan.
+
+Authorization tetap mengikuti Security boundary.
+
+6. Operations
+
+Connection Framework minimal mengekspos:
+
+create/connect get list validate health disconnect revoke 
+
+Semua operation bersifat user-owned.
+
+Conceptual interface:
+
+connect(userId, input) get(userId, connectionId) list(userId) validate(userId, connectionId) health(userId, connectionId) disconnect(userId, connectionId) revoke(userId, connectionId) 
+
+Provider-specific authentication mechanism tidak ditentukan oleh generic contract.
+
+Misalnya:
+
+token oauth custom 
+
+merupakan provider concern.
+
+7. Provider Identity
+
+Connection wajib memiliki stable provider identifier:
+
+provider: "github" 
+
+Framework tidak boleh membuat GitHub-specific branching seperti:
+
+if (provider === "github") ... 
+
+di dalam generic lifecycle implementation.
+
+Provider-specific behavior berada di provider implementation.
+
+8. Capability Discovery
+
+Connection dapat menyimpan capability metadata:
+
+capabilities: [ "repository.read", "branch.read", "file.read" ] 
+
+Framework hanya menyediakan contract/metadata.
+
+Framework tidak menentukan capability GitHub.
+
+Capability discovery aktual dilakukan oleh provider implementation.
+
+9. Credential Boundary
+
+Credential mempunyai lifecycle dan storage yang terpisah secara konseptual dari connection metadata.
+
+Connection boleh mengetahui:
+
+credentialRef 
+
+tetapi tidak boleh mengekspos:
+
+raw token password secret private key 
+
+kepada:
+
+frontend
+
+chat message
+
+memory
+
+activity feed
+
+execution result
+
+ordinary API response
+
+Existing encrypted credential mechanism menjadi implementation baseline.
+
+Batch 05 tidak mengganti cryptographic implementation kecuali ditemukan gap contract yang menghalangi lifecycle.
+
+10. Validation
+
+validate() berarti memastikan connection masih dapat digunakan untuk identity/authentication dasar provider.
+
+Hasil harus dinormalisasi menjadi outcome application-level, misalnya:
+
+{ valid: true, status: "active", checkedAt } 
+
+atau:
+
+{ valid: false, status: "requires_reauth", checkedAt, reasonCode } 
+
+Provider-specific error tidak boleh bocor sebagai generic lifecycle contract tanpa normalization.
+
+11. Health
+
+Health berbeda dari authorization.
+
+Health menjawab:
+
+"Apakah connection/provider relationship saat ini sehat?" 
+
+bukan:
+
+"Apakah user boleh melakukan operation tertentu?" 
+
+Authorization tetap berada pada core/security.
+
+12. Disconnect vs Revoke
+
+disconnect:
+
+application tidak lagi menggunakan connection 
+
+revoke:
+
+credential/provider authorization dianggap tidak lagi valid 
+
+Provider-specific revoke mechanism boleh berbeda.
+
+Framework harus menyediakan semantic distinction tanpa mengharuskan setiap provider mempunyai API revoke yang identik.
+
+13. Application API Boundary
+
+Server tidak boleh memanipulasi store connection secara langsung.
+
+Tidak:
+
+application.store.removeConnection(userId, connectionId) 
+
+Setelah Batch 05:
+
+application.disconnectConnection(userId, connectionId) 
+
+atau melalui connection service.
+
+Flow:
+
+HTTP ↓ Agentic Application ↓ Connection Framework ↓ Store 
+
+14. Security Boundary
+
+Connection Framework tidak menggantikan Security.
+
+Untuk operation yang membutuhkan authority:
+
+Connection Framework ↓ Security authorization ↓ Provider / Connector executor 
+
+Security tetap memiliki:
+
+principal
+
+action
+
+resource
+
+scope
+
+policy
+
+approval
+
+audit
+
+allow/deny
+
+Connection Framework memiliki:
+
+connection identity
+
+ownership
+
+lifecycle
+
+provider relationship
+
+credential reference
+
+health state
+
+15. Connector Boundary
+
+Connection Framework tidak menggantikan:
+
+core/connectors connectors/* 
+
+Perbedaan:
+
+Connection = user-owned relationship/state Connector = provider capability/execution adapter 
+
+Batch 05 tidak membuat connector runtime baru.
+
+16. Batch 05 Non-Goals
+
+Tidak termasuk:
+
+GitHub repository abstraction baru
+
+GitHub branch abstraction baru
+
+GitHub file/search API
+
+GitHub write operations
+
+OAuth implementation
+
+Workspace-provider binding
+
+Agent workspace context
+
+SSE/WebSocket
+
+frontend connection UX redesign
+
+provider-specific authorization policy
+
+credential vault rewrite
+
+replacement of core/connectors
+
+Semua itu tetap berada pada batch berikutnya atau existing subsystem boundary.
+
+17. Tests Required
+
+Batch 05 harus menambah dedicated connection contract coverage minimal untuk:
+
+connection creation
+
+connection ownership
+
+cross-user isolation
+
+list ownership
+
+get ownership
+
+lifecycle transition
+
+validation result normalization
+
+health result normalization
+
+disconnect
+
+revoke
+
+credential opacity
+
+credential tidak muncul pada public connection
+
+unknown connection behavior
+
+provider identity preservation
+
+existing Agentic regression tetap PASS
+
+existing connector runtime tetap PASS
+
+existing security contract tetap PASS
+
+18. Definition of Done
+
+Batch 05 selesai apabila:
+
+Authenticated User ↓ Agentic Application ↓ Generic Connection Framework ↓ User-owned Connection ↓ Lifecycle / Validation / Health / Disconnect 
+
+dapat berjalan tanpa provider-specific logic di generic framework.
+
+GitHub provider harus tetap dapat menggunakan connection state yang sama tanpa membuat second ownership or credential model.
+
+V2 architecture tetap PASS.
+
+Batch 01–04 regression tetap PASS.
+
+Tidak ada secret leakage.
+
+Tidak ada cross-user connection access.
+
+Tidak ada direct server → store connection mutation.
+
+Batch 06 kemudian dapat mengimplementasikan GitHub Provider di atas contract ini tanpa mendesain ulang Connections Framework.
+
+

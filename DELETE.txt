@@ -1,0 +1,8 @@
+DELETE THESE OLD SOURCE/TEST PATHS AFTER APPLYING THE DELTA
+
+tests/apps/agentic-v3.mjs
+tests/apps/agentic-execution-v3.mjs
+tests/apps/agentic-sessions-v3.mjs
+
+Reason:
+V1/V2/V3 are roadmap/documentation phase labels. They must not be embedded in source/test filenames.

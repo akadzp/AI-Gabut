@@ -1,5 +1,4 @@
-import { runAgent } from "../agent-engine/core/agent.js";
-import { resumeExecution, getReliabilityMetrics, getReliabilityLimits } from "../agent-engine/reliability/runtime.js";
+import { runAgent, resumeExecution, getReliabilityMetrics, getReliabilityLimits } from "../agent-engine/index.js";
 import { getGovernancePolicy, issueApproval, getAuditTrail, getAuditMetrics, getAuditPolicy } from "../security/index.js";
 import { readWorkspaceFile, writeWorkspaceFile, listWorkspaceFiles, createWorkspaceChangeSystem, workspaceChangeSystem } from "../workspace/index.js";
 import { createTaskOrchestrator, taskOrchestrator } from "../tasks/index.js";

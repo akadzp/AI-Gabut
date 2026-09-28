@@ -1,5 +1,22 @@
 {
-  "name":"ai-gabut","version":"0.19.0","private":true,"type":"module",
-  "scripts":{"start":"node core/system/runtime.js","dev":"node --watch core/system/runtime.js","start:agentic":"node apps/agentic/backend/server.js","check":"node scripts/check-backend.mjs","test":"npm run check && node tests/platform/contracts.mjs && node tests/platform/dependency-health.mjs && node tests/platform/capability-registry.mjs && node tests/platform/runtime-validation.mjs && node tests/platform/operations.mjs && node tests/platform/configuration.mjs && node tests/security/secret-sandbox.mjs && node tests/security/audit-observability.mjs && node tests/storage/record-object.mjs && node tests/storage/state.mjs && node tests/linux/local-system.mjs && node tests/workspace/change-system.mjs && node tests/tasks/orchestrator.mjs && node tests/sync/reconciliation.mjs && node tests/connectors/runtime.mjs && node tests/media/runtime.mjs && node tests/api/contracts.mjs && node tests/apps/application-layer.mjs && npm run test:agentic","test:agentic":"node --test tests/apps/agentic-v3.mjs tests/apps/agentic-execution-v3.mjs tests/apps/agentic-sessions-v3.mjs","check:architecture":"node scripts/check-architecture.mjs"},
-  "dependencies":{"@babel/parser":"^7.27.0","@google/genai":"^1.0.0","dotenv":"^16.4.7","express":"^5.1.0","openai":"^6.0.0"}
+  "name": "ai-gabut",
+  "version": "0.19.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node core/system/runtime.js",
+    "dev": "node --watch core/system/runtime.js",
+    "start:agentic": "node apps/agentic/backend/server.js",
+    "check": "node scripts/check-backend.mjs",
+    "test": "npm run check && node tests/platform/contracts.mjs && node tests/platform/dependency-health.mjs && node tests/platform/capability-registry.mjs && node tests/platform/runtime-validation.mjs && node tests/platform/operations.mjs && node tests/platform/configuration.mjs && node tests/security/secret-sandbox.mjs && node tests/security/audit-observability.mjs && node tests/storage/record-object.mjs && node tests/storage/state.mjs && node tests/linux/local-system.mjs && node tests/workspace/change-system.mjs && node tests/tasks/orchestrator.mjs && node tests/sync/reconciliation.mjs && node tests/connectors/runtime.mjs && node tests/media/runtime.mjs && node tests/api/contracts.mjs && node tests/apps/application-layer.mjs && npm run test:agentic",
+    "test:agentic": "node --test tests/apps/agentic.mjs tests/apps/agentic-execution.mjs tests/apps/agentic-sessions.mjs",
+    "check:architecture": "node scripts/check-architecture.mjs"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.27.0",
+    "@google/genai": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "openai": "^6.0.0"
+  }
 }

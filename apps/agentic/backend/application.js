@@ -3,159 +3,28 @@ import { createAuthService } from "./auth.js";
 import { createGitHubService } from "./github.js";
 import { createId } from "./ids.js";
 import { AgenticError } from "./errors.js";
-import { runAgent } from "../../../core/agent-engine/index.js";
+import { runAgent,extractMemoryCandidates,addMemories,retrieveMemories,resolveMemoryConflicts,getActiveMemories } from "../../../core/agent-engine/index.js";
 import { createExecutionId } from "../../../core/agent-engine/reliability/runtime.js";
-import { issueApproval } from "../../../core/security/index.js";
-import { extractMemoryCandidates, addMemories, retrieveMemories, resolveMemoryConflicts, getActiveMemories } from "../../../core/agent-engine/index.js";
-import { auditEvent } from "../../../core/security/index.js";
-
-function executionStatusFromResult(result) {
-  const autonomy = result?.autonomy;
-  if (result?.execution?.status === "failed") return "failed";
-  if (result?.execution?.status === "cancelled") return "cancelled";
-  if (result?.approval?.required || result?.status === "waiting_approval") return "waiting_approval";
-  if (autonomy?.status === "stopped" || /Execution dihentikan secara bounded/i.test(String(result?.text || ""))) return "stopped";
-  if (/mencapai batas maksimum/i.test(String(result?.text || ""))) return "max_turns";
-  return "completed";
-}
-
-function approvalCandidate(result) {
-  const steps = result?.tool?.steps || [];
-  const last = steps.at(-1);
-  if (!last?.result?.requiresApproval) return null;
-  return { tool: last.name, input: last.input || {}, reason: last.result.error || "Tool memerlukan human approval" };
-}
-
-export function createAgenticApplication({ storage = undefined, agentRunner = runAgent } = {}) {
-  const store = createAgenticStore({ storage });
-  const auth = createAuthService({ store });
-  const github = createGitHubService({ store });
-
-  async function createChatSession(u, { title = "New Chat", connectionId = null, workspaceId = null } = {}) {
-    const s = { id: createId("chat"), title: String(title || "New Chat").trim().slice(0, 160), connectionId, workspaceId, messages: [], memories: [], taskId: null, executionId: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-    await store.putChatSession(u, s);
-    return s;
-  }
-
-  async function getSession(u, id) {
-    if (id) {
-      const s = await store.getChatSession(u, id);
-      if (!s) throw new AgenticError("SESSION_NOT_FOUND", "Chat session tidak ditemukan", 404);
-      return s;
-    }
-    return createChatSession(u, {});
-  }
-
-  async function recordActivity(u, executionId, sessionId, event) {
-    const activity = { id: event.id || createId("activity"), ownerId: u, executionId, sessionId, type: event.type || "activity", action: event.action || "unknown", status: event.status || "running", label: String(event.label || event.action || "Activity").slice(0, 300), meta: event.meta || {}, error: event.error || null, createdAt: new Date().toISOString() };
-    await store.putActivity(u, activity);
-    return activity;
-  }
-
-  async function createExecution(u, sessionId, prompt) {
-    const id = createExecutionId();
-    const task = { id: createId("task"), ownerId: u, sessionId, status: "running", title: String(prompt).slice(0, 160), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-    const execution = { id, ownerId: u, sessionId, taskId: task.id, status: "running", prompt: String(prompt).slice(0, 12000), plan: null, currentStep: null, checkpoint: null, approval: null, result: null, error: null, startedAt: new Date().toISOString(), updatedAt: new Date().toISOString(), finishedAt: null };
-    await store.putTask(u, task);
-    await store.putExecution(u, execution);
-    return execution;
-  }
-
-  async function updateExecution(u, id, patch) {
-    const current = await store.getExecution(u, id);
-    if (!current) throw new AgenticError("EXECUTION_NOT_FOUND", "Execution tidak ditemukan", 404);
-    const next = { ...current, ...patch, id: current.id, ownerId: u, updatedAt: new Date().toISOString() };
-    await store.putExecution(u, next);
-    if (["completed", "failed", "cancelled", "stopped", "max_turns"].includes(next.status) && current.taskId) {
-      const task = await store.getTask(u, current.taskId);
-      if (task) await store.putTask(u, { ...task, status: next.status, updatedAt: next.updatedAt });
-    }
-    return next;
-  }
-
-  async function ensureExecutionActive(u, id) {
-    const execution = await store.getExecution(u, id);
-    if (!execution) throw new AgenticError("EXECUTION_NOT_FOUND", "Execution tidak ditemukan", 404);
-    if (execution.status === "cancelled") throw new AgenticError("EXECUTION_CANCELLED", "Execution dibatalkan", 409);
-    return execution;
-  }
-
-  async function runExecution(u, s, prompt, options = {}) {
-    const execution = options.resumeExecutionId ? await ensureExecutionActive(u, options.resumeExecutionId) : await createExecution(u, s.id, prompt);
-    s.taskId = execution.taskId;
-    s.executionId = execution.id;
-    s.executionId = execution.id;
-    await store.putChatSession(u, s);
-    const emit = async event => {
-      const current = await store.getExecution(u, execution.id);
-      if (current?.status === "cancelled") throw new AgenticError("EXECUTION_CANCELLED", "Execution dibatalkan", 409);
-      await recordActivity(u, execution.id, s.id, event);
-      if (event.action === "planning" && event.status === "completed") await updateExecution(u, execution.id, { plan: event.meta || null });
-      if (event.action === "checkpoint") await updateExecution(u, execution.id, { checkpoint: event.meta || null });
-    };
-    try {
-      const result = await agentRunner({ prompt, provider: options.provider, model: options.model, conversation: s.messages.slice(-20).map(m => ({ role: m.role, content: m.content })), memories: getActiveMemories(s.memories), sessionId: `${u}:${s.id}`, approvalToken: options.approvalToken || null, principal: { userId: u }, applicationId: "agentic", executionId: options.resumeExecutionId || undefined, agentExecutionId: execution.id, onActivity: emit });
-      const candidate = approvalCandidate(result);
-      if (candidate && !options.approvalToken) {
-        const approval = issueApproval({ tool: candidate.tool, input: candidate.input, sessionId: `${u}:${s.id}`, reason: candidate.reason });
-        await updateExecution(u, execution.id, { status: "waiting_approval", approval: { tool: candidate.tool, input: candidate.input, reason: candidate.reason, expiresAt: approval.expiresAt }, result: null });
-        await recordActivity(u, execution.id, s.id, { action: "approval_required", status: "waiting", label: `Approval diperlukan · ${candidate.tool}`, meta: { tool: candidate.tool, expiresAt: approval.expiresAt } });
-        return { sessionId: s.id, execution: { ...execution, status: "waiting_approval", approval: { tool: candidate.tool, reason: candidate.reason, expiresAt: approval.expiresAt } }, plan: result.plan || null, approvalRequired: true };
-      }
-      const status = executionStatusFromResult(result);
-      const final = await updateExecution(u, execution.id, { status, result: result.text || null, plan: result.plan || null, finishedAt: status === "completed" || status === "failed" || status === "stopped" || status === "max_turns" ? new Date().toISOString() : null });
-      await recordActivity(u, execution.id, s.id, { action: "execution", status: status === "completed" ? "completed" : "finished", label: status === "completed" ? "Pekerjaan selesai" : `Execution selesai · ${status}`, meta: { status } });
-      return { result, execution: final };
-    } catch (error) {
-      const status = error?.code === "EXECUTION_CANCELLED" ? "cancelled" : "failed";
-      const final = await updateExecution(u, execution.id, { status, error: error?.message || String(error), finishedAt: new Date().toISOString() });
-      await recordActivity(u, execution.id, s.id, { action: "execution", status: "error", label: status === "cancelled" ? "Execution dibatalkan" : "Execution gagal", error: final.error, meta: { status } });
-      if (status === "cancelled") return { result: { text: "Execution dibatalkan." }, execution: final };
-      throw error;
-    }
-  }
-
-  async function chat(u, { sessionId, prompt, provider, model, approvalToken = null } = {}) {
-    if (typeof prompt !== "string" || !prompt.trim()) throw new AgenticError("INVALID_PROMPT", "Prompt wajib diisi");
-    const s = await getSession(u, sessionId);
-    const user = { id: createId("msg"), role: "user", content: prompt.trim().slice(0, 12000), createdAt: new Date().toISOString() };
-    s.messages.push(user);
-    const run = await runExecution(u, s, user.content, { provider, model, approvalToken });
-    if (!run.approvalRequired) {
-      const result = run.result;
-      const assistant = { id: createId("msg"), role: "assistant", content: String(result.text || ""), createdAt: new Date().toISOString(), executionId: run.execution.id };
-      s.messages.push(assistant);
-      addMemories(s.memories, extractMemoryCandidates(user.content));
-      resolveMemoryConflicts(s.memories);
-      s.executionId = run.execution.id;
-      s.updatedAt = new Date().toISOString();
-      await store.putChatSession(u, s);
-      auditEvent({ actor: "user", action: "agentic-chat", outcome: run.execution.status, principal: { userId: u }, sessionId: s.id, applicationId: "agentic", executionId: run.execution.id });
-      return { sessionId: s.id, message: assistant, execution: run.execution, plan: result.plan || null, memory: { active: getActiveMemories(s.memories).length, relevant: retrieveMemories(s.memories, user.content).length } };
-    }
-    await store.putChatSession(u, s);
-    return run;
-  }
-
-  async function approveExecution(u, id) {
-    const execution = await ensureExecutionActive(u, id);
-    if (execution.status !== "waiting_approval" || !execution.approval) throw new AgenticError("APPROVAL_NOT_PENDING", "Execution tidak sedang menunggu approval", 409);
-    if (execution.approval.expiresAt && Date.parse(execution.approval.expiresAt) <= Date.now()) throw new AgenticError("APPROVAL_EXPIRED", "Approval sudah kedaluwarsa", 409);
-    const issued = issueApproval({ tool: execution.approval.tool, input: execution.approval.input, sessionId: `${u}:${execution.sessionId}`, reason: execution.approval.reason });
-    const s = await getSession(u, execution.sessionId);
-    await updateExecution(u, id, { status: "running", approval: null });
-    return runExecution(u, s, execution.prompt, { approvalToken: issued.token, resumeExecutionId: id });
-  }
-
-  async function cancelExecution(u, id) {
-    const execution = await ensureExecutionActive(u, id);
-    if (["completed", "failed", "cancelled", "stopped", "max_turns"].includes(execution.status)) return execution;
-    const next = await updateExecution(u, id, { status: "cancelled", finishedAt: new Date().toISOString(), error: "Execution dibatalkan oleh user" });
-    await recordActivity(u, id, execution.sessionId, { action: "execution", status: "cancelled", label: "Execution dibatalkan", meta: { status: "cancelled" } });
-    return next;
-  }
-
-  async function createWorkspace(u, input) { const w = { id: createId("workspace"), provider: input.provider, connectionId: input.connectionId, resource: input.resource, branch: input.branch || null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }; await store.putWorkspace(u, w); return w; }
-
-  return Object.freeze({ store, auth, github, createChatSession, chat, approveExecution, cancelExecution, createWorkspace, getExecution: async (u, id) => { const e = await store.getExecution(u, id); if (!e) throw new AgenticError("EXECUTION_NOT_FOUND", "Execution tidak ditemukan", 404); return e; }, listExecutions: u => store.listExecutions(u), listSessions: u => store.listChatSessions(u), listConnections: u => store.listConnections(u), listWorkspaces: u => store.listWorkspaces(u), listTasks: u => store.listTasks(u), listActivities: u => store.listActivities(u) });
-}
+import { issueApproval,auditEvent } from "../../../core/security/index.js";
+const TERMINAL=new Set(["completed","failed","cancelled","stopped","max_turns"]);
+const title=v=>String(v??"").trim().slice(0,160)||"New Chat";
+function resultStatus(r){if(r?.execution?.status==="failed")return"failed";if(r?.execution?.status==="cancelled")return"cancelled";if(r?.approval?.required||r?.status==="waiting_approval")return"waiting_approval";if(r?.autonomy?.status==="stopped"||/Execution dihentikan secara bounded/i.test(String(r?.text||"")))return"stopped";if(/mencapai batas maksimum/i.test(String(r?.text||"")))return"max_turns";return"completed"}
+function approvalCandidate(r){const x=r?.tool?.steps?.at(-1);return x?.result?.requiresApproval?{tool:x.name,input:x.input||{},reason:x.result.error||"Tool memerlukan human approval"}:null}
+export function createAgenticApplication({storage,agentRunner=runAgent}={}){const store=createAgenticStore({storage}),auth=createAuthService({store}),github=createGitHubService({store});
+ async function messages(u,sid,{limit=100,before=null}={}){const s=await store.getChatSession(u,sid);if(!s)throw new AgenticError("SESSION_NOT_FOUND","Chat session tidak ditemukan",404);let a=(await store.listChatMessages(u)).filter(x=>x.sessionId===sid).sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));if(before)a=a.filter(x=>x.createdAt<before);const n=Math.max(1,Math.min(Number(limit)||100,100)),page=a.slice(-n);if(!page.length&&s.messages?.length)return{messages:s.messages.slice(-n),nextBefore:null,total:s.messages.length};return{messages:page,nextBefore:page.length===n?page[0].createdAt:null,total:a.length}}
+ async function session(u,id){const s=await store.getChatSession(u,id);if(!s)throw new AgenticError("SESSION_NOT_FOUND","Chat session tidak ditemukan",404);s.messages=(await messages(u,id)).messages;return s}
+ async function active(u,id){const s=await store.getChatSession(u,id);if(!s)throw new AgenticError("SESSION_NOT_FOUND","Chat session tidak ditemukan",404);if(s.state==="archived")throw new AgenticError("SESSION_ARCHIVED","Chat session diarsipkan; restore terlebih dahulu",409);if(s.state==="deleted")throw new AgenticError("SESSION_DELETED","Chat session sudah dihapus",409);return s}
+ async function patch(u,id,p){const s=await store.getChatSession(u,id);if(!s)throw new AgenticError("SESSION_NOT_FOUND","Chat session tidak ditemukan",404);const n={...s,...p,id:s.id,ownerId:u,updatedAt:new Date().toISOString()};await store.putChatSession(u,n,{expectedVersion:s._storage?.version});return n}
+ async function createChatSession(u,o={}){const now=new Date().toISOString(),s={id:createId("chat"),title:title(o.title),state:"active",connectionId:o.connectionId||null,workspaceId:o.workspaceId||null,messages:[],memories:[],taskId:null,executionId:null,createdAt:now,updatedAt:now,archivedAt:null,deletedAt:null,lastMessageAt:null};await store.putChatSession(u,s);return s}
+ async function addMessage(u,sid,m){const x={id:m.id||createId("msg"),sessionId:sid,role:m.role,content:String(m.content||"").slice(0,12000),createdAt:m.createdAt||new Date().toISOString(),executionId:m.executionId||null};await store.putChatMessage(u,x,{overwrite:false});const s=await store.getChatSession(u,sid);await patch(u,sid,{messages:[...(s.messages||[]),x].slice(-40),lastMessageAt:x.createdAt});return x}
+ async function activity(u,eid,sid,e){const x={id:e.id||createId("activity"),executionId:eid,sessionId:sid,type:e.type||"activity",action:e.action||"unknown",status:e.status||"running",label:String(e.label||e.action||"Activity").slice(0,300),meta:e.meta||{},error:e.error||null,createdAt:new Date().toISOString()};await store.putActivity(u,x);return x}
+ async function createExecution(u,sid,p){const now=new Date().toISOString(),t={id:createId("task"),sessionId:sid,status:"running",title:String(p).slice(0,160),createdAt:now,updatedAt:now},e={id:createExecutionId(),sessionId:sid,taskId:t.id,status:"running",prompt:String(p).slice(0,12000),plan:null,currentStep:null,checkpoint:null,approval:null,result:null,error:null,startedAt:now,updatedAt:now,finishedAt:null};await store.putTask(u,t);await store.putExecution(u,e);return e}
+ async function exec(u,id,p={}){const e=await store.getExecution(u,id);if(!e)throw new AgenticError("EXECUTION_NOT_FOUND","Execution tidak ditemukan",404);const n={...e,...p,id:e.id,ownerId:u,updatedAt:new Date().toISOString()};await store.putExecution(u,n,{expectedVersion:e._storage?.version});if(TERMINAL.has(n.status)&&e.taskId){const t=await store.getTask(u,e.taskId);if(t)await store.putTask(u,{...t,status:n.status,updatedAt:n.updatedAt})}return n}
+ async function runExecution(u,s,p,o={}){const e=o.resumeExecutionId?await execActive(u,o.resumeExecutionId):await createExecution(u,s.id,p);await patch(u,s.id,{taskId:e.taskId,executionId:e.id});const emit=async ev=>{const cur=await store.getExecution(u,e.id);if(cur?.status==="cancelled")throw new AgenticError("EXECUTION_CANCELLED","Execution dibatalkan",409);await activity(u,e.id,s.id,ev);if(ev.action==="planning"&&ev.status==="completed")await exec(u,e.id,{plan:ev.meta||null});if(ev.action==="checkpoint")await exec(u,e.id,{checkpoint:ev.meta||null})};try{const r=await agentRunner({prompt:p,provider:o.provider,model:o.model,conversation:(await messages(u,s.id,{limit:20})).messages.map(m=>({role:m.role,content:m.content})),memories:getActiveMemories(s.memories||[]),sessionId:`${u}:${s.id}`,approvalToken:o.approvalToken||null,principal:{userId:u},applicationId:"agentic",executionId:o.resumeExecutionId||undefined,agentExecutionId:e.id,onActivity:emit});const c=approvalCandidate(r);if(c&&!o.approvalToken){const a=issueApproval({tool:c.tool,input:c.input,sessionId:`${u}:${s.id}`,reason:c.reason});const f=await exec(u,e.id,{status:"waiting_approval",approval:{tool:c.tool,input:c.input,reason:c.reason,expiresAt:a.expiresAt},result:null});await activity(u,e.id,s.id,{action:"approval_required",status:"waiting",label:`Approval diperlukan · ${c.tool}`,meta:{tool:c.tool,expiresAt:a.expiresAt}});return{sessionId:s.id,execution:f,plan:r.plan||null,approvalRequired:true}}const st=resultStatus(r),f=await exec(u,e.id,{status:st,result:r.text||null,plan:r.plan||null,finishedAt:TERMINAL.has(st)?new Date().toISOString():null});await activity(u,e.id,s.id,{action:"execution",status:st==="completed"?"completed":"finished",label:st==="completed"?"Pekerjaan selesai":`Execution selesai · ${st}`,meta:{status:st}});return{result:r,execution:f}}catch(err){const st=err?.code==="EXECUTION_CANCELLED"?"cancelled":"failed",f=await exec(u,e.id,{status:st,error:err?.message||String(err),finishedAt:new Date().toISOString()});if(st==="cancelled")return{result:{text:"Execution dibatalkan."},execution:f};throw err}}
+ async function execActive(u,id){const e=await store.getExecution(u,id);if(!e)throw new AgenticError("EXECUTION_NOT_FOUND","Execution tidak ditemukan",404);if(e.status==="cancelled")throw new AgenticError("EXECUTION_CANCELLED","Execution dibatalkan",409);return e}
+ async function chat(u,{sessionId,prompt,provider,model,approvalToken=null}={}){if(!String(prompt||"").trim())throw new AgenticError("INVALID_PROMPT","Prompt wajib diisi");const s=await active(u,sessionId),user=await addMessage(u,s.id,{role:"user",content:prompt.trim()}),run=await runExecution(u,s,user.content,{provider,model,approvalToken});if(run.approvalRequired)return run;const assistant=await addMessage(u,s.id,{role:"assistant",content:String(run.result.text||""),executionId:run.execution.id});const latest=await store.getChatSession(u,s.id);addMemories(latest.memories||[],extractMemoryCandidates(user.content));resolveMemoryConflicts(latest.memories||[]);await store.putChatSession(u,{...latest,updatedAt:new Date().toISOString()},{expectedVersion:latest._storage?.version});auditEvent({actor:"user",action:"agentic-chat",outcome:run.execution.status,principal:{userId:u},sessionId:s.id,applicationId:"agentic",executionId:run.execution.id});return{sessionId:s.id,message:assistant,execution:run.execution,plan:run.result.plan||null,memory:{active:getActiveMemories(latest.memories||[]).length,relevant:retrieveMemories(latest.memories||[],user.content).length}}}
+ async function rename(u,id,t){await active(u,id);return patch(u,id,{title:title(t)})}async function archive(u,id){const s=await session(u,id);if(s.state==="deleted")throw new AgenticError("SESSION_DELETED","Chat session sudah dihapus",409);return patch(u,id,{state:"archived",archivedAt:new Date().toISOString()})}async function restore(u,id){const s=await session(u,id);return patch(u,id,{state:"active",archivedAt:null,deletedAt:null})}async function remove(u,id){const s=await session(u,id);if(s.state!=="deleted")return patch(u,id,{state:"deleted",deletedAt:new Date().toISOString()});return s}
+ async function approve(u,id){const e=await execActive(u,id);if(e.status!=="waiting_approval"||!e.approval)throw new AgenticError("APPROVAL_NOT_PENDING","Execution tidak sedang menunggu approval",409);if(e.approval.expiresAt&&Date.parse(e.approval.expiresAt)<=Date.now())throw new AgenticError("APPROVAL_EXPIRED","Approval sudah kedaluwarsa",409);const a=issueApproval({tool:e.approval.tool,input:e.approval.input,sessionId:`${u}:${e.sessionId}`,reason:e.approval.reason});await exec(u,id,{status:"running",approval:null});return runExecution(u,await active(u,e.sessionId),e.prompt,{approvalToken:a.token,resumeExecutionId:id})}
+ async function cancel(u,id){const e=await execActive(u,id);if(TERMINAL.has(e.status))return e;return exec(u,id,{status:"cancelled",finishedAt:new Date().toISOString(),error:"Execution dibatalkan oleh user"})}
+ async function listSessions(u,o={}){let a=await store.listChatSessions(u);a=a.filter(s=>o.deleted?s.state!==undefined:s.state!=="deleted").filter(s=>o.archived===false?s.state==="active":true);return a.sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).map(({messages,...s})=>({...s,messageCount:messages?.length||0}))}
+ return Object.freeze({store,auth,github,createChatSession,session,sessionMessages:messages,listSessions,renameSession:rename,archiveSession:archive,restoreSession:restore,deleteSession:remove,chat,approveExecution:approve,cancelExecution:cancel,createWorkspace:async(u,i)=>{const w={id:createId("workspace"),provider:i.provider,connectionId:i.connectionId,resource:i.resource,branch:i.branch||null,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};await store.putWorkspace(u,w);return w},getExecution:async(u,id)=>{const e=await store.getExecution(u,id);if(!e)throw new AgenticError("EXECUTION_NOT_FOUND","Execution tidak ditemukan",404);return e},listExecutions:u=>store.listExecutions(u),listConnections:u=>store.listConnections(u),listWorkspaces:u=>store.listWorkspaces(u),listTasks:u=>store.listTasks(u),listActivities:u=>store.listActivities(u)})}

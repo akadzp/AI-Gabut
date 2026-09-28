@@ -3,22 +3,13 @@
 1. Agentic is not yet a complete end-user application/product surface.
 2. The frontend shell is not yet a complete production backend client.
 3. Realtime activity/progress transport and UX are not yet complete.
-4. Application-level connection lifecycle, ownership, credential reference,
-   validation, health, and revocation need a generic Connections Framework.
-5. GitHub currently exists as an Agentic read integration and connector
-   scaffold; it is not yet the first fully integrated generic provider.
-6. Workspace/project binding is not yet fully connected to provider resources,
-   Agentic context, and execution.
-7. Approval/cancellation backend lifecycle exists, but complete frontend
-   approval UX and end-to-end governance integration remain.
-8. Restart/resume continuity is not yet validated as a complete user
-   workflow across process restart and persisted execution state.
-9. Separate frontend/backend deployment and production operations remain to
-   be validated.
-10. V3 end-to-end and final production-readiness validation remain.
-11. Memory service integration is not yet the final cross-subsystem context
-    model; execution, workspace, and connection context still need a unified
-    first-class integration path.
+4. Workspace/project binding is not yet fully connected to provider resources, Agentic context, and execution.
+5. Approval/cancellation backend lifecycle exists, but complete frontend approval UX and end-to-end governance integration remain.
+6. Restart/resume continuity is not yet validated as a complete user workflow across process restart and persisted execution state.
+7. Separate frontend/backend deployment and production operations remain to be validated.
+8. V3 end-to-end and final production-readiness validation remain.
+9. Memory service integration is not yet the final cross-subsystem context model; execution, workspace, and connection context still need a unified first-class integration path.
+10. GitHub write operations and broader collaboration workflows remain outside Batch 06.
 
 HISTORICAL V2 NOTES
 ===================
@@ -34,9 +25,9 @@ KNOWN GAPS
    validation contract.
 
 2. Runtime integration environment
-   Full HTTP startup requires project dependencies such as Express to be
-   installed in the execution environment. Foundation/runtime validation
-   is performed independently when dependencies are absent.
+   Full HTTP startup requires project dependencies such as Express to
+   be installed in the execution environment. Foundation/runtime
+   validation is performed independently when dependencies are absent.
 
 3. State/storage gap
    Roadmap 04 has started. Storage directories exist as structural
@@ -44,8 +35,8 @@ KNOWN GAPS
 
 4. In-memory state gap
    Sessions, memory, approvals, reliability locks/metrics, and several
-   caches are process-local. Durability and lifecycle requirements must be
-   decided per state category rather than globally.
+   caches are process-local. Durability and lifecycle requirements must
+   be decided per state category rather than globally.
 
 5. Persistence ownership gap
    Reliability checkpoint persistence and Workspace file persistence

@@ -1,12 +1,61 @@
 import { encryptSecret, decryptSecret } from "./crypto.js";
 import { createId } from "./ids.js";
 import { AgenticError } from "./errors.js";
-const API="https://api.github.com";
-async function request(token,path){const r=await fetch(`${API}${path}`,{headers:{Accept:"application/vnd.github+json",Authorization:`Bearer ${token}`,"X-GitHub-Api-Version":"2022-11-28"}});const text=await r.text();let body=null;try{body=text?JSON.parse(text):null}catch{body=text}if(!r.ok)throw new AgenticError(r.status===401?"GITHUB_AUTH_FAILED":"GITHUB_REQUEST_FAILED",body?.message||`GitHub request failed (${r.status})`,r.status===401?401:502,{rateLimitRemaining:r.headers.get("x-ratelimit-remaining")});return body;}
-export function createGitHubService({store,connections}){async function tokenFor(u,id){const c=await connections.raw(u,id);if(!c||c.provider!=="github")throw new AgenticError("CONNECTION_NOT_FOUND","GitHub connection tidak ditemukan",404);if(c.status!=="active")throw new AgenticError("CONNECTION_INACTIVE","GitHub connection tidak aktif",409);return {connection:c,token:decryptSecret(c.credential)};}
- async function connect(u,{token,name="GitHub"}={}){if(typeof token!=="string"||token.length<10)throw new AgenticError("INVALID_GITHUB_TOKEN","GitHub token tidak valid");const account=await request(token,"/user");return connections.create(u,{provider:"github",name:String(name).trim().slice(0,120)||"GitHub",account:{login:account.login,id:account.id,avatarUrl:account.avatar_url||null},credential:encryptSecret(token),status:"active"});}
- async function repositories(u,id){const {token}=await tokenFor(u,id);return (await request(token,"/user/repos?per_page=100&sort=updated")).map(r=>({id:r.id,name:r.name,fullName:r.full_name,private:r.private,defaultBranch:r.default_branch,htmlUrl:r.html_url,description:r.description}));}
- async function branches(u,id,o,r){const {token}=await tokenFor(u,id);return (await request(token,`/repos/${encodeURIComponent(o)}/${encodeURIComponent(r)}/branches?per_page=100`)).map(b=>({name:b.name,sha:b.commit?.sha||null}));}
- async function tree(u,id,o,r,branch=null){const {token}=await tokenFor(u,id);const body=await request(token,`/repos/${encodeURIComponent(o)}/${encodeURIComponent(r)}/git/trees/${branch?encodeURIComponent(branch):"HEAD"}?recursive=1`);return {sha:body.sha,truncated:Boolean(body.truncated),entries:(body.tree||[]).map(x=>({path:x.path,type:x.type,size:x.size||0,sha:x.sha}))};}
- async function file(u,id,o,r,p,ref=null){const {token}=await tokenFor(u,id);const suffix=ref?`?ref=${encodeURIComponent(ref)}`:"";const body=await request(token,`/repos/${encodeURIComponent(o)}/${encodeURIComponent(r)}/contents/${String(p).split("/").map(encodeURIComponent).join("/")}${suffix}`);if(!body||Array.isArray(body)||body.type!=="file")throw new AgenticError("GITHUB_FILE_NOT_FOUND","Resource bukan file",404);return {path:body.path,sha:body.sha,size:body.size,content:body.encoding==="base64"?Buffer.from(body.content.replace(/\s+/g,""),"base64").toString("utf8"):String(body.content||"")};}
- async function validateConnection(_u,{credential}){const account=await request(decryptSecret(credential),"/user");return {status:"active",patch:{account:{login:account.login,id:account.id,avatarUrl:account.avatar_url||null}}};} async function healthConnection(_u,{credential}){const body=await request(decryptSecret(credential),"/rate_limit");return {health:{status:"healthy",rateLimitRemaining:Number(body?.rate?.remaining??0),rateLimitLimit:Number(body?.rate?.limit??0),checkedAt:new Date().toISOString()}};} function publicConnection(c){return {id:c.id,provider:c.provider,name:c.name,account:c.account,status:c.status,createdAt:c.createdAt,updatedAt:c.updatedAt};} return Object.freeze({connect,validateConnection,healthConnection,repositories,branches,tree,file,publicConnection});}
+import { createGitHubConnector, GitHubConnectorError } from "../../../connectors/github/index.js";
+
+function mapError(error) {
+  if (!(error instanceof GitHubConnectorError)) return error;
+  return new AgenticError(error.code, error.message, error.status, error.details);
+}
+
+export function createGitHubService({ store, connections, connector = createGitHubConnector() }) {
+  async function tokenFor(u, id) {
+    const c = await connections.raw(u, id);
+    if (!c || c.provider !== "github") throw new AgenticError("CONNECTION_NOT_FOUND", "GitHub connection tidak ditemukan", 404);
+    if (c.status !== "active") throw new AgenticError("CONNECTION_INACTIVE", "GitHub connection tidak aktif", 409);
+    try { return { connection: c, token: decryptSecret(c.credential) }; }
+    catch { throw new AgenticError("GITHUB_CREDENTIAL_INVALID", "Credential GitHub tidak dapat digunakan", 409); }
+  }
+
+  async function connect(u, { token, name = "GitHub" } = {}) {
+    if (typeof token !== "string" || token.length < 10) throw new AgenticError("INVALID_GITHUB_TOKEN", "GitHub token tidak valid");
+    try {
+      const account = await connector.account(token);
+      return connections.create(u, {
+        provider: "github",
+        name: String(name).trim().slice(0, 120) || "GitHub",
+        account,
+        credential: encryptSecret(token),
+        status: "active"
+      });
+    } catch (error) { throw mapError(error); }
+  }
+
+  async function validateConnection(_u, { credential }) {
+    try {
+      const account = await connector.account(decryptSecret(credential));
+      return { status: "active", patch: { account } };
+    } catch (error) { throw mapError(error); }
+  }
+
+  async function healthConnection(_u, { credential }) {
+    try {
+      const limits = await connector.rateLimits(decryptSecret(credential));
+      const status = limits.remaining === 0 ? "degraded" : "healthy";
+      return { health: { status, rateLimitRemaining: limits.remaining, rateLimitLimit: limits.limit, resetAt: limits.resetAt, checkedAt: new Date().toISOString() } };
+    } catch (error) { throw mapError(error); }
+  }
+
+  async function repositories(u, id) { const { token } = await tokenFor(u, id); try { return connector.repositories(token); } catch (error) { throw mapError(error); } }
+  async function repository(u, id, owner, name) { const { token } = await tokenFor(u, id); try { return connector.repository(token, owner, name); } catch (error) { throw mapError(error); } }
+  async function branches(u, id, owner, name) { const { token } = await tokenFor(u, id); try { return connector.branches(token, owner, name); } catch (error) { throw mapError(error); } }
+  async function tree(u, id, owner, name, branch = null) { const { token } = await tokenFor(u, id); try { return connector.tree(token, owner, name, branch); } catch (error) { throw mapError(error); } }
+  async function file(u, id, owner, name, path, ref = null) { const { token } = await tokenFor(u, id); try { return connector.file(token, owner, name, path, ref); } catch (error) { throw mapError(error); } }
+  async function search(u, id, owner, name, query, options = {}) { const { token } = await tokenFor(u, id); try { return connector.search(token, owner, name, query, options); } catch (error) { throw mapError(error); } }
+
+  function publicConnection(c) {
+    return { id: c.id, provider: c.provider, name: c.name, account: c.account, status: c.status, createdAt: c.createdAt, updatedAt: c.updatedAt };
+  }
+
+  return Object.freeze({ connect, validateConnection, healthConnection, repositories, repository, branches, tree, file, search, publicConnection });
+}

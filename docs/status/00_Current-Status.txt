@@ -3,7 +3,7 @@ CURRENT STATUS
 PROJECT: AI-Gabut
 CURRENT PHASE: V4 — Agentic Work Platform
 CURRENT ROADMAP: V4 — Agentic Work Platform
-CURRENT BATCH: 01 — Work & Task Model
+CURRENT BATCH: 02 — Agent Planning & Execution UX
 
 VERSION STATUS
 --------------
@@ -19,17 +19,13 @@ V4 BATCH 01
 - Task and Execution remain independent resources and are referenced by ID.
 - Authenticated API surface added for Work creation, inspection, lifecycle,
   cancellation, and resource association.
-- Batch-specific tests added.
+- Batch-specific tests added and included in the Agentic validation gate.
 
 VALIDATION IN THIS RUN
 ----------------------
-- Static source generation completed.
-- Batch test file created.
-- Full repository test suite could not be executed against the remote
-  repository snapshot because the automation environment has no local clone
-  and repository network download is unavailable.
-- The user must apply the generated delta ZIP to the local repository and
-  run the normal validation suite there.
+- Focused Batch 01 tests pass locally.
+- Full repository validation is run from the local checkout before the
+  Batch 01 checkpoint.
 
 NORTH STAR
 ----------
@@ -38,5 +34,4 @@ AI + GitHub remains the proving workflow; GitHub is not Work identity.
 
 NEXT
 ----
-Batch 02 — Agent Planning & Execution UX, after Batch 01 has been locally
-applied and validated.
+Batch 02 — Agent Planning & Execution UX.

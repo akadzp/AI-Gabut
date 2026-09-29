@@ -1,16 +1,9 @@
 # CURRENT KNOWN GAPS — V3
 
-1. Agentic is not yet a complete end-user application/product surface.
-2. The frontend shell is not yet a complete production backend client.
-3. Realtime activity/progress transport and UX are not yet complete.
-4. Workspace context is implemented, but full execution-context injection and file-change/snapshot reconciliation remain later integration work.
-5. Approval/cancellation backend lifecycle exists, but complete frontend approval UX and end-to-end governance integration remain.
-6. Restart/resume continuity is not yet validated as a complete user workflow across process restart and persisted execution state.
-7. Separate frontend/backend deployment and production operations remain to be validated.
-8. V3 end-to-end and final production-readiness validation remain.
-9. Memory service integration is not yet the final cross-subsystem context model.
-10. GitHub write operations and broader collaboration workflows remain outside Batch 06/07.
-
-HISTORICAL V2 NOTES
-===================
-The previous contents of this file are preserved as historical implementation notes.
+1. Realtime activity/progress transport and UX are not yet complete.
+2. Dedicated approval UX remains incomplete.
+3. Restart/resume continuity is not yet validated end-to-end.
+4. Frontend loading/error states remain lightweight.
+5. Workspace changes, snapshots, and reconciliation remain later work.
+6. GitHub write operations remain outside current scope.
+7. Deployment/operations and final V3 validation remain.

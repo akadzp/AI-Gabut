@@ -1,18 +1,6 @@
 COMPLETED WORK
 
-V3 BATCH 05 — CONNECTIONS FRAMEWORK
-- Generic user-owned connection lifecycle is implemented under apps/agentic.
-- Ownership, public credential reference, validation, health, disconnect, and revoke boundaries are explicit.
-- Provider-specific authentication remains outside the generic framework.
-
-V3 BATCH 06 — GITHUB PROVIDER
-- GitHub provider operations are routed through connectors/github.
-- Account authentication, repository listing/metadata, branches, tree, file read, and repository-scoped code search are implemented.
-- GitHub rate-limit and authentication errors are normalized at the connector boundary.
-
-V3 BATCH 07 — WORKSPACE & PROJECT CONTEXT
-- User-owned workspace service is implemented under apps/agentic.
-- Workspace explicitly binds connection, repository, and branch.
-- Provider-backed project context can be refreshed without exposing provider credentials.
-- Current file and workspace lifecycle are explicit.
-- Workspace context is exposed as application-owned context for later Agentic execution integration.
+V3 BATCH 08 — AGENTIC FRONTEND
+- Frontend is an Agentic backend client rather than a direct core/provider client.
+- Authentication, sessions, chat, connections, GitHub repository/branch selection, workspace binding, file browsing, and activity visibility are wired to the Agentic API.
+- Frontend regression checks enforce endpoint coverage and direct-core/provider isolation.

@@ -2,32 +2,32 @@ CURRENT STATUS
 
 PROJECT: AI-Gabut
 CURRENT PHASE: V3 — Agentic Activation
-CURRENT BATCH: 07 — Workspace & Project Context
+CURRENT BATCH: 08 — Agentic Frontend
 
 COMPLETED BATCHES
 -----------------
-- Batch 01 — Application Runtime
-- Batch 02 — Agent Execution Activation
-- Batch 03 — Sessions & Conversation
-- Batch 04 — Memory & Context
-- Batch 05 — Connections Framework
-- Batch 06 — GitHub Provider
+Batch 01 Application Runtime — DONE
+Batch 02 Agent Execution Activation — DONE
+Batch 03 Sessions & Conversation — DONE
+Batch 04 Memory & Context — DONE
+Batch 05 Connections Framework — DONE + VALIDATED
+Batch 06 GitHub Provider — DONE + VALIDATED
+Batch 07 Workspace & Project Context — DONE + VALIDATED
 
-BATCH 07 RESULT
+BATCH 08 RESULT
 ---------------
 IMPLEMENTED — awaiting repository validation.
 
-BATCH 07 DELIVERED
+BATCH 08 DELIVERED
 ------------------
-- Explicit user-owned workspace service under apps/agentic.
-- Connection/repository/branch binding.
-- Provider-backed repository context refresh.
-- Current-file context.
-- Workspace active/archived lifecycle.
-- Workspace context endpoint.
-- Cross-user workspace isolation.
-- GitHub repository context adapter using the existing GitHub provider boundary.
+- Authentication, sessions, chat, connections.
+- GitHub repository and branch selection.
+- Workspace binding and refresh.
+- Workspace file tree and file content viewer.
+- Current-file propagation.
+- Read-only task/activity surface.
+- No direct core/provider access from frontend.
 
 NEXT
 ----
-Batch 08 — Agentic Frontend.
+Batch 09 — Realtime, Activity & Progress.

@@ -1,0 +1,4 @@
+import assert from "node:assert/strict";import test from "node:test";import fs from "node:fs/promises";
+const html=await fs.readFile(new URL("../../apps/agentic/frontend/index.html",import.meta.url),"utf8"),app=await fs.readFile(new URL("../../apps/agentic/frontend/app.js",import.meta.url),"utf8");
+test("frontend exposes Agentic application surface",()=>{for(const id of ["login","register","sessions","messages","connections","repo","branch","bindWorkspace","tree","file","activity"])assert.match(html,new RegExp(`id="${id}"`));for(const e of ["/api/agentic/auth/login","/api/agentic/sessions","/api/agentic/chat","/api/agentic/connections","/api/agentic/github/","/api/agentic/workspaces","/api/agentic/activity"])assert.ok(app.includes(e))});
+test("frontend is only an Agentic backend client",()=>{assert.doesNotMatch(app,/core\/|connectors\/|api\.github\.com|github\.com\/api/);assert.match(app,/Authorization:`Bearer/)});

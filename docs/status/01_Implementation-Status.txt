@@ -35,3 +35,13 @@ AI + GitHub remains the proving workflow; GitHub is not Work identity.
 NEXT
 ----
 Batch 02 — Agent Planning & Execution UX.
+
+V4 BATCH 02
+-----------
+- V4 Work planning uses the public V2 planner boundary and stores an
+  inspectable plan before execution.
+- Work execution creates separate owner-scoped Task and Execution records.
+- Progress is persisted and published as work-scoped observable activity.
+- Pause, resume, stop, and cancel retain lifecycle authority in the backend.
+- Approval requirements continue through canonical security authority.
+- Focused Batch 02 tests and the full repository validation suite pass locally.

@@ -6,6 +6,7 @@
  * specialist, or reliability internals directly.
  */
 export { runAgent } from "./core/agent.js";
+export { createPlan } from "./planning/planner.js";
 
 export {
   getOrCreateSession,

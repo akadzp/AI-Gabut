@@ -10,6 +10,7 @@ function publicEvent(event) {
     id:event.id,
     cursor:cursorOf(event),
     type:event.type||"activity",
+    workId:event.workId||null,
     executionId:event.executionId||null,
     sessionId:event.sessionId||null,
     action:event.action||"unknown",
@@ -28,14 +29,14 @@ function afterCursor(events,cursor) {
 }
 export function createRealtimeService({store}={}) {
   const subscribers=new Map();
-  function subscribe(ownerId,handler,{executionId=null,sessionId=null}={}) {
+  function subscribe(ownerId,handler,{executionId=null,sessionId=null,workId=null}={}) {
     const set=subscribers.get(ownerId)||new Set();
-    const sub={handler,executionId,sessionId};
+    const sub={handler,executionId,sessionId,workId};
     set.add(sub);subscribers.set(ownerId,set);
     return ()=>{set.delete(sub);if(!set.size)subscribers.delete(ownerId)};
   }
-  async function replay(ownerId,{after=null,executionId=null,sessionId=null,limit=500}={}) {
-    let events=(await store.listActivities(ownerId)).filter(x=>!executionId||x.executionId===executionId).filter(x=>!sessionId||x.sessionId===sessionId).sort(compare);
+  async function replay(ownerId,{after=null,executionId=null,sessionId=null,workId=null,limit=500}={}) {
+    let events=(await store.listActivities(ownerId)).filter(x=>!executionId||x.executionId===executionId).filter(x=>!sessionId||x.sessionId===sessionId).filter(x=>!workId||x.workId===workId).sort(compare);
     events=afterCursor(events,after);
     return events.slice(0,Math.max(1,Math.min(Number(limit)||500,500))).map(publicEvent);
   }
@@ -44,6 +45,7 @@ export function createRealtimeService({store}={}) {
     for(const sub of [...(subscribers.get(ownerId)||[])]) {
       if(sub.executionId&&sub.executionId!==value.executionId)continue;
       if(sub.sessionId&&sub.sessionId!==value.sessionId)continue;
+      if(sub.workId&&sub.workId!==value.workId)continue;
       try{await sub.handler(value)}catch{}
     }
     return value;

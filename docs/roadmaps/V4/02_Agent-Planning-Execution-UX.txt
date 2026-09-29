@@ -1,4 +1,4 @@
-V4 — AGENT PLANNING & EXECUTION UX
+V4 — BATCH 02 — AGENT PLANNING & EXECUTION UX
 
 Tujuan: membuat proses Agent memahami → merencanakan → menjalankan
 menjadi observable dan dapat dikendalikan manusia.
@@ -22,3 +22,40 @@ diperiksa.
 
 DoD: User dapat memahami pekerjaan Agent dari objective sampai outcome
 tanpa membutuhkan akses ke internal reasoning.
+
+STATUS
+======
+IMPLEMENTED AND VALIDATED LOCALLY.
+
+IMPLEMENTATION CONTRACT
+=======================
+V4 owns plan representation, Work orchestration, progress projection, and
+human controls. V2 remains the planner and Agent Engine; canonical security
+authority remains the issuer of approval. Realtime publishes work-scoped
+observable events only.
+
+Plan has version, status, interpretation, steps, currentStepId, and
+replanAvailable. Every step has id, goal, tools, and observable status; it
+contains neither chain-of-thought nor credentials.
+
+POST /api/agentic/works/:id/plan invokes the public V2 planner and moves a
+draft Work to ready. POST /run requires that durable plan, creates separate
+Task and Execution records, and links them to Work. Activity persists and
+publishes workId, action, status, label, and safe metadata. Completion,
+bounded stop, failure, or approval requirement updates the Work lifecycle.
+
+POST /resume creates a new execution after a paused Work returns to ready.
+POST /pause observes the next runner activity boundary. POST /stop and
+POST /cancel consistently update Work, Task, and Execution. Failure exposes
+replanAvailable; automated repair belongs to Batch 06.
+
+API:
+- POST /api/agentic/works/:id/plan
+- POST /api/agentic/works/:id/run
+- POST /api/agentic/works/:id/resume
+- POST /api/agentic/works/:id/pause
+- POST /api/agentic/works/:id/stop
+- GET  /api/agentic/works/:id/activity
+
+Focused tests cover plan-before-run, durable Work/Task/Execution linkage,
+owner-scoped live activity, and pause/resume at an observable boundary.

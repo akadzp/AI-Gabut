@@ -2,11 +2,14 @@ V3 — REALTIME, ACTIVITY & PROGRESS
 
 Tujuan: membuat pekerjaan Agentic terlihat hidup saat execution.
 
-Scope: - event integration - streaming - execution progress -
-tool/task/approval/connection events - activity feed - reconnect -
-ordering/deduplication
+Batch 09 contract:
+- durable activity records are the event source
+- normalized public event envelope
+- live subscription is transport-agnostic
+- SSE is only the current HTTP transport adapter
+- Last-Event-ID/cursor supports replay after reconnect
+- ordering is createdAt + event id
+- owner/session/execution filters are enforced server-side
+- duplicate delivery is safe because event ids/cursors are stable
 
-Transport dapat SSE/WebSocket sesuai kebutuhan; contract tidak boleh
-terkunci pada satu transport.
-
-DoD: Frontend dapat menerima progress dan recover setelah reconnect.
+DoD: Frontend dapat menerima progress live dan recover dari persisted activity setelah reconnect tanpa cross-user event leakage.

@@ -1,9 +1,8 @@
 # CURRENT KNOWN GAPS — V3
 
-1. Realtime activity/progress transport and UX are not yet complete.
-2. Dedicated approval UX remains incomplete.
-3. Restart/resume continuity is not yet validated end-to-end.
-4. Frontend loading/error states remain lightweight.
-5. Workspace changes, snapshots, and reconciliation remain later work.
-6. GitHub write operations remain outside current scope.
-7. Deployment/operations and final V3 validation remain.
+1. Dedicated approval UX and final credential governance remain incomplete.
+2. Restart/resume continuity is not yet validated end-to-end across process restart.
+3. Frontend loading/error states remain lightweight.
+4. Workspace changes, snapshots, and reconciliation remain later work.
+5. GitHub write operations remain outside current scope.
+6. Deployment/operations and final V3 validation remain.

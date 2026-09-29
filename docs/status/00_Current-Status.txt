@@ -2,7 +2,7 @@ CURRENT STATUS
 
 PROJECT: AI-Gabut
 CURRENT PHASE: V3 — Agentic Activation
-CURRENT BATCH: 08 — Agentic Frontend
+CURRENT BATCH: 09 — Realtime, Activity & Progress
 
 COMPLETED BATCHES
 -----------------
@@ -13,21 +13,12 @@ Batch 04 Memory & Context — DONE
 Batch 05 Connections Framework — DONE + VALIDATED
 Batch 06 GitHub Provider — DONE + VALIDATED
 Batch 07 Workspace & Project Context — DONE + VALIDATED
+Batch 08 Agentic Frontend — DONE + VALIDATED
 
-BATCH 08 RESULT
+BATCH 09 RESULT
 ---------------
 IMPLEMENTED — awaiting repository validation.
 
-BATCH 08 DELIVERED
-------------------
-- Authentication, sessions, chat, connections.
-- GitHub repository and branch selection.
-- Workspace binding and refresh.
-- Workspace file tree and file content viewer.
-- Current-file propagation.
-- Read-only task/activity surface.
-- No direct core/provider access from frontend.
-
 NEXT
 ----
-Batch 09 — Realtime, Activity & Progress.
+Batch 10 — Approval, Security & Credential Governance.

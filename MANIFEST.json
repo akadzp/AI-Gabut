@@ -1,0 +1,7 @@
+{
+  "version": "correction-03",
+  "reason": "Compatibility with existing connection service contract and minimal provider test double; no behavior change to durable credential/recovery paths.",
+  "files": [
+    "apps/agentic/backend/github.js"
+  ]
+}

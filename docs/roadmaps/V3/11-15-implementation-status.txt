@@ -1,0 +1,29 @@
+V3 — BATCH 11–15 CONSOLIDATED DELTA
+
+Batch 11 — Approval, Security & Credential Governance
+- Credential state has a dedicated owner-scoped storage scope.
+- Provider credential material is encrypted and never returned as normal connection data.
+- Credential references are stable metadata and credentials can be revoked independently.
+- Approval contract can bind token use to principal, session, execution and exact tool input.
+- Split deployment has explicit origin allow-list and security headers.
+
+Batch 12 — Persistence, Recovery & Continuity
+- Agentic state remains backed by the existing state storage abstraction.
+- Credential state is persisted independently from connection metadata.
+- In-flight execution recovery is explicit: running/waiting_approval records can be marked interrupted and resumed through a recovery contract.
+- Optimistic version checks are used for credential/execution transitions.
+
+Batch 13 — Deployment & Operations
+- Deployment configuration distinguishes same-origin and split topology.
+- Split topology requires explicit allowed origins.
+- API base URL and request/body settings are validated.
+- Security response headers are provided by the deployment contract.
+
+Batch 14 — Testing, Validation & Reliability
+- Realtime tests are included in the Agentic test layer.
+- Credential isolation/revocation, recovery, deployment origin policy and approval binding are covered by executable tests.
+- Existing V2 tests remain in the root test command.
+
+Batch 15 — Definition of Done
+- This delta closes the source/test contracts above.
+- Full repository validation remains the final local gate because the ZIP is a delta and the repository is not mutated by this delivery.

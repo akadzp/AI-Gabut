@@ -1,7 +1,8 @@
 import { AgenticError } from "./errors.js";
 import { createId } from "./ids.js";
 
-const EXECUTION_TERMINAL = new Set(["completed", "failed", "cancelled", "stopped", "max_turns"]);
+const EXECUTION_TERMINAL = new Set(["completed", "failed", "cancelled", "stopped", "max_turns", "rejected"]);
+const APPROVAL_TTL_MS = 5 * 60 * 1000;
 
 function planSteps(steps) {
   if (!Array.isArray(steps) || !steps.length) {
@@ -48,7 +49,23 @@ function approvalCandidate(result) {
   };
 }
 
-export function createWorkExecutionService({ store, work, realtime, agentRunner, planner, approvalAuthority } = {}) {
+function approvalSummary(candidate, policy = {}) {
+  return {
+    id: createId("approval"),
+    status: "pending",
+    tool: candidate.tool,
+    input: candidate.input,
+    reason: candidate.reason,
+    risk: policy.risk || "high",
+    affectedResource: policy.resource || "unknown",
+    requestedCapability: policy.permission || "approval",
+    requestedAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + APPROVAL_TTL_MS).toISOString(),
+    decision: null
+  };
+}
+
+export function createWorkExecutionService({ store, work, realtime, agentRunner, planner, approvalAuthority, approvalPolicy = () => ({}) } = {}) {
   if (!store?.putTask || !store?.putExecution || !store?.putActivity || !work?.raw || !agentRunner || !planner || !approvalAuthority) {
     throw new TypeError("Work execution membutuhkan store, work, planner, runner, dan approval authority");
   }
@@ -91,6 +108,13 @@ export function createWorkExecutionService({ store, work, realtime, agentRunner,
       .sort((left, right) => String(right.updatedAt).localeCompare(String(left.updatedAt)))[0] || null;
   }
 
+  async function latestExecution(ownerId, workId, statuses) {
+    const executions = await store.listExecutions(ownerId);
+    return executions
+      .filter(execution => execution.workId === workId && statuses.includes(execution.status))
+      .sort((left, right) => String(right.updatedAt).localeCompare(String(left.updatedAt)))[0] || null;
+  }
+
   async function plan(ownerId, workId, options = {}) {
     const current = await work.raw(ownerId, workId);
     if (!["draft", "ready", "paused"].includes(current.state)) {
@@ -114,36 +138,42 @@ export function createWorkExecutionService({ store, work, realtime, agentRunner,
     return ready;
   }
 
-  async function run(ownerId, workId, options = {}) {
+  async function execute(ownerId, workId, options = {}, existing = null) {
     const initial = await work.raw(ownerId, workId);
-    if (!["ready", "paused"].includes(initial.state)) {
+    if (!existing && !["ready", "paused"].includes(initial.state)) {
       throw new AgenticError("WORK_NOT_READY", "Work harus berstatus ready sebelum dijalankan", 409);
     }
     if (!initial.plan?.steps?.length) {
       throw new AgenticError("WORK_PLAN_REQUIRED", "Work harus memiliki plan sebelum dijalankan", 409);
     }
-    if (await activeExecution(ownerId, workId)) {
+    if (!existing && await activeExecution(ownerId, workId)) {
       throw new AgenticError("WORK_EXECUTION_ACTIVE", "Work sudah memiliki execution aktif", 409);
     }
 
     if (initial.state === "paused") await work.transition(ownerId, workId, "ready");
     const running = await work.transition(ownerId, workId, "running");
     const now = new Date().toISOString();
-    const task = {
+    const task = existing ? await store.getTask(ownerId, existing.taskId) : {
       id: createId("task"), ownerId, workId, sessionId: null, planStepId: running.plan.steps[0].id,
       title: running.plan.steps[0].goal, status: "running", progress: { completed: 0, total: running.plan.steps.length },
       createdAt: now, updatedAt: now, finishedAt: null
     };
-    const execution = {
+    const execution = existing || {
       id: createId("work-execution"), ownerId, workId, sessionId: null, taskId: task.id,
       status: "running", prompt: running.objective, plan: running.plan, currentStep: running.plan.steps[0].id,
-      checkpoint: null, approval: null, result: null, error: null, startedAt: now, updatedAt: now, finishedAt: null
+      checkpoint: null, approval: null, interventions: [], result: null, error: null, startedAt: now, updatedAt: now, finishedAt: null
     };
-    await store.putTask(ownerId, task, { overwrite: false });
-    await store.putExecution(ownerId, execution, { overwrite: false });
-    await work.attachTask(ownerId, workId, task.id);
-    await work.attachExecution(ownerId, workId, execution.id);
-    await emit(ownerId, workId, execution.id, { action: "execution", status: "running", label: "Execution dimulai" });
+    if (!existing) {
+      await store.putTask(ownerId, task, { overwrite: false });
+      await store.putExecution(ownerId, execution, { overwrite: false });
+      await work.attachTask(ownerId, workId, task.id);
+      await work.attachExecution(ownerId, workId, execution.id);
+      await emit(ownerId, workId, execution.id, { action: "execution", status: "running", label: "Execution dimulai" });
+    } else {
+      await updateTask(ownerId, task.id, { status: "running", finishedAt: null });
+      await updateExecution(ownerId, execution.id, { status: "running", finishedAt: null, error: null });
+      await emit(ownerId, workId, execution.id, { action: "execution_resumed", status: "running", label: "Execution dilanjutkan dari checkpoint" });
+    }
 
     const onActivity = async event => {
       const latest = await work.raw(ownerId, workId);
@@ -169,15 +199,16 @@ export function createWorkExecutionService({ store, work, realtime, agentRunner,
         applicationId: "agentic",
         executionId: execution.id,
         agentExecutionId: execution.id,
+        approvalToken: options.approvalToken || null,
         onActivity
       });
       const approval = approvalCandidate(result);
       if (approval) {
-        const issued = approvalAuthority({ tool: approval.tool, input: approval.input, sessionId: `work:${ownerId}:${workId}`, reason: approval.reason });
-        const waiting = await updateExecution(ownerId, execution.id, { status: "waiting_approval", approval: { tool: approval.tool, input: approval.input, reason: approval.reason, expiresAt: issued.expiresAt } });
+        const request = approvalSummary(approval, approvalPolicy(approval.tool));
+        const waiting = await updateExecution(ownerId, execution.id, { status: "waiting_approval", approval: request });
         await updateTask(ownerId, task.id, { status: "waiting_approval" });
         await work.transition(ownerId, workId, "waiting_approval");
-        await emit(ownerId, workId, execution.id, { action: "approval_required", status: "waiting", label: `Approval diperlukan · ${approval.tool}`, meta: { tool: approval.tool, expiresAt: issued.expiresAt } });
+        await emit(ownerId, workId, execution.id, { action: "approval_required", status: "waiting", label: `Approval diperlukan · ${approval.tool}`, meta: { approval: request } });
         return { work: await work.get(ownerId, workId), execution: waiting, approvalRequired: true };
       }
       const status = statusFromResult(result);
@@ -201,12 +232,78 @@ export function createWorkExecutionService({ store, work, realtime, agentRunner,
     }
   }
 
+  async function run(ownerId, workId, options = {}) {
+    return execute(ownerId, workId, options);
+  }
+
+  async function approve(ownerId, workId) {
+    const current = await work.raw(ownerId, workId);
+    const execution = await latestExecution(ownerId, workId, ["waiting_approval"]);
+    if (current.state !== "waiting_approval" || !execution?.approval || execution.approval.status !== "pending") {
+      throw new AgenticError("APPROVAL_NOT_PENDING", "Work tidak sedang menunggu approval", 409);
+    }
+    if (Date.parse(execution.approval.expiresAt) <= Date.now()) {
+      await updateExecution(ownerId, execution.id, { approval: { ...execution.approval, status: "expired", decision: { at: new Date().toISOString() } } });
+      await emit(ownerId, workId, execution.id, { action: "approval_expired", status: "expired", label: "Approval sudah kedaluwarsa" });
+      throw new AgenticError("APPROVAL_EXPIRED", "Approval sudah kedaluwarsa", 409);
+    }
+    const issued = approvalAuthority({ tool: execution.approval.tool, input: execution.approval.input, principalId: ownerId, sessionId: `work:${ownerId}:${workId}`, executionId: execution.id, reason: execution.approval.reason });
+    const approved = await updateExecution(ownerId, execution.id, { approval: { ...execution.approval, status: "approved", decision: { at: new Date().toISOString(), by: ownerId } } });
+    await emit(ownerId, workId, execution.id, { action: "approval_approved", status: "approved", label: `Approval diberikan · ${approved.approval.tool}`, meta: { approval: approved.approval } });
+    return execute(ownerId, workId, { approvalToken: issued.token }, approved);
+  }
+
+  async function reject(ownerId, workId, reason = "Approval ditolak oleh user") {
+    const current = await work.raw(ownerId, workId);
+    const execution = await latestExecution(ownerId, workId, ["waiting_approval"]);
+    if (current.state !== "waiting_approval" || !execution?.approval || execution.approval.status !== "pending") throw new AgenticError("APPROVAL_NOT_PENDING", "Work tidak sedang menunggu approval", 409);
+    const now = new Date().toISOString();
+    const message = String(reason || "Approval ditolak oleh user").slice(0, 2000);
+    await updateExecution(ownerId, execution.id, { status: "rejected", approval: { ...execution.approval, status: "rejected", decision: { at: now, by: ownerId, reason: message } }, error: message, finishedAt: now });
+    await updateTask(ownerId, execution.taskId, { status: "rejected", finishedAt: now });
+    await work.transition(ownerId, workId, "failed", { result: { status: "rejected", reason: message } });
+    await emit(ownerId, workId, execution.id, { action: "approval_rejected", status: "rejected", label: "Approval ditolak; execution tidak dijalankan", meta: { reason: message } });
+    return work.get(ownerId, workId);
+  }
+
+  async function revise(ownerId, workId, instruction) {
+    const message = String(instruction || "").trim().slice(0, 12000);
+    if (!message) throw new AgenticError("INVALID_INTERVENTION", "Instruksi revisi wajib diisi");
+    const current = await work.raw(ownerId, workId);
+    if (!["running", "waiting_approval", "paused"].includes(current.state)) throw new AgenticError("WORK_NOT_INTERVENABLE", "Work tidak dapat direvisi pada state ini", 409);
+    const execution = await latestExecution(ownerId, workId, ["running", "waiting_approval", "paused"]);
+    if (!execution) throw new AgenticError("EXECUTION_NOT_FOUND", "Execution aktif tidak ditemukan", 404);
+    if (current.state !== "paused") await work.transition(ownerId, workId, "paused");
+    const at = new Date().toISOString();
+    const intervention = { id: createId("intervention"), type: "revise_instruction", instruction: message, at, by: ownerId };
+    await updateExecution(ownerId, execution.id, { status: "paused", prompt: `${execution.prompt}\n\nInstruksi revisi dari user:\n${message}`, approval: execution.approval?.status === "pending" ? { ...execution.approval, status: "superseded" } : execution.approval, interventions: [...(execution.interventions || []), intervention] });
+    await updateTask(ownerId, execution.taskId, { status: "paused" });
+    await emit(ownerId, workId, execution.id, { action: "instruction_revised", status: "paused", label: "Instruksi direvisi; lanjutkan saat siap", meta: { intervention } });
+    return work.get(ownerId, workId);
+  }
+
+  async function resume(ownerId, workId, options = {}) {
+    const current = await work.raw(ownerId, workId);
+    if (current.state !== "paused") throw new AgenticError("WORK_NOT_PAUSED", "Work tidak sedang dijeda", 409);
+    const execution = await latestExecution(ownerId, workId, ["paused"]);
+    if (!execution) return run(ownerId, workId, options);
+    if (execution.approval?.status === "pending") {
+      await updateExecution(ownerId, execution.id, { status: "waiting_approval" });
+      await updateTask(ownerId, execution.taskId, { status: "waiting_approval" });
+      await work.transition(ownerId, workId, "ready");
+      await work.transition(ownerId, workId, "waiting_approval");
+      await emit(ownerId, workId, execution.id, { action: "approval_resumed", status: "waiting", label: "Menunggu keputusan approval" });
+      return { work: await work.get(ownerId, workId), execution: await store.getExecution(ownerId, execution.id), approvalRequired: true };
+    }
+    return execute(ownerId, workId, options, execution);
+  }
+
   async function control(ownerId, workId, action, reason) {
     const current = await work.raw(ownerId, workId);
     const execution = await activeExecution(ownerId, workId);
     const now = new Date().toISOString();
     if (action === "pause") {
-      if (current.state !== "running") throw new AgenticError("WORK_NOT_RUNNING", "Hanya work berjalan yang dapat dijeda", 409);
+      if (!["running", "waiting_approval"].includes(current.state)) throw new AgenticError("WORK_NOT_RUNNING", "Hanya work berjalan atau menunggu approval yang dapat dijeda", 409);
       await work.transition(ownerId, workId, "paused");
       if (execution) await updateExecution(ownerId, execution.id, { status: "paused", pauseReason: String(reason || "Work dijeda").slice(0, 2000) });
       if (execution) await updateTask(ownerId, execution.taskId, { status: "paused" });
@@ -232,5 +329,5 @@ export function createWorkExecutionService({ store, work, realtime, agentRunner,
     return (await store.listActivities(ownerId)).filter(activity => activity.workId === workId).sort((left, right) => String(left.createdAt).localeCompare(String(right.createdAt)));
   }
 
-  return Object.freeze({ plan, run, pause: (ownerId, workId, reason) => control(ownerId, workId, "pause", reason), stop: (ownerId, workId, reason) => control(ownerId, workId, "stop", reason), cancel: (ownerId, workId, reason) => control(ownerId, workId, "cancel", reason), listActivities });
+  return Object.freeze({ plan, run, resume, approve, reject, revise, pause: (ownerId, workId, reason) => control(ownerId, workId, "pause", reason), stop: (ownerId, workId, reason) => control(ownerId, workId, "stop", reason), cancel: (ownerId, workId, reason) => control(ownerId, workId, "cancel", reason), listActivities });
 }

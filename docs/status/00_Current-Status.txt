@@ -3,7 +3,7 @@ CURRENT STATUS
 PROJECT: AI-Gabut
 CURRENT PHASE: V4 — Agentic Work Platform
 CURRENT ROADMAP: V4 — Agentic Work Platform
-CURRENT BATCH: 02 — Agent Planning & Execution UX
+CURRENT BATCH: 03 — Approval & Human Intervention UX
 
 VERSION STATUS
 --------------
@@ -34,7 +34,7 @@ AI + GitHub remains the proving workflow; GitHub is not Work identity.
 
 NEXT
 ----
-Batch 02 — Agent Planning & Execution UX.
+Batch 04 — Workspace, Diff & Change Experience.
 
 V4 BATCH 02
 -----------
@@ -45,3 +45,19 @@ V4 BATCH 02
 - Pause, resume, stop, and cancel retain lifecycle authority in the backend.
 - Approval requirements continue through canonical security authority.
 - Focused Batch 02 tests and the full repository validation suite pass locally.
+
+V4 BATCH 03
+-----------
+- Approval requests now persist a human-readable risk, capability, affected
+  resource, action input, expiry, and decision state on the work execution.
+- Approval, rejection, pause, cancellation, and instruction revision are
+  owner-scoped work controls with observable activity records.
+- Approval tokens are not returned to the frontend or stored in the approval
+  request. They are issued only after approval through canonical security
+  authority, bound to the exact execution, then used to resume that same
+  execution.
+- Expired, pending, rejected, and superseded approval states are explicit.
+- The Agentic frontend has an Approval & Intervention control surface for
+  review and decisions; it remains a client of backend/security authority.
+- Focused Batch 03 execution tests and the full repository validation suite
+  pass locally.

@@ -35,7 +35,8 @@ function workRuntime(agentRunner) {
     realtime,
     agentRunner,
     planner: async () => [{ id: "inspect", goal: "Inspect repository", tools: ["inspect_project"] }, { id: "verify", goal: "Verify changes", tools: ["run_command"] }],
-    approvalAuthority: () => ({ expiresAt: "2099-01-01T00:00:00.000Z" })
+    approvalAuthority: () => ({ token: "approved-token", expiresAt: "2099-01-01T00:00:00.000Z" }),
+    approvalPolicy: tool => ({ permission: "approval", risk: tool === "git_push" ? "critical" : "high", resource: "git" })
   });
   return { store, work, realtime, runtime };
 }
@@ -101,4 +102,58 @@ test("work execution activity stays owner-scoped", async () => {
   await runtime.plan("user-a", created.id);
   await runtime.run("user-a", created.id);
   await assert.rejects(() => runtime.listActivities("user-b", created.id), error => error.code === "WORK_NOT_FOUND");
+});
+
+test("approval request exposes governed risk summary and approval resumes the same work execution", async () => {
+  const seen = [];
+  const { work, runtime } = workRuntime(async args => {
+    seen.push(args);
+    if (!args.approvalToken) {
+      return {
+        text: "blocked",
+        tool: { steps: [{ name: "git_push", input: { branch: "main" }, result: { requiresApproval: true, error: "Push requires human approval" } }] }
+      };
+    }
+    return { text: "pushed" };
+  });
+  const created = await work.create("user-a", { objective: "Push reviewed change" });
+  await runtime.plan("user-a", created.id);
+  const pending = await runtime.run("user-a", created.id);
+  assert.equal(pending.work.state, "waiting_approval");
+  assert.equal(pending.execution.approval.risk, "critical");
+  assert.equal(pending.execution.approval.affectedResource, "git");
+  assert.equal(pending.execution.approval.requestedCapability, "approval");
+  assert.equal(pending.execution.approval.status, "pending");
+  assert.equal("token" in pending.execution.approval, false);
+  const approved = await runtime.approve("user-a", created.id);
+  assert.equal(approved.work.state, "completed");
+  assert.equal(approved.execution.id, pending.execution.id);
+  assert.equal(seen.length, 2);
+  assert.equal(seen[1].approvalToken, "approved-token");
+  assert.equal(seen[1].executionId, pending.execution.id);
+});
+
+test("human can reject or revise a pending work approval without bypassing it", async () => {
+  let calls = 0;
+  const { store, work, runtime } = workRuntime(async args => {
+    calls++;
+    if (calls === 1) return { text: "blocked", tool: { steps: [{ name: "git_commit", input: { message: "initial" }, result: { requiresApproval: true, error: "Commit requires human approval" } }] } };
+    return { text: args.prompt.includes("use a release note") ? "revised" : "done" };
+  });
+  const rejected = await work.create("user-a", { objective: "Commit change" });
+  await runtime.plan("user-a", rejected.id);
+  await runtime.run("user-a", rejected.id);
+  const rejectedWork = await runtime.reject("user-a", rejected.id, "Need a release note first");
+  assert.equal(rejectedWork.state, "failed");
+  assert.equal((await store.listExecutions("user-a"))[0].status, "rejected");
+
+  calls = 0;
+  const revised = await work.create("user-a", { objective: "Commit another change" });
+  await runtime.plan("user-a", revised.id);
+  const pending = await runtime.run("user-a", revised.id);
+  const paused = await runtime.revise("user-a", revised.id, "use a release note");
+  assert.equal(paused.state, "paused");
+  const resumed = await runtime.resume("user-a", revised.id);
+  assert.equal(resumed.execution.id, pending.execution.id);
+  assert.equal(resumed.work.state, "completed");
 });

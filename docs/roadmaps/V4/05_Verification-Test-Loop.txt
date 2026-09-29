@@ -1,0 +1,19 @@
+V4 — VERIFICATION & TEST LOOP
+
+Tujuan: memastikan Agent tidak berhenti pada perubahan file tetapi
+mampu memverifikasi outcome.
+
+Scope:
+- test command / capability selection
+- test execution state
+- stdout / stderr evidence
+- pass / fail normalization
+- failure extraction
+- verification result
+- retry policy
+- timeout
+- resource limit
+- test artifact retention
+
+DoD: Work dapat menyatakan hasil berdasarkan evidence verification,
+bukan hanya berdasarkan klaim Agent.

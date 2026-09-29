@@ -1,70 +1,125 @@
-AI-GABUT ARCHITECTURE V3 — AGENTIC APPLICATION BOUNDARY
+AI-GABUT ARCHITECTURE V3 — AGENTIC APPLICATION + INTEGRATION FOUNDATION
 
 V3 mengaktifkan apps/agentic sebagai application nyata di atas
 foundation V2. V3 tidak mengganti boundary V2.
 
-Layer
+POSITION
+========
 
-User ↓ Agentic Frontend ↓ Agentic Backend / Application API ↓
-apps/agentic ├── identity/auth ├── sessions/conversation ├──
-memory/context ├── connections ├── workspace context ├── task/execution
-coordination └── application policy ↓ AI-Gabut Core ↓ Connectors /
-external providers
+V2 = AI / Agent Foundation
+V3 = Agentic Application + Integration Foundation
+V4 = Agentic Work Platform di atas V2 + V3
 
-Frontend boundary
+V3 menyediakan reusable application/integration primitives.
+V4 akan menggunakan primitives tersebut untuk product/workflow
+orchestration yang lebih tinggi.
+
+LAYER
+=====
+
+User
+ ↓
+Agentic Frontend
+ ↓
+Agentic Backend / Application API
+ ↓
+apps/agentic
+ ├── identity/auth
+ ├── sessions/conversation
+ ├── memory/context
+ ├── connections
+ ├── workspace context
+ ├── task/execution coordination
+ └── application policy
+ ↓
+AI-Gabut V2 Core
+ ↓
+Connectors / external providers
+
+FRONTEND BOUNDARY
+=================
 
 Frontend adalah client Agentic.
 
-Frontend tidak boleh: - import core langsung; - mengakses storage
-langsung; - menerima credential provider; - memutuskan authorization; -
-mengandalkan hide-in-UI sebagai security.
+Frontend tidak boleh:
+- import core langsung;
+- mengakses storage langsung;
+- menerima credential provider sebagai authority;
+- memutuskan authorization;
+- mengandalkan hide-in-UI sebagai security.
 
-Multi-user ownership
+MULTI-USER OWNERSHIP
+====================
 
 Setiap resource user-owned harus mempunyai owner yang dapat
-ditegakkan: - sessions - messages - memory - connections - credentials -
-workspace - tasks - executions - activity
+ditegakkan:
+- sessions
+- messages
+- memory
+- connections
+- credentials
+- workspace
+- tasks
+- executions
+- activity
 
 Backend harus memeriksa ownership sebelum read/mutate.
 
-Session
+CONNECTION VS CONNECTOR
+=======================
 
-Session mengikat: - owner - conversation - active connection(s) -
-workspace - task - relevant memory - execution state
+Connection adalah relationship/account state milik user.
+Connector adalah capability/execution adapter terhadap provider.
 
-Task dapat memakai lebih dari satu provider.
+Connection tidak menggantikan connector dan connector tidak memiliki
+application identity.
 
-Connection
+GITHUB
+======
 
-Connection adalah reference milik user terhadap akun provider eksternal.
-
-Lifecycle: created → authenticating → active → expired/requires_reauth →
-revoked/disconnected
-
-Credential dipisahkan dari conversation/memory.
-
-Agent authority
-
-User request ↓ Agent intent ↓ Capability request ↓ Security policy ↓
-Approval bila perlu ↓ Executor / Connector ↓ Observation + evidence ↓
-Evaluation ↓ Replan / finish
-
-Workspace
-
-Workspace adalah working context, bukan hanya file browser. Ia dapat
-mengikat connection, provider resource, repository/project, branch,
-changes, snapshots, dan task context.
-
-core/workspace tetap generic. Agentic mengelola application-level
-selection/context.
-
-GitHub
-
-Agentic ↓ connection contract ↓ GitHub connector ↓ GitHub API
+Agentic
+ ↓ connection contract
+ ↓ GitHub connector
+ ↓ GitHub API
 
 Generic core tidak memanggil GitHub API langsung.
 
-Data separation
+GitHub adalah salah satu integration/provider implementation dan bukan
+identity permanen Agentic.
+
+AGENT AUTHORITY
+===============
+
+User request
+ ↓
+Agent intent
+ ↓
+Capability request
+ ↓
+Security policy
+ ↓
+Approval bila perlu
+ ↓
+Executor / Connector
+ ↓
+Observation + evidence
+ ↓
+Evaluation
+ ↓
+Replan / finish
+
+WORKSPACE
+=========
+
+Workspace adalah working context, bukan hanya file browser.
+Ia dapat mengikat connection, provider resource, repository/project,
+branch, changes, snapshots, dan task context.
+
+core/workspace tetap generic.
+Agentic mengelola application-level selection/context.
+
+DATA SEPARATION
+===============
 
 USER DATA: account, sessions, memory, preferences, connections
 
@@ -77,7 +132,8 @@ SECURITY DATA: credentials, approvals, security audit
 Infrastructure storage boleh sama, tetapi ownership dan access policy
 tetap berbeda.
 
-Deployment
+DEPLOYMENT
+==========
 
 Topology A: Frontend + Agentic Backend → AI-Gabut
 
@@ -85,8 +141,28 @@ Topology B: Frontend → Agentic Backend → AI-Gabut
 
 Core tidak bergantung pada topology.
 
-V2 preservation
+V3 → V4 BOUNDARY
+================
+
+V3 owns reusable application/integration foundation.
+
+V4 owns higher-level work/product orchestration, termasuk:
+- work/task model
+- planning/execution UX
+- human intervention
+- verification
+- bounded repair/replan
+- change/PR/CI workflow
+- long-running work
+- work history/evidence
+- autonomous end-to-end workflow
+
+V4 tidak boleh memindahkan product workflow tersebut ke generic core
+hanya karena Agentic merupakan consumer pertama.
+
+V2 PRESERVATION
+===============
 
 V2 roadmap dan technical documentation tetap menjadi historical
-baseline. V3 menambahkan application activation tanpa menghapus sejarah
-V2.
+baseline. V3 menambahkan application/integration activation tanpa
+menghapus sejarah V2.

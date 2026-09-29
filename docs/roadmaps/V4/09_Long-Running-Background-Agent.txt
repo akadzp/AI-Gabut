@@ -1,0 +1,19 @@
+V4 — LONG-RUNNING WORK & BACKGROUND AGENT
+
+Tujuan: memungkinkan work berjalan lebih lama daripada satu HTTP
+request atau satu browser session.
+
+Scope:
+- background execution
+- durable work state
+- worker ownership
+- heartbeat
+- timeout
+- cancellation
+- resource limits
+- notification hooks
+- browser disconnect tolerance
+- reconnect
+
+DoD: User dapat meninggalkan browser tanpa menghapus valid work state,
+dan dapat melihat execution yang masih berjalan setelah kembali.

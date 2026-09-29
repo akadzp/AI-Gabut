@@ -1,0 +1,35 @@
+V4 — WORK & TASK MODEL
+
+Tujuan: menjadikan pekerjaan user sebagai resource utama yang dapat
+dilihat, dijalankan, dihentikan, dilanjutkan, dan diaudit.
+
+MODEL
+
+Project
+  ↓
+Work
+  ├── objective
+  ├── context
+  ├── plan
+  ├── task(s)
+  ├── execution(s)
+  ├── changes
+  ├── evidence
+  ├── approval(s)
+  └── result
+
+Scope:
+- work identity
+- objective
+- work state
+- task decomposition
+- execution association
+- ownership
+- priority
+- lifecycle
+- cancellation
+- resume
+- result / outcome
+
+DoD: User dapat membuat work nyata dan melihat lifecycle work tanpa
+mencampurkan session, task, dan execution menjadi satu resource.

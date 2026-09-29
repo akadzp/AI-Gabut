@@ -1,0 +1,19 @@
+V4 — HUMAN / AGENT COLLABORATION
+
+Tujuan: memungkinkan manusia mengarahkan Agent tanpa mengambil alih
+seluruh execution secara manual.
+
+Scope:
+- instruction refinement
+- intervention
+- pause / resume
+- feedback
+- approval
+- correction
+- shared work context
+- provenance
+- collaboration boundaries
+- explicit future multi-user collaboration
+
+DoD: User dapat mengoreksi arah Agent di tengah work dengan state dan
+ownership tetap konsisten.

@@ -1,0 +1,190 @@
+AI-GABUT V4 — ROADMAP BESAR
+
+AGENTIC WORK PLATFORM
+
+VERSION
+=======
+
+V1:
+- fase awal
+- dokumentasi lengkap tidak tersedia
+
+V2:
+- AI-Gabut AI / Agent Foundation
+- roadmap 00–13 dipertahankan sebagai historical baseline
+- status: COMPLETE terhadap roadmap V2
+
+V3:
+- Agentic Application + Integration Foundation
+- Agentic runtime, application boundary, connections, GitHub,
+  workspace, frontend, realtime, approval, persistence, deployment,
+  recovery, testing
+- status: COMPLETE terhadap roadmap V3
+
+V4:
+- fase berikutnya
+- mengubah V2 + V3 foundation menjadi Agentic Work Platform
+- fokus pada pekerjaan nyata, execution UX, autonomous workflow,
+  verification, repair, collaboration, dan external outcome
+
+TUJUAN
+======
+
+V4 tidak mengganti Agent Engine V2 dan tidak membangun ulang
+integration foundation V3.
+
+V4 membangun kemampuan product/workflow di atas foundation tersebut
+agar manusia dapat memberikan tujuan dan Agent dapat menjalankan
+pekerjaan multi-step secara observable, governed, recoverable, dan
+menghasilkan outcome nyata.
+
+TARGET EXPERIENCE
+=================
+
+    login
+      ↓
+    choose project / context
+      ↓
+    create work
+      ↓
+    give objective
+      ↓
+    understand
+      ↓
+    plan
+      ↓
+    authorize / approve
+      ↓
+    act
+      ↓
+    observe
+      ↓
+    verify
+      ↓
+    repair / replan
+      ↓
+    review changes / evidence
+      ↓
+    finish / publish outcome
+      ↓
+    persist
+      ↓
+    resume if interrupted
+
+TARGET ARCHITECTURE
+===================
+
+    Application / User
+          ↓
+    Agentic V4 Work Surface
+          ↓
+    Work / Task / Execution Model
+          ↓
+    V3 Agentic Application Foundation
+          ↓
+    V2 AI / Agent Foundation
+          ↓
+    Connectors / External Platforms
+
+PRINCIPLES
+==========
+
+1. V4 menggunakan V2 dan V3 sebagai platform foundation.
+2. V4 tidak memasukkan product-specific workflow ke generic core
+   apabila workflow tersebut merupakan application/use-case concern.
+3. Connector tetap provider-neutral dan reusable.
+4. Frontend menampilkan observable execution state, bukan hidden
+   chain-of-thought.
+5. Approval tetap diputuskan oleh security authority, bukan UI.
+6. Semua work, task, execution, change, artifact, dan evidence yang
+   user-owned tetap mempunyai ownership yang dapat ditegakkan.
+7. Autonomous behavior harus mempunyai batas, checkpoint, timeout,
+   cancellation, approval, dan recovery.
+8. Setiap action penting harus menghasilkan evidence yang dapat
+   diperiksa manusia.
+9. V4 boleh memperluas connector capability, tetapi tidak mengikat
+   Agentic secara permanen kepada satu provider.
+10. V4 harus tetap memungkinkan application lain menggunakan V2/V3
+    foundation tanpa membawa identity Agentic.
+
+ROADMAP TURUNAN
+===============
+
+01. Work & Task Model
+02. Agent Planning & Execution UX
+03. Approval & Human Intervention UX
+04. Workspace, Diff & Change Experience
+05. Verification & Test Loop
+06. Autonomous Repair & Replan Loop
+07. Git / Change / Pull Request Workflow
+08. CI / External Feedback Loop
+09. Long-running Work & Background Agent
+10. Recovery / Resume / Continuity UX
+11. Artifacts, Evidence & Results
+12. Human-Agent Collaboration
+13. Observability & Work History
+14. Agentic Frontend V4
+15. End-to-End Autonomous Workflows
+16. Testing, Reliability & Safety
+17. Final Definition of Done
+
+DEPENDENCY
+==========
+
+    01 → 02 → 03
+          ↓    ↘
+          04 → 05 → 06
+                    ↓
+              07 → 08
+                    ↓
+              09 ↔ 10
+                    ↓
+              11 → 12 → 13
+                    ↓
+                   14
+                    ↓
+              15 → 16 → 17
+
+V3 PRESERVATION
+===============
+
+V3 frontend saat ini tetap menjadi baseline application client:
+- login / registration
+- sessions
+- chat
+- connections
+- GitHub repository / branch selection
+- workspace binding
+- file browsing
+- activity visibility
+
+V4 frontend berkembang dari baseline tersebut menjadi work surface:
+- project / work context
+- plan visibility
+- execution timeline
+- approval/intervention controls
+- change / diff review
+- test / verification output
+- repair/replan state
+- artifacts / evidence
+- background work
+- recovery / resume
+- final outcome
+
+DEFINITION OF V4
+================
+
+V4 selesai apabila Agentic dapat mengubah objective user menjadi work
+yang terstruktur, menjalankan langkah-langkah yang diizinkan,
+memperlihatkan progress dan evidence, meminta intervensi saat perlu,
+memverifikasi hasil, memperbaiki kegagalan secara bounded, menjaga
+state selama pekerjaan panjang, dan menghasilkan outcome yang dapat
+diperiksa manusia.
+
+V4 bukan sekadar:
+- chat yang lebih bagus;
+- UI yang lebih kompleks;
+- connector tambahan;
+- autonomous loop tanpa governance.
+
+V4 adalah work execution product layer di atas V2 + V3.

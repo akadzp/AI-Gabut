@@ -1,0 +1,20 @@
+V4 — AUTONOMOUS REPAIR & REPLAN LOOP
+
+Tujuan: membuat Agent dapat merespons failure secara bounded dengan
+observe → evaluate → repair → verify.
+
+Scope:
+- failure classification
+- evidence ingestion
+- repair planning
+- bounded retry
+- replan
+- loop limit
+- escalation to human
+- approval re-check
+- final failure report
+- checkpoint per iteration
+
+DoD: Agent dapat memperbaiki failure yang berada dalam capability dan
+authority yang diizinkan, atau berhenti dengan alasan dan evidence yang
+jelas.

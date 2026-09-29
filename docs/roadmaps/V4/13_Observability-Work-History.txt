@@ -1,0 +1,19 @@
+V4 — OBSERVABILITY & WORK HISTORY
+
+Tujuan: menyediakan history pekerjaan yang berguna bagi user dan
+operator tanpa menyimpan hidden chain-of-thought.
+
+Scope:
+- work timeline
+- execution timeline
+- action history
+- approval history
+- change history
+- verification history
+- failure / retry history
+- result history
+- operational correlation
+- search / filtering
+
+DoD: User dapat merekonstruksi lifecycle work dari observable events,
+state, changes, approvals, dan evidence.

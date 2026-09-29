@@ -1,8 +1,25 @@
-# CURRENT KNOWN GAPS — V3
+CURRENT KNOWN GAPS — V4 SCOPE
 
-1. Dedicated approval UX and final credential governance remain incomplete.
-2. Restart/resume continuity is not yet validated end-to-end across process restart.
-3. Frontend loading/error states remain lightweight.
-4. Workspace changes, snapshots, and reconciliation remain later work.
-5. GitHub write operations remain outside current scope.
-6. Deployment/operations and final V3 validation remain.
+V2 and V3 roadmap gaps are closed against their defined scope.
+The following are intentionally V4 work, not V3 defects:
+
+1. Work should become a first-class resource above session/execution.
+2. Planning should become visible and controllable from the frontend.
+3. Approval and human intervention need a dedicated work-oriented UX.
+4. Workspace changes need richer diff/review/change provenance UX.
+5. Verification/test execution needs first-class work integration.
+6. Autonomous repair/replan needs bounded loop semantics.
+7. Git commit/push/PR workflow needs governed end-to-end orchestration.
+8. CI/external feedback needs to feed verification and repair loops.
+9. Long-running/background work needs a product-level UX.
+10. Recovery/resume needs a clear user-facing continuity experience.
+11. Artifacts/evidence/results need a first-class presentation model.
+12. Human-agent collaboration needs explicit intervention semantics.
+13. Work history and observability need a coherent user-facing timeline.
+14. V4 frontend needs to evolve from application client into work control
+    surface.
+15. At least one autonomous real-world workflow must be validated
+    end-to-end without fake/mock requirements on the main path.
+
+These are planned V4 capabilities and should not be used to reopen the
+completed V2/V3 roadmap unless implementation reveals a foundation defect.

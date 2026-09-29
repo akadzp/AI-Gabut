@@ -1,0 +1,24 @@
+V4 — AGENT PLANNING & EXECUTION UX
+
+Tujuan: membuat proses Agent memahami → merencanakan → menjalankan
+menjadi observable dan dapat dikendalikan manusia.
+
+Scope:
+- objective interpretation
+- plan representation
+- task progress
+- execution state
+- bounded autonomy
+- pause / stop / cancel
+- live progress
+- observable action labels
+- evidence references
+- failure state
+- replan state
+
+Frontend tidak menampilkan hidden chain-of-thought. Frontend hanya
+menampilkan plan, status, action, evidence, dan hasil yang dapat
+diperiksa.
+
+DoD: User dapat memahami pekerjaan Agent dari objective sampai outcome
+tanpa membutuhkan akses ke internal reasoning.

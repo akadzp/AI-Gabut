@@ -1,11 +1,46 @@
 {
-  "type": "delta",
-  "correction": "05",
+  "project": "AI-Gabut",
+  "purpose": "Documentation alignment for V2/V3 completion and V4 Agentic Work Platform roadmap",
+  "sourceBranch": "main",
+  "createdFromAudit": true,
+  "validationEvidence": {
+    "coreCheck": "PASS — 120 JavaScript files",
+    "agenticTests": "29 PASS / 0 FAIL / 0 cancelled / 0 skipped",
+    "platformContracts": "PASS"
+  },
   "files": [
-    "apps/agentic/backend/application.js",
-    "apps/agentic/backend/server.js",
-    "tests/apps/agentic-deployment-security.mjs",
-    "tests/apps/agentic-execution.mjs"
+    "docs/README.txt",
+    "docs/status/00_Current-Status.txt",
+    "docs/status/01_Implementation-Status.txt",
+    "docs/status/03_Completed-Work.txt",
+    "docs/status/04_Known-Gaps.txt",
+    "docs/roadmaps/V3/00_Roadmap-Besar.txt",
+    "docs/roadmaps/V3/09_Agentic-Frontend.txt",
+    "docs/roadmaps/V3/11-15-implementation-status.txt",
+    "docs/technical/ARCHITECTURE-V3-AGENTIC.txt",
+    "docs/technical/ARCHITECTURE-V4-WORK-PLATFORM.txt",
+    "docs/roadmaps/V4/00_Roadmap-Besar.txt",
+    "docs/roadmaps/V4/01_Work-Task-Model.txt",
+    "docs/roadmaps/V4/02_Agent-Planning-Execution-UX.txt",
+    "docs/roadmaps/V4/03_Approval-Human-Intervention-UX.txt",
+    "docs/roadmaps/V4/04_Workspace-Diff-Change-Experience.txt",
+    "docs/roadmaps/V4/05_Verification-Test-Loop.txt",
+    "docs/roadmaps/V4/06_Autonomous-Repair-Replan-Loop.txt",
+    "docs/roadmaps/V4/07_Git-Change-PR-Workflow.txt",
+    "docs/roadmaps/V4/08_CI-External-Feedback-Loop.txt",
+    "docs/roadmaps/V4/09_Long-Running-Background-Agent.txt",
+    "docs/roadmaps/V4/10_Recovery-Resume-Continuity-UX.txt",
+    "docs/roadmaps/V4/11_Artifacts-Evidence-Results.txt",
+    "docs/roadmaps/V4/12_Human-Agent-Collaboration.txt",
+    "docs/roadmaps/V4/13_Observability-Work-History.txt",
+    "docs/roadmaps/V4/14_Agentic-Frontend-V4.txt",
+    "docs/roadmaps/V4/15_End-to-End-Autonomous-Workflows.txt",
+    "docs/roadmaps/V4/16_Testing-Reliability-Safety.txt",
+    "docs/roadmaps/V4/17_Definition-of-Done.txt"
   ],
-  "notes": "Wiring recovery into application, preserving realtime, enforcing deployment middleware, adding resume endpoint and integration tests."
+  "notes": [
+    "V2 roadmap files remain historical baseline and are not overwritten.",
+    "V3 implementation remains complete; V4 is the next product/workflow layer.",
+    "No source-code files are included in this documentation delta."
+  ]
 }

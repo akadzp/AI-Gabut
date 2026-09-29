@@ -1,0 +1,99 @@
+V4 — AGENTIC FRONTEND
+
+Tujuan: mengembangkan frontend V3 dari application client menjadi work
+control surface.
+
+V3 BASELINE
+-----------
+Frontend saat ini sudah menyediakan:
+- login / registration
+- sessions
+- chat
+- connections
+- GitHub repository / branch selection
+- workspace binding
+- file tree / file content
+- task / activity visibility
+- responsive shell
+
+V4 TARGET SURFACE
+-----------------
+
+    ┌───────────────────────────────────────────────────────────┐
+    │ Agentic Work                                              │
+    ├───────────────┬──────────────────────────┬────────────────┤
+    │ Project       │ Work / Conversation      │ Execution      │
+    │               │                          │                │
+    │ sessions      │ objective                │ status         │
+    │ context       │ plan                     │ progress       │
+    │ workspace     │ agent messages           │ timeline       │
+    │ resources     │ intervention             │ approvals      │
+    │               │                          │ changes        │
+    │               │                          │ tests          │
+    │               │                          │ evidence       │
+    │               │                          │ result         │
+    └───────────────┴──────────────────────────┴────────────────┘
+
+LAYERS
+------
+
+1. Navigation / Project Context
+   - project
+   - work list
+   - sessions
+   - connections
+   - workspace
+
+2. Work Surface
+   - objective
+   - conversation
+   - context
+   - plan
+   - current task
+
+3. Execution Surface
+   - status
+   - progress
+   - activity
+   - action evidence
+   - approval state
+   - failure / repair state
+
+4. Change Surface
+   - changed files
+   - diff
+   - snapshots
+   - validation
+
+5. Verification Surface
+   - tests
+   - logs
+   - CI / external feedback
+   - verification result
+
+6. Outcome Surface
+   - result summary
+   - artifacts
+   - external links
+   - final state
+
+7. Continuity Surface
+   - interrupted work
+   - resume
+   - reconnect
+   - recovery state
+
+BOUNDARY
+--------
+
+Frontend tetap hanya client Agentic.
+
+Frontend tidak:
+- mengakses core langsung;
+- menyimpan provider credential sebagai application authority;
+- membuat authorization decision;
+- mengeksekusi provider API secara langsung;
+- menganggap hide-in-UI sebagai security.
+
+DoD: Frontend dapat mengendalikan dan memahami lifecycle work V4
+melalui Agentic API tanpa mengambil alih responsibility backend/core.

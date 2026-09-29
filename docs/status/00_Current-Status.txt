@@ -1,24 +1,96 @@
 CURRENT STATUS
 
 PROJECT: AI-Gabut
-CURRENT PHASE: V3 — Agentic Activation
-CURRENT BATCH: 09 — Realtime, Activity & Progress
+CURRENT PHASE: V4 — Agentic Work Platform Planning
+CURRENT ROADMAP: V4 — Agentic Work Platform
+CURRENT BATCH: 00 — Roadmap / Architecture Preparation
 
-COMPLETED BATCHES
+VERSION STATUS
+--------------
+V1 — HISTORICAL
+- fase awal
+- documentation tidak lengkap
+
+V2 — COMPLETE
+- AI / Agent Foundation
+- seluruh roadmap V2 00–13 terhadap scope yang ditetapkan telah selesai
+- foundation dapat digunakan secara reusable oleh application
+- V2 dipertahankan sebagai historical baseline
+
+V3 — COMPLETE + VALIDATED
+- Agentic Application + Integration Foundation
+- roadmap 01–15 selesai terhadap scope yang ditetapkan
+- final validation: 29 Agentic tests PASS / 0 FAIL
+- core/platform validation PASS
+- V3 frontend baseline selesai
+- GitHub adalah salah satu integration/provider, bukan identity permanen Agentic
+
+V4 — PLANNED
+- Agentic Work Platform
+- fokus pada work/task model, planning UX, execution control,
+  verification, repair/replan, change/PR/CI workflow, background work,
+  recovery UX, artifacts/evidence, collaboration, dan autonomous
+  end-to-end workflow
+
+ARCHITECTURAL POSITION
+----------------------
+
+    V2
+    AI / Agent Foundation
+          ↓
+    V3
+    Application + Integration Foundation
+          ↓
+    V4
+    Agentic Work Platform
+
+V2 dan V3 adalah foundation.
+V4 adalah product/workflow layer yang menggunakan foundation tersebut.
+
+FRONTEND POSITION
 -----------------
-Batch 01 Application Runtime — DONE
-Batch 02 Agent Execution Activation — DONE
-Batch 03 Sessions & Conversation — DONE
-Batch 04 Memory & Context — DONE
-Batch 05 Connections Framework — DONE + VALIDATED
-Batch 06 GitHub Provider — DONE + VALIDATED
-Batch 07 Workspace & Project Context — DONE + VALIDATED
-Batch 08 Agentic Frontend — DONE + VALIDATED
 
-BATCH 09 RESULT
----------------
-IMPLEMENTED — awaiting repository validation.
+V3 frontend baseline:
+- login / registration
+- sessions / chat
+- connections
+- GitHub repository / branch selection
+- workspace binding
+- file tree / file content
+- activity visibility
+
+V4 frontend target:
+- project / work context
+- objective
+- plan
+- execution timeline
+- approval / intervention
+- diff / change review
+- verification / tests
+- repair / replan state
+- artifacts / evidence
+- background work
+- recovery / resume
+- final result / external outcome
+
+VALIDATION EVIDENCE
+-------------------
+
+Final local validation reported:
+- CORE CHECK PASS — 120 JavaScript files
+- Platform contracts: PASS
+- Platform dependency/health: PASS
+- PLATFORM RUNTIME VALIDATION PASS
+- Operations runtime contract: PASS
+- Production configuration contract: PASS
+- Security secret/sandbox contract: PASS
+- security audit observability: PASS
+- Storage / State / Workspace / Task / Sync / Connector / Media / API /
+  Application contracts: PASS
+- Agentic tests: 29 PASS / 0 FAIL / 0 cancelled / 0 skipped
 
 NEXT
 ----
-Batch 10 — Approval, Security & Credential Governance.
+
+V4 harus dimulai dari audit terhadap foundation V2/V3 dan frontend V3,
+bukan dari perubahan core secara langsung.

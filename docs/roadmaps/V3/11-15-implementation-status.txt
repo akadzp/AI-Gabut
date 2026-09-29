@@ -1,26 +1,48 @@
-V3 — BATCH 11–15 CONSOLIDATED DELTA — INTEGRATION COMPLETION
+V3 — BATCH 11–15 CONSOLIDATED DELTA — FINAL INTEGRATION STATUS
 
 Batch 11 — Approval, Security & Credential Governance
 - Credential state uses a dedicated owner-scoped storage scope and encrypted material.
 - Credential references remain separate from normal connection payloads and are independently revocable.
 - Approval authority remains the canonical core/security governance policy; the V3 approval-contract module is only a compatibility facade.
 - Approval tokens bind principal, session, execution and exact tool input before an authorized executor can run.
+- STATUS: DONE + VALIDATED
 
 Batch 12 — Persistence, Recovery & Continuity
 - Agentic state remains backed by the existing state storage abstraction.
 - In-flight executions are scanned at Agentic startup and transitioned to explicit interrupted/recoverable state.
 - A user-owned resume endpoint continues a valid execution through the existing Agent Engine checkpoint/resume path.
+- STATUS: DONE + VALIDATED
 
 Batch 13 — Deployment & Operations
 - Deployment configuration is applied to the actual Agentic Express server.
 - Split topology enforces explicit origin allow-list, CORS response policy and security headers.
 - Request body limits and trust-proxy configuration are applied from deployment configuration.
+- STATUS: DONE + VALIDATED
 
 Batch 14 — Testing, Validation & Reliability
 - Agentic tests cover credential isolation/revocation, recovery, approval authority binding, realtime and deployment policy.
 - Recovery resume is exercised through the application lifecycle rather than only as an isolated service.
 - Existing V2/platform tests remain in the root test command.
+- FINAL AGENTIC VALIDATION: 29 PASS / 0 FAIL / 0 cancelled / 0 skipped
+- STATUS: DONE + VALIDATED
 
 Batch 15 — Definition of Done
-- Source-level integration gaps identified after the first green validation pass are closed by this correction.
-- Final local `npm test` remains the authoritative validation gate after applying this delta.
+- Source-level integration gaps identified after the first green validation pass were closed by the correction sequence.
+- Final local validation reported CORE CHECK PASS — 120 JavaScript files.
+- Platform contracts, dependency/health, runtime, operations, production, security, storage, workspace, task, sync, connector, media, API and application contracts all PASS.
+- STATUS: DONE + VALIDATED
+
+V3 FINAL STATUS
+================
+
+Batches 11–15 are complete against their defined roadmap scope.
+No remaining V3 roadmap requirement is being carried forward as an
+accidental implementation gap.
+
+V4 SCOPE NOTE
+=============
+
+Autonomous coding depth, richer work UX, bounded repair/replan,
+commit/push/PR/CI orchestration, long-running background work and
+human-agent collaboration are intentionally moved into V4 product/work
+scope rather than treated as V3 completion defects.

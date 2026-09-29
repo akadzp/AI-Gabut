@@ -1,0 +1,50 @@
+V4 — FINAL DEFINITION OF DONE
+
+V4 selesai apabila:
+
+1. User dapat membuat work dari objective nyata.
+2. Work mempunyai context, task, execution, dan result yang terpisah.
+3. Agent dapat memahami objective dan menghasilkan plan yang observable.
+4. User dapat melihat progress tanpa melihat hidden chain-of-thought.
+5. Approval tetap melewati canonical security authority.
+6. User dapat pause, cancel, intervene, dan resume sesuai state.
+7. Perubahan workspace dapat dilihat sebagai diff/evidence.
+8. Agent dapat melakukan verification.
+9. Failure dapat memicu bounded repair/replan.
+10. Repair loop mempunyai limit, timeout, cancellation, dan escalation.
+11. Work dapat berjalan sebagai long-running/background execution.
+12. Browser disconnect tidak menghapus valid work state.
+13. Recovery/resume dapat dilakukan tanpa duplicate execution yang salah.
+14. Result dan artifacts dapat diperiksa manusia.
+15. Git/change workflow dapat menghasilkan external outcome bila
+    capability tersedia.
+16. External CI/feedback dapat menjadi input verification bila tersedia.
+17. Agentic frontend menjadi work control surface yang tetap mematuhi
+    backend/core boundary.
+18. Cross-user ownership tetap enforced.
+19. Credential dan approval tidak bocor ke conversation content.
+20. V2 dan V3 foundation tetap lulus seluruh validation gate.
+21. Tidak ada requirement penting yang hanya berupa mock/fake UI.
+22. Setidaknya satu real-world autonomous workflow tervalidasi
+    end-to-end.
+
+REAL-WORLD FLOW
+---------------
+
+    login
+      → project/context
+      → new work
+      → objective
+      → understand
+      → plan
+      → authorize/approve
+      → act
+      → observe
+      → verify
+      → repair/replan
+      → review
+      → external outcome
+      → report
+      → persist
+      → restart/reconnect
+      → resume

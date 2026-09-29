@@ -1,0 +1,24 @@
+V4 — APPROVAL & HUMAN INTERVENTION UX
+
+Tujuan: membuat approval dan intervensi manusia menjadi bagian alami
+dari work execution.
+
+Scope:
+- approval request
+- risk / action summary
+- affected resource
+- requested capability
+- approve / reject
+- pause
+- cancel
+- revise instruction
+- resume same execution
+- expired / invalid approval state
+- audit visibility
+
+Security authority tetap berada di V2/V3 security layer.
+Frontend hanya menjadi control surface.
+
+DoD: User dapat memahami mengapa approval diperlukan, memberi keputusan,
+dan execution melanjutkan checkpoint yang benar tanpa melewati
+security authority.

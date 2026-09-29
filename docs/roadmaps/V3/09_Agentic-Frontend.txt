@@ -3,9 +3,66 @@ V3 — AGENTIC FRONTEND
 Tujuan: membuat frontend sebagai client aplikasi, bukan client langsung
 core.
 
-Layout: - application shell - hamburger/sidebar - sessions - Chat -
-Connections - Files - profile/settings - task/activity
+STATUS: DONE + VALIDATED
 
-DoD: User dapat login, memilih session, chat, melihat connection,
+V3 BASELINE LAYOUT
+------------------
+- application shell
+- hamburger/sidebar
+- sessions
+- Chat
+- Connections
+- Files / Workspace
+- profile / settings boundary
+- task / activity
+
+IMPLEMENTED CAPABILITIES
+------------------------
+- login / registration
+- session selection and chat
+- connection visibility and GitHub connection
+- GitHub repository selection
+- GitHub branch selection
+- workspace binding
+- file tree
+- file content viewer
+- current-file propagation
+- task/activity visibility
+- responsive shell
+
+BOUNDARY
+--------
+Frontend adalah client Agentic backend.
+
+Frontend tidak boleh:
+- import core langsung;
+- mengakses storage langsung;
+- menerima provider credential sebagai authority;
+- memutuskan authorization;
+- mengandalkan hide-in-UI sebagai security.
+
+DoD V3:
+User dapat login, memilih session, chat, melihat connection,
 memilih GitHub resource, dan melihat file/workspace melalui Agentic
+backend.
+
+V4 TRANSITION
+-------------
+Frontend V3 menjadi baseline untuk V4 Work Control Surface.
+
+V4 akan menambahkan:
+- project / work context
+- objective
+- plan
+- execution timeline
+- approval / intervention
+- diff / change review
+- verification / tests
+- repair / replan state
+- artifacts / evidence
+- background work
+- recovery / resume
+- final result / external outcome
+
+V4 tidak boleh mengubah boundary bahwa frontend tetap client Agentic
 backend.

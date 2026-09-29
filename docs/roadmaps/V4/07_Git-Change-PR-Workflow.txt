@@ -1,0 +1,22 @@
+V4 — GIT / CHANGE / PULL REQUEST WORKFLOW
+
+Tujuan: mengubah workspace result menjadi lifecycle perubahan eksternal
+secara governed.
+
+Scope:
+- branch strategy
+- commit preparation
+- commit evidence
+- push authorization
+- pull request creation
+- pull request metadata
+- review context
+- merge state visibility
+- provider-neutral change workflow
+
+GitHub menjadi provider pertama untuk capability yang tersedia. Model
+work/change tetap berada pada application/workflow layer dan connector
+contract.
+
+DoD: User dapat membawa work yang tervalidasi menuju external change
+workflow dengan approval dan evidence yang sesuai.

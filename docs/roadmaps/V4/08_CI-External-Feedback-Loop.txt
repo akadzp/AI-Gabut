@@ -1,0 +1,19 @@
+V4 — CI / EXTERNAL FEEDBACK LOOP
+
+Tujuan: membuat Agent dapat menggunakan feedback eksternal sebagai input
+verification dan repair.
+
+Scope:
+- CI status
+- workflow/run discovery
+- job status
+- logs / failure evidence
+- external checks
+- feedback normalization
+- repair trigger
+- bounded iteration
+- final outcome
+
+DoD: Agent dapat menerima failure dari external verification system,
+memasukkannya ke work context, dan melakukan repair/replan secara
+bounded apabila capability tersedia.

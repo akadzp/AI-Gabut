@@ -1,6 +1,41 @@
 COMPLETED WORK
 
-V3 BATCH 08 — AGENTIC FRONTEND
-- Frontend is an Agentic backend client rather than a direct core/provider client.
-- Authentication, sessions, chat, connections, GitHub repository/branch selection, workspace binding, file browsing, and activity visibility are wired to the Agentic API.
-- Frontend regression checks enforce endpoint coverage and direct-core/provider isolation.
+V2 — AI / AGENT FOUNDATION
+- Core foundation and runtime completed.
+- Agent Engine completed as reusable generic intelligence foundation.
+- Security, authority, governance, storage, workspace, execution,
+  synchronization, connectors, media, API, application and operations
+  foundations completed against the V2 roadmap.
+
+V3 — AGENTIC APPLICATION + INTEGRATION FOUNDATION
+- Agentic application runtime completed.
+- Identity/authentication and multi-user ownership completed.
+- Sessions/conversation completed.
+- Agent execution activation completed.
+- Memory/context completed.
+- Connections framework completed.
+- GitHub provider completed through connector boundary.
+- Workspace/project context completed.
+- Agentic frontend completed as backend client.
+- Realtime/activity/progress completed with persisted activity replay.
+- Approval/security/credential governance completed.
+- Persistence/recovery/continuity completed.
+- Deployment/operations completed.
+- Testing/validation/reliability completed.
+- Final V3 validation: 29 Agentic tests PASS / 0 FAIL.
+
+V3 FRONTEND BASELINE
+- Login / registration
+- Session list and chat
+- Connection management
+- GitHub repository / branch selection
+- Workspace binding
+- File tree / file content
+- Activity visibility
+- Responsive application shell
+
+V4 — NEXT PRODUCT LAYER
+- Agentic Work Platform planning started.
+- V4 will use V2 + V3 rather than replacing them.
+- V4 focus is real work execution, verification, repair, intervention,
+  evidence, external outcome, and autonomous workflows.

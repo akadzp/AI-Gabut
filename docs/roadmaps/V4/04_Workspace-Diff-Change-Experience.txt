@@ -1,0 +1,23 @@
+V4 — WORKSPACE, DIFF & CHANGE EXPERIENCE
+
+Tujuan: membuat perubahan Agent terhadap workspace dapat diperiksa dan
+dipahami manusia.
+
+Scope:
+- changed files
+- diff viewer
+- file context
+- change grouping
+- before / after
+- validation status
+- snapshot
+- rollback
+- change provenance
+- human vs agent change origin
+- conflict visibility
+
+V4 menggunakan workspace/change foundation V2 dan workspace context
+V3; tidak membuat model perubahan kedua.
+
+DoD: User dapat melihat perubahan Agent, memahami sumbernya, dan
+menyetujui atau menolak hasil perubahan sesuai capability yang tersedia.

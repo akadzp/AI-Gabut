@@ -1,0 +1,136 @@
+AI-GABUT ARCHITECTURE V4 — AGENTIC WORK PLATFORM
+
+PURPOSE
+=======
+
+V4 adalah product/workflow layer yang menggunakan V2 AI Foundation dan
+V3 Agentic Application + Integration Foundation.
+
+V4 tidak membangun Agent Engine kedua dan tidak membuat connector
+provider-specific menjadi bagian dari generic core.
+
+LAYER
+=====
+
+    User
+      ↓
+    V4 Agentic Work Surface
+      ↓
+    Work / Task / Execution Orchestration
+      ↓
+    V3 Agentic Application Foundation
+      ↓
+    V2 AI / Agent Foundation
+      ↓
+    Connectors / External Providers
+
+PRIMARY OBJECT
+==============
+
+Work menjadi abstraction utama di atas session dan execution.
+
+    Project
+      ↓
+    Work
+      ├── objective
+      ├── context
+      ├── plan
+      ├── tasks
+      ├── executions
+      ├── changes
+      ├── approvals
+      ├── evidence
+      └── result
+
+FRONTEND ROLE
+=============
+
+Frontend V4 adalah control surface, bukan authority layer.
+
+Ia menampilkan:
+- objective
+- plan
+- progress
+- action status
+- approval state
+- changes / diff
+- verification
+- repair/replan
+- evidence
+- artifacts
+- result
+- recovery state
+
+Ia tidak menampilkan atau menyimpan hidden chain-of-thought sebagai
+product requirement.
+
+AUTHORITY
+=========
+
+V4 meminta capability.
+V2/V3 security authority menentukan permission dan approval.
+V4 tidak dapat melewati policy melalui UI atau orchestration.
+
+AUTONOMY BOUNDARY
+=================
+
+Autonomous loop harus memiliki:
+- capability boundary
+- authorization
+- approval bila diperlukan
+- checkpoint
+- timeout
+- retry / loop limit
+- cancellation
+- recovery
+- escalation to human
+
+VERIFICATION
+============
+
+V4 tidak menganggap perubahan sebagai sukses hanya karena Agent
+menghasilkan response.
+
+Outcome harus dapat didukung oleh evidence:
+- tests
+- tool result
+- diff
+- external check
+- CI result
+- artifact
+- provider state
+
+EXTERNAL WORKFLOW
+=================
+
+Contoh:
+
+objective
+ → understand
+ → plan
+ → authorize
+ → act
+ → verify
+ → repair/replan
+ → review
+ → commit/push/PR
+ → CI
+ → repair if needed
+ → final result
+
+Provider-specific implementation tetap berada di connector.
+Workflow orchestration tetap berada di V4/application layer.
+
+MULTI-USER
+==========
+
+Work, task, execution, approval, changes, evidence, artifacts, dan
+result yang user-owned harus mengikuti ownership enforcement yang sudah
+berlaku di V3.
+
+RECOVERY
+========
+
+Long-running work harus dapat mempertahankan durable state dan
+melanjutkan execution valid setelah reconnect/restart sesuai capability
+reliability layer.

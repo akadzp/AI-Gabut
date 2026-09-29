@@ -1,0 +1,19 @@
+V4 — ARTIFACTS, EVIDENCE & RESULTS
+
+Tujuan: menjadikan output Agent sebagai hasil kerja yang dapat diperiksa,
+disimpan, dan digunakan kembali.
+
+Scope:
+- result summary
+- changed files
+- test reports
+- logs
+- screenshots / media bila relevan
+- generated documents
+- links / external references
+- evidence provenance
+- artifact ownership
+- retention policy
+
+DoD: Setiap completed work mempunyai result dan evidence yang cukup
+untuk memahami apa yang dilakukan dan apa yang diverifikasi.

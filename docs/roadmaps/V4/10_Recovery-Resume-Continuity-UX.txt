@@ -1,0 +1,19 @@
+V4 — RECOVERY / RESUME / CONTINUITY UX
+
+Tujuan: menjadikan persistence dan recovery V3 sebagai pengalaman yang
+jelas bagi user.
+
+Scope:
+- interrupted work
+- recoverable state
+- resume action
+- stale execution detection
+- checkpoint visibility
+- recovery timeline
+- conflict detection
+- user intervention after interruption
+- final recovery outcome
+
+DoD: User dapat melihat work yang terinterupsi, memahami state terakhir,
+dan melanjutkan execution valid tanpa membuat duplicate work secara
+tidak sengaja.

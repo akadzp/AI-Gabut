@@ -1,0 +1,24 @@
+V4 — TESTING, RELIABILITY & SAFETY
+
+Tujuan: membuktikan work platform aman dan dapat diandalkan ketika
+execution menjadi panjang, autonomous, dan menghasilkan external effect.
+
+Test layers:
+- work/task contracts
+- planning/execution contracts
+- authorization / approval
+- cross-user isolation
+- change/diff integrity
+- verification
+- repair loop limits
+- cancellation
+- timeout
+- background execution
+- restart / resume
+- realtime / reconnect
+- connector failures
+- CI feedback
+- end-to-end autonomous workflow
+
+DoD: Happy path dan failure path utama tervalidasi, autonomous loop
+mempunyai batas yang dapat ditegakkan, dan V2/V3 foundation tetap lulus.

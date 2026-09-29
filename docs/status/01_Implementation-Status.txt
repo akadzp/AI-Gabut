@@ -1,41 +1,84 @@
-IMPLEMENTATION STATUS — V2 HISTORICAL ROADMAP
+IMPLEMENTATION STATUS — V2 / V3 / V4
 
+V2 HISTORICAL ROADMAP
+=====================
 
-ROADMAP 01 — CORE FOUNDATION & RUNTIME
+01 CORE FOUNDATION & RUNTIME                         DONE + VALIDATED
+02 AI / AGENT INTELLIGENCE ENGINE                    DONE + VALIDATED
+03 SECURITY, AUTHORITY & GOVERNANCE                  DONE + VALIDATED
+04 STATE, STORAGE & PERSISTENCE                      DONE + VALIDATED
+05 LOCAL SYSTEM & EXECUTION CAPABILITIES             DONE + VALIDATED
+06 WORKSPACE & CHANGE SYSTEM                         DONE + VALIDATED
+07 TASK, JOB & EXECUTION ORCHESTRATION               DONE + VALIDATED
+08 SYNCHRONIZATION & RECONCILIATION                  DONE + VALIDATED
+09 EXTERNAL CONNECTOR & INTEGRATION LAYER             DONE + VALIDATED
+10 MEDIA & ADVANCED CAPABILITIES                     DONE + VALIDATED
+11 API & SYSTEM INTERFACE                             DONE + VALIDATED
+12 APPLICATION / PRODUCT LAYER                       DONE + VALIDATED
+13 OPERATIONS, RECOVERY & PRODUCTION READINESS       DONE + VALIDATED
 
-01 Audit Existing Foundation       DONE
-02 Define Foundation Boundary      DONE
-03 Define Base Contracts           DONE
-04 Build Runtime Foundation       DONE
-05 Integrate Existing Subsystems   DONE
-06 Validation                     DONE
-07 Definition of Done              DONE
+V2 STATUS
+---------
+COMPLETE against the V2 roadmap scope.
 
-ROADMAP 02 — AI / AGENT INTELLIGENCE ENGINE
+V3 AGENTIC APPLICATION + INTEGRATION FOUNDATION
+================================================
 
-01 Audit Existing Agent Engine       DONE
-02 Define Engine Boundary            DONE
-03 Define Intelligence Contracts     DONE
-04 Build / Integrate Intelligence    DONE
-05 Reliability & Evaluation          DONE
-06 Validation                        DONE
-07 Definition of Done                DONE
+01 Application Runtime                              DONE + VALIDATED
+02 Identity, Authentication & Multi-user             DONE + VALIDATED
+03 Sessions & Conversation                           DONE + VALIDATED
+04 Agent Execution Activation                        DONE + VALIDATED
+05 Memory & Context                                  DONE + VALIDATED
+06 Connections Framework                             DONE + VALIDATED
+07 GitHub Provider                                   DONE + VALIDATED
+08 Workspace & Project Context                       DONE + VALIDATED
+09 Agentic Frontend                                  DONE + VALIDATED
+10 Realtime, Activity & Progress                     DONE + VALIDATED
+11 Approval, Security & Credential Governance        DONE + VALIDATED
+12 Persistence, Recovery & Continuity                DONE + VALIDATED
+13 Deployment & Operations                            DONE + VALIDATED
+14 Testing, Validation & Reliability                 DONE + VALIDATED
+15 Final Definition of Done                          DONE + VALIDATED
 
-ROADMAP 03 — SECURITY, AUTHORITY & GOVERNANCE
+V3 VALIDATION
+-------------
+Final reported local validation:
+- CORE CHECK PASS — 120 JavaScript files
+- platform/runtime/security/application contracts PASS
+- Agentic test suite: 29 PASS / 0 FAIL
 
-01 Audit Existing Security & Governance  DONE
-02 Define Security Boundary              DONE
-03 Define Authority & Permission Contracts DONE
-04 Build Identity, Authorization & Policy Enforcement NEXT
-05 Build Secret Protection & Sandbox Controls
-06 Build Audit & Security Observability
-07 Validation
-08 Definition of Done
+V3 STATUS
+---------
+COMPLETE against the V3 roadmap scope.
 
-SECURITY CONTRACTS:
-- Principal identity is distinct from permission.
-- Action/resource/scope are explicit authorization dimensions.
-- Policy decision is explicit and inspectable.
-- Approval is bound to operation context and expires.
-- Unknown or unsafe authority conditions fail closed.
-- Security contracts do not execute protected operations.
+IMPORTANT SCOPE NOTE
+--------------------
+V3 is not defined as "autonomous AI + complete GitHub coding loop".
+V3 provides the application and integration foundation required for
+those workflows.
+
+GitHub is one provider implementation inside the integration layer.
+Autonomous coding, PR/CI iteration, bounded repair, and human-agent work
+orchestration are V4 product/workflow scope.
+
+V4 — AGENTIC WORK PLATFORM
+===========================
+
+00 Roadmap / Architecture Preparation                  CURRENT
+01 Work & Task Model                                    PLANNED
+02 Agent Planning & Execution UX                       PLANNED
+03 Approval & Human Intervention UX                    PLANNED
+04 Workspace, Diff & Change Experience                 PLANNED
+05 Verification & Test Loop                            PLANNED
+06 Autonomous Repair & Replan Loop                     PLANNED
+07 Git / Change / Pull Request Workflow                PLANNED
+08 CI / External Feedback Loop                         PLANNED
+09 Long-running Work & Background Agent                PLANNED
+10 Recovery / Resume / Continuity UX                   PLANNED
+11 Artifacts, Evidence & Results                       PLANNED
+12 Human / Agent Collaboration                         PLANNED
+13 Observability & Work History                        PLANNED
+14 Agentic Frontend V4                                 PLANNED
+15 End-to-End Autonomous Workflows                     PLANNED
+16 Testing, Reliability & Safety                       PLANNED
+17 Final Definition of Done                            PLANNED

@@ -1,0 +1,48 @@
+V4 — END-TO-END AUTONOMOUS WORKFLOWS
+
+Tujuan: menggabungkan capability V4 menjadi workflow nyata yang
+menghasilkan external outcome.
+
+Contoh target coding workflow:
+
+    user objective
+      ↓
+    understand repository / context
+      ↓
+    plan
+      ↓
+    authorize / approve
+      ↓
+    modify workspace
+      ↓
+    run tests
+      ↓
+    inspect failure
+      ↓
+    repair / replan
+      ↓
+    verify
+      ↓
+    review diff
+      ↓
+    commit / push
+      ↓
+    create PR
+      ↓
+    observe CI
+      ↓
+    repair if required
+      ↓
+    report result
+
+Scope:
+- orchestration
+- capability selection
+- bounded autonomy
+- evidence
+- human intervention
+- external outcome
+- failure recovery
+
+DoD: Setidaknya satu workflow nyata dapat berjalan end-to-end melalui
+V2 + V3 + V4 tanpa fake/mock requirement pada jalur utama.

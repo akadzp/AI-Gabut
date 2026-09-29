@@ -1,0 +1,134 @@
+name: AI-Gabut V4 Batch Worker
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ai-gabut-v4-batch
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  v4-batch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Prepare autonomous V4 branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main --prune
+          if git ls-remote --exit-code --heads origin agentic/v4-autonomous >/dev/null 2>&1; then
+            git fetch origin agentic/v4-autonomous
+            git switch -C agentic/v4-autonomous origin/agentic/v4-autonomous
+          else
+            git switch -C agentic/v4-autonomous origin/main
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          echo "V4_BASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Codex for exactly one V4 batch
+        id: codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          permission-profile: ':workspace'
+          model: gpt-5.6-sol
+          effort: high
+          output-file: .agentic-v4-final-message.txt
+          prompt: |
+            You are the autonomous implementation worker for the AI-Gabut repository.
+
+            Execute EXACTLY ONE V4 roadmap batch in this run.
+
+            Repository: ${{ github.repository }}
+            Branch: agentic/v4-autonomous
+
+            Mission:
+            1. Inspect the actual repository source, tests, package scripts, and V4 roadmap.
+            2. Determine the NEXT V4 batch that is genuinely uncompleted in source/tests.
+               Do NOT trust a roadmap STATUS line as proof that implementation exists.
+            3. Verify all prerequisites for that batch. If the prerequisite is absent or
+               contradictory, stop without implementing the dependent batch and report the blocker.
+            4. If a batch is ready, audit its boundary and contracts before coding.
+            5. Implement ONLY that one batch. Do not start the next batch in the same run.
+            6. Add/update focused tests for the batch and integrate with existing V2/V3 APIs.
+            7. Run the relevant tests and then npm test. Fix failures caused by your changes.
+            8. Preserve V2 and V3 boundaries and the V4 north star: AI + GitHub development workflow.
+            9. Do not add fake implementations merely to satisfy roadmap text.
+            10. Do not modify secrets, CI permissions, or unrelated infrastructure unless the
+                current batch explicitly requires it.
+            11. Do not commit or push; the workflow owns git publication.
+
+            Important current-state warning:
+            The V4 Batch 01 roadmap document may claim implementation while the active source
+            tree may not contain the implementation. Treat source + tests as authoritative.
+
+            Completion condition:
+            - Either one batch is fully implemented and tested, or a concrete prerequisite blocker
+              is established.
+            - Leave the working tree containing only the changes required for that one batch,
+              its tests, and necessary documentation/status updates.
+            - Do not create apply scripts.
+
+      - name: Validate no unrelated changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git status --short
+          if git diff --name-only origin/main...HEAD | grep -E '^\.github/workflows/' >/dev/null; then
+            echo 'Unexpected workflow changes detected in the autonomous work branch.'
+            exit 1
+          fi
+
+      - name: Run full validation
+        shell: bash
+        run: npm test
+
+      - name: Create batch delta artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .agentic-v4-artifact
+          git diff --binary "$V4_BASE_SHA" > .agentic-v4-artifact/working.diff || true
+          git status --short > .agentic-v4-artifact/status.txt
+          cp .agentic-v4-final-message.txt .agentic-v4-artifact/final-message.txt
+          git diff --name-only > .agentic-v4-artifact/changed-files.txt
+          zip -r v4-batch-delta.zip .agentic-v4-artifact >/dev/null
+
+      - name: Publish batch artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: v4-batch-${{ github.run_number }}-delta
+          path: v4-batch-delta.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Commit one batch
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .agentic-v4-artifact v4-batch-delta.zip .agentic-v4-final-message.txt
+          if git diff --quiet && git diff --cached --quiet && [ -z "$(git status --porcelain)" ]; then
+            echo 'No implementation changes produced.'
+            exit 1
+          fi
+          git add -A
+          git commit -m "feat(v4): implement next work batch"
+          git push origin agentic/v4-autonomous
+

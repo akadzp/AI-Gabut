@@ -6,6 +6,8 @@ PURPOSE
 V4 adalah product/workflow layer yang menggunakan V2 AI Foundation dan
 V3 Agentic Application + Integration Foundation.
 
+Tujuan pembuktian utama V4 adalah AI + GitHub development workflow.
+
 V4 tidak membangun Agent Engine kedua dan tidak membuat connector
 provider-specific menjadi bagian dari generic core.
 
@@ -23,6 +25,23 @@ LAYER
     V2 AI / Agent Foundation
       ↓
     Connectors / External Providers
+
+NORTH STAR
+==========
+
+AI-Gabut harus dapat menjadi execution platform untuk pekerjaan
+development.
+
+AI capability dan external capability adalah platform capability yang
+dapat dikombinasikan.
+
+AI + GitHub adalah first proving workflow:
+
+    V2 AI Foundation
+          +
+    V3 GitHub / Integration Foundation
+          ↓
+    V4 Development Work Platform
 
 PRIMARY OBJECT
 ==============
@@ -100,10 +119,10 @@ Outcome harus dapat didukung oleh evidence:
 - artifact
 - provider state
 
-EXTERNAL WORKFLOW
-=================
+AI + GITHUB DEVELOPMENT WORKFLOW
+=================================
 
-Contoh:
+Contoh target:
 
 objective
  → understand
@@ -121,12 +140,27 @@ objective
 Provider-specific implementation tetap berada di connector.
 Workflow orchestration tetap berada di V4/application layer.
 
+GITHUB BOUNDARY
+===============
+
+GitHub:
+- tetap berada pada connector/integration boundary;
+- menyediakan external repository/change/PR/CI capability sesuai scope;
+- tidak menjadi dependency langsung generic Agent Engine.
+
+V4:
+- mengorkestrasi work;
+- memilih capability;
+- menyimpan work state;
+- mengelola verification dan repair;
+- menghubungkan external feedback ke work lifecycle.
+
 MULTI-USER
 ==========
 
 Work, task, execution, approval, changes, evidence, artifacts, dan
-result yang user-owned harus mengikuti ownership enforcement yang sudah
-berlaku di V3.
+result yang user-owned harus mengikuti ownership enforcement yang
+sudah berlaku di V3.
 
 RECOVERY
 ========
@@ -134,3 +168,25 @@ RECOVERY
 Long-running work harus dapat mempertahankan durable state dan
 melanjutkan execution valid setelah reconnect/restart sesuai capability
 reliability layer.
+
+V4 tidak boleh menyamakan reconnect frontend dengan restart execution.
+Durable execution state tetap menjadi source untuk continuity.
+
+BOUNDARY RULE
+=============
+
+Jika sebuah capability:
+- generik terhadap application,
+- tidak membutuhkan identity Agentic,
+- dan berguna bagi lebih dari satu consumer,
+
+maka pertimbangkan untuk menempatkannya pada platform/core/connector
+boundary.
+
+Jika sebuah capability:
+- merupakan workflow produk,
+- bergantung pada work UX,
+- mengorkestrasi beberapa capability,
+- atau merupakan proving use-case AI + GitHub,
+
+maka default-nya berada di V4/application/work layer.

@@ -22,10 +22,65 @@ V3:
 - status: COMPLETE terhadap roadmap V3
 
 V4:
-- fase berikutnya
-- mengubah V2 + V3 foundation menjadi Agentic Work Platform
-- fokus pada pekerjaan nyata, execution UX, autonomous workflow,
-  verification, repair, collaboration, dan external outcome
+- Agentic Work Platform
+- mengubah V2 + V3 foundation menjadi product/workflow layer
+- tujuan pertama: mewujudkan AI + GitHub development workflow nyata
+
+NORTH STAR
+==========
+
+Tujuan awal AI-Gabut bukan membuat aplikasi yang "kebetulan bisa memakai
+GitHub".
+
+Tujuannya adalah membangun platform yang menyediakan AI capability dan
+external capabilities secara modular kepada application.
+
+AI + GitHub adalah kombinasi capability pertama yang digunakan untuk
+membuktikan bahwa Agent dapat melakukan pekerjaan development nyata.
+
+    V2
+    AI / Agent Foundation
+          +
+    V3
+    GitHub / Integration Foundation
+          ↓
+    V4
+    Development Work Platform
+          ↓
+    AI + GitHub Autonomous Development Workflow
+
+TARGET WORKFLOW
+===============
+
+    user objective
+      ↓
+    understand repository / context
+      ↓
+    plan
+      ↓
+    authorize / approve
+      ↓
+    modify workspace
+      ↓
+    verify
+      ↓
+    repair / replan
+      ↓
+    review diff / evidence
+      ↓
+    commit / push
+      ↓
+    create PR
+      ↓
+    observe CI / external feedback
+      ↓
+    repair / replan if required
+      ↓
+    report final result
+
+V4 tidak mengharuskan seluruh capability tersebut menjadi generic core.
+Workflow orchestration tetap berada pada application/work layer.
+Connector tetap provider-specific.
 
 TUJUAN
 ======
@@ -37,39 +92,6 @@ V4 membangun kemampuan product/workflow di atas foundation tersebut
 agar manusia dapat memberikan tujuan dan Agent dapat menjalankan
 pekerjaan multi-step secara observable, governed, recoverable, dan
 menghasilkan outcome nyata.
-
-TARGET EXPERIENCE
-=================
-
-    login
-      ↓
-    choose project / context
-      ↓
-    create work
-      ↓
-    give objective
-      ↓
-    understand
-      ↓
-    plan
-      ↓
-    authorize / approve
-      ↓
-    act
-      ↓
-    observe
-      ↓
-    verify
-      ↓
-    repair / replan
-      ↓
-    review changes / evidence
-      ↓
-    finish / publish outcome
-      ↓
-    persist
-      ↓
-    resume if interrupted
 
 TARGET ARCHITECTURE
 ===================
@@ -92,7 +114,7 @@ PRINCIPLES
 1. V4 menggunakan V2 dan V3 sebagai platform foundation.
 2. V4 tidak memasukkan product-specific workflow ke generic core
    apabila workflow tersebut merupakan application/use-case concern.
-3. Connector tetap provider-neutral dan reusable.
+3. Connector tetap provider-neutral dan reusable pada contract level.
 4. Frontend menampilkan observable execution state, bukan hidden
    chain-of-thought.
 5. Approval tetap diputuskan oleh security authority, bukan UI.
@@ -102,8 +124,8 @@ PRINCIPLES
    cancellation, approval, dan recovery.
 8. Setiap action penting harus menghasilkan evidence yang dapat
    diperiksa manusia.
-9. V4 boleh memperluas connector capability, tetapi tidak mengikat
-   Agentic secara permanen kepada satu provider.
+9. GitHub adalah provider pertama untuk development workflow, bukan
+   identity permanen Agentic.
 10. V4 harus tetap memungkinkan application lain menggunakan V2/V3
     foundation tanpa membawa identity Agentic.
 
@@ -180,6 +202,8 @@ memperlihatkan progress dan evidence, meminta intervensi saat perlu,
 memverifikasi hasil, memperbaiki kegagalan secara bounded, menjaga
 state selama pekerjaan panjang, dan menghasilkan outcome yang dapat
 diperiksa manusia.
+
+AI + GitHub adalah proving workflow utama untuk Definition of Done V4.
 
 V4 bukan sekadar:
 - chat yang lebih bagus;

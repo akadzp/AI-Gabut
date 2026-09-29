@@ -32,6 +32,40 @@ V4 — PLANNED
   recovery UX, artifacts/evidence, collaboration, dan autonomous
   end-to-end workflow
 
+NORTH STAR
+----------
+
+Tujuan awal AI-Gabut adalah membangun AI development platform yang
+menjadikan AI sebagai execution capability dan external systems sebagai
+modular capabilities.
+
+AI + GitHub adalah proving workflow pertama:
+
+    V2 AI Foundation
+          +
+    V3 GitHub / Integration Foundation
+          ↓
+    V4 Development Work Platform
+          ↓
+    real development workflow
+
+Target workflow:
+
+    Understand
+      → Plan
+      → Authorize / Approve
+      → Modify
+      → Verify
+      → Repair / Replan
+      → Commit / Push
+      → PR
+      → CI / External Feedback
+      → Repair / Replan
+      → Result
+
+V4 tidak berarti GitHub menjadi milik Agentic. GitHub tetap berada di
+integration boundary dan dapat digunakan oleh application lain.
+
 ARCHITECTURAL POSITION
 ----------------------
 
@@ -43,6 +77,8 @@ ARCHITECTURAL POSITION
           ↓
     V4
     Agentic Work Platform
+          ↓
+    AI + GitHub Development Workflow
 
 V2 dan V3 adalah foundation.
 V4 adalah product/workflow layer yang menggunakan foundation tersebut.

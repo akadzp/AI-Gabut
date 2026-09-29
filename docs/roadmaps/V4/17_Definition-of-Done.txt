@@ -28,8 +28,20 @@ V4 selesai apabila:
 22. Setidaknya satu real-world autonomous workflow tervalidasi
     end-to-end.
 
-REAL-WORLD FLOW
----------------
+PRIMARY PROVING OUTCOME
+-----------------------
+
+V4 harus membuktikan bahwa:
+
+    V2 AI Foundation
+          +
+    V3 GitHub / Integration Foundation
+          ↓
+    V4 Work Platform
+          ↓
+    real AI + GitHub development workflow
+
+Real-world flow:
 
     login
       → project/context
@@ -43,8 +55,16 @@ REAL-WORLD FLOW
       → verify
       → repair/replan
       → review
+      → commit/push
+      → PR
+      → CI/external feedback
+      → repair/replan if required
       → external outcome
       → report
       → persist
       → restart/reconnect
       → resume
+
+V4 tidak dianggap selesai hanya karena setiap fitur dapat didemokan
+secara terpisah. Minimal satu workflow nyata harus menghubungkan
+capability tersebut sebagai satu Work lifecycle.

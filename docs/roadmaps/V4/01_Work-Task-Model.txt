@@ -3,6 +3,8 @@ V4 — WORK & TASK MODEL
 Tujuan: menjadikan pekerjaan user sebagai resource utama yang dapat
 dilihat, dijalankan, dihentikan, dilanjutkan, dan diaudit.
 
+Work adalah abstraction product-level di atas session dan execution.
+
 MODEL
 
 Project
@@ -30,6 +32,13 @@ Scope:
 - cancellation
 - resume
 - result / outcome
+
+AI + GitHub relevance:
+- work harus dapat membawa repository/project context;
+- task dapat memicu execution pada Agent Engine;
+- changes dan evidence menjadi bagian dari work;
+- external outcome seperti PR dapat direferensikan tanpa menjadikan
+  GitHub sebagai identity Work.
 
 DoD: User dapat membuat work nyata dan melihat lifecycle work tanpa
 mencampurkan session, task, dan execution menjadi satu resource.

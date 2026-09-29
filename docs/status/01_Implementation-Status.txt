@@ -11,7 +11,7 @@ V2 HISTORICAL ROADMAP
 06 WORKSPACE & CHANGE SYSTEM                         DONE + VALIDATED
 07 TASK, JOB & EXECUTION ORCHESTRATION               DONE + VALIDATED
 08 SYNCHRONIZATION & RECONCILIATION                  DONE + VALIDATED
-09 EXTERNAL CONNECTOR & INTEGRATION LAYER             DONE + VALIDATED
+09 EXTERNAL CONNECTOR & INTEGRATION LAYER            DONE + VALIDATED
 10 MEDIA & ADVANCED CAPABILITIES                     DONE + VALIDATED
 11 API & SYSTEM INTERFACE                             DONE + VALIDATED
 12 APPLICATION / PRODUCT LAYER                       DONE + VALIDATED
@@ -53,13 +53,33 @@ COMPLETE against the V3 roadmap scope.
 
 IMPORTANT SCOPE NOTE
 --------------------
-V3 is not defined as "autonomous AI + complete GitHub coding loop".
-V3 provides the application and integration foundation required for
-those workflows.
+V3 is the application and integration foundation.
 
+V3 is not defined as the complete autonomous AI development product.
 GitHub is one provider implementation inside the integration layer.
-Autonomous coding, PR/CI iteration, bounded repair, and human-agent work
-orchestration are V4 product/workflow scope.
+
+V3 therefore supplies the primitives required by V4:
+- Agentic application lifecycle
+- user/session isolation
+- memory/context
+- connection/provider relationship
+- GitHub capability
+- workspace context
+- activity/realtime
+- approval/security
+- persistence/recovery
+- frontend/backend boundary
+
+V4 owns the higher-level development work workflow:
+- understand repository
+- plan work
+- modify workspace
+- verify
+- repair/replan
+- commit/push/PR
+- consume CI/external feedback
+- continue bounded autonomous work
+- report external outcome
 
 V4 — AGENTIC WORK PLATFORM
 ===========================
@@ -82,3 +102,15 @@ V4 — AGENTIC WORK PLATFORM
 15 End-to-End Autonomous Workflows                     PLANNED
 16 Testing, Reliability & Safety                       PLANNED
 17 Final Definition of Done                            PLANNED
+
+V4 NORTH STAR
+=============
+
+The first proving workflow is AI + GitHub development.
+
+V4 is successful when the existing V2 AI foundation and V3 GitHub /
+integration foundation can be composed into a real, governed,
+observable and recoverable development workflow.
+
+GitHub remains a connector/provider.
+Development work orchestration remains a V4/application concern.

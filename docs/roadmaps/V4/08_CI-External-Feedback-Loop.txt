@@ -3,6 +3,9 @@ V4 — CI / EXTERNAL FEEDBACK LOOP
 Tujuan: membuat Agent dapat menggunakan feedback eksternal sebagai input
 verification dan repair.
 
+CI adalah salah satu mekanisme external feedback untuk proving workflow
+AI + GitHub.
+
 Scope:
 - CI status
 - workflow/run discovery
@@ -13,6 +16,12 @@ Scope:
 - repair trigger
 - bounded iteration
 - final outcome
+
+Boundary:
+- provider-specific CI API tetap berada di connector;
+- feedback yang sudah dinormalisasi masuk ke Work context;
+- repair/replan tetap dikendalikan oleh V4 bounded workflow;
+- CI success tidak menggantikan security/approval policy.
 
 DoD: Agent dapat menerima failure dari external verification system,
 memasukkannya ke work context, dan melakukan repair/replan secara

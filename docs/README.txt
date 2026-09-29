@@ -54,6 +54,50 @@ tersebut untuk membangun product/workflow layer yang memungkinkan Agent
 menyelesaikan pekerjaan nyata secara observable, governed, recoverable,
 dan dapat diverifikasi.
 
+NORTH STAR — AI + GITHUB
+
+Tujuan awal AI-Gabut tetap menjadi referensi utama V4:
+
+AI-Gabut harus dapat menjadi execution platform untuk pekerjaan
+development, dengan AI capability dan external capability yang modular.
+
+AI + GitHub adalah use-case utama pertama untuk membuktikan platform ini.
+
+Secara arsitektur:
+- V2 menyediakan AI / agent foundation.
+- V3 menyediakan application + integration foundation dan GitHub provider.
+- V4 menggabungkan capability tersebut menjadi development work workflow.
+
+Target konseptual:
+
+    Repository
+      ↓
+    Understand
+      ↓
+    Plan
+      ↓
+    Authorize / Approve
+      ↓
+    Modify
+      ↓
+    Verify
+      ↓
+    Repair / Replan
+      ↓
+    Commit / Push
+      ↓
+    Pull Request
+      ↓
+    CI / External Feedback
+      ↓
+    Repair / Replan bila diperlukan
+      ↓
+    Final Result
+
+GitHub adalah provider pertama untuk external development workflow.
+Workflow tidak boleh dibuat GitHub-specific apabila abstraction-nya
+sebenarnya merupakan generic work/change capability.
+
 V4 mencakup:
 - work/task model
 - planning/execution UX
@@ -137,6 +181,9 @@ ARCHITECTURAL MODEL
            ▼
     V4
     Agentic Work Platform
+           │
+           ▼
+    AI + GitHub Development Workflow
 
 AI-Gabut adalah platform.
 
@@ -156,7 +203,8 @@ V3:
 
 V4:
     project → work → objective → plan → execution → approval →
-    changes → verification → repair/replan → result → recovery
+    changes → verification → repair/replan → external outcome →
+    result → recovery
 
 ATURAN ARSITEKTUR
 
@@ -177,3 +225,5 @@ ATURAN ARSITEKTUR
 14. V4 membangun work/product capability di atas V2 + V3.
 15. Autonomous behavior harus bounded, observable, governed, dan
     recoverable.
+16. AI + GitHub adalah first proving workflow, bukan batas arsitektur
+    platform.

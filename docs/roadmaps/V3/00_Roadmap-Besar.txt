@@ -19,22 +19,21 @@ TUJUAN
 V3 mengaktifkan Agentic sebagai application nyata di atas V2 dan
 membangun integration foundation yang reusable.
 
-Agentic harus dapat:
-1. menerima user secara aman;
-2. mempunyai session/chat terpisah;
-3. menjaga context dan memory;
-4. menghubungkan provider eksternal;
-5. menggunakan GitHub sebagai provider pertama;
-6. mempunyai workspace yang mengikuti resource yang dipilih;
-7. menerima pekerjaan nyata;
-8. memahami → merencanakan → bertindak → mengamati → mengevaluasi →
-   memperbaiki/replan → menyelesaikan → melaporkan;
-9. meminta approval bila diperlukan;
-10. menyimpan execution state;
-11. resume setelah restart;
-12. mempunyai frontend dan backend yang dapat satu server atau terpisah;
-13. menjaga isolasi antar-user;
-14. menyediakan observability, audit, recovery, dan operations.
+V3 harus menyediakan:
+1. application runtime;
+2. identity dan multi-user isolation;
+3. session/chat dan context;
+4. agent execution activation;
+5. memory;
+6. connection terhadap provider eksternal;
+7. GitHub sebagai provider pertama;
+8. workspace/project context;
+9. frontend/backend boundary;
+10. realtime/activity;
+11. approval/security/credential governance;
+12. persistence/recovery;
+13. deployment/operations;
+14. validation.
 
 TARGET ARCHITECTURE
 ===================
@@ -58,6 +57,47 @@ TARGET ARCHITECTURE
      ↓
     Connectors
      └── GitHub first
+
+GITHUB POSITION
+===============
+
+GitHub adalah provider pertama yang membuktikan integration boundary.
+
+    Agentic
+       ↓
+    connection contract
+       ↓
+    GitHub connector
+       ↓
+    GitHub API
+
+GitHub tidak menjadi identity permanen Agentic.
+V3 tidak menyelesaikan seluruh autonomous development workflow.
+
+V3 menyediakan capability yang akan dikonsumsi V4.
+
+V3 → V4 BOUNDARY
+================
+
+V3 owns:
+- application foundation
+- integration foundation
+- GitHub provider capability
+- workspace context
+- security/approval
+- persistence/recovery
+- frontend/backend boundary
+
+V4 owns:
+- work/task product model
+- development planning
+- change/verification workflow
+- bounded repair/replan
+- commit/push/PR orchestration
+- CI/external feedback
+- long-running work
+- human-agent intervention
+- end-to-end autonomous development workflow
 
 ROADMAP TURUNAN
 ===============
@@ -103,7 +143,7 @@ GitHub adalah salah satu connector/provider implementation.
 
 Kemampuan seperti autonomous coding loop, bounded repair/replan,
 commit/push/PR/CI orchestration, background work UX, dan human-agent
-work control merupakan candidate V4 product/workflow scope.
+work control merupakan V4 product/workflow scope.
 
 DEPENDENCY
 ==========

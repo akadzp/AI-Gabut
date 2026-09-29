@@ -3,7 +3,7 @@ V4 — END-TO-END AUTONOMOUS WORKFLOWS
 Tujuan: menggabungkan capability V4 menjadi workflow nyata yang
 menghasilkan external outcome.
 
-Contoh target coding workflow:
+PRIMARY PROVING WORKFLOW — AI + GITHUB
 
     user objective
       ↓
@@ -43,6 +43,14 @@ Scope:
 - human intervention
 - external outcome
 - failure recovery
+- provider-neutral workflow boundary
+
+GitHub adalah provider pertama dalam workflow ini.
+Workflow tidak boleh dikunci secara arsitektural ke GitHub.
 
 DoD: Setidaknya satu workflow nyata dapat berjalan end-to-end melalui
 V2 + V3 + V4 tanpa fake/mock requirement pada jalur utama.
+
+Target akhir bukan "chatbot yang dapat membaca GitHub", tetapi Agent
+yang dapat menyelesaikan development Work dengan outcome eksternal yang
+dapat diverifikasi manusia.

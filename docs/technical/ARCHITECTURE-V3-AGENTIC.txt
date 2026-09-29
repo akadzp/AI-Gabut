@@ -11,8 +11,7 @@ V3 = Agentic Application + Integration Foundation
 V4 = Agentic Work Platform di atas V2 + V3
 
 V3 menyediakan reusable application/integration primitives.
-V4 akan menggunakan primitives tersebut untuk product/workflow
-orchestration yang lebih tinggi.
+V4 menggunakan primitives tersebut untuk product/workflow orchestration.
 
 LAYER
 =====
@@ -87,6 +86,15 @@ Generic core tidak memanggil GitHub API langsung.
 GitHub adalah salah satu integration/provider implementation dan bukan
 identity permanen Agentic.
 
+AI + GITHUB POSITION
+====================
+
+AI + GitHub adalah proving use-case, bukan boundary arsitektur.
+
+V2 menyediakan AI / Agent Foundation.
+V3 menyediakan GitHub dan integration foundation.
+V4 menggunakan keduanya untuk membangun development work workflow.
+
 AGENT AUTHORITY
 ===============
 
@@ -132,21 +140,12 @@ SECURITY DATA: credentials, approvals, security audit
 Infrastructure storage boleh sama, tetapi ownership dan access policy
 tetap berbeda.
 
-DEPLOYMENT
-==========
-
-Topology A: Frontend + Agentic Backend → AI-Gabut
-
-Topology B: Frontend → Agentic Backend → AI-Gabut
-
-Core tidak bergantung pada topology.
-
 V3 → V4 BOUNDARY
 ================
 
 V3 owns reusable application/integration foundation.
 
-V4 owns higher-level work/product orchestration, termasuk:
+V4 owns higher-level work/product orchestration:
 - work/task model
 - planning/execution UX
 - human intervention
@@ -159,6 +158,15 @@ V4 owns higher-level work/product orchestration, termasuk:
 
 V4 tidak boleh memindahkan product workflow tersebut ke generic core
 hanya karena Agentic merupakan consumer pertama.
+
+DEPLOYMENT
+==========
+
+Topology A: Frontend + Agentic Backend → AI-Gabut
+
+Topology B: Frontend → Agentic Backend → AI-Gabut
+
+Core tidak bergantung pada topology.
 
 V2 PRESERVATION
 ===============

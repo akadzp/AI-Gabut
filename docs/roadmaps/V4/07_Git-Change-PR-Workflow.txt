@@ -3,6 +3,9 @@ V4 — GIT / CHANGE / PULL REQUEST WORKFLOW
 Tujuan: mengubah workspace result menjadi lifecycle perubahan eksternal
 secara governed.
 
+Ini adalah bagian penting dari proving workflow AI + GitHub, tetapi
+abstraction work/change tetap provider-neutral.
+
 Scope:
 - branch strategy
 - commit preparation
@@ -13,10 +16,17 @@ Scope:
 - review context
 - merge state visibility
 - provider-neutral change workflow
+- external outcome linkage
 
-GitHub menjadi provider pertama untuk capability yang tersedia. Model
-work/change tetap berada pada application/workflow layer dan connector
-contract.
+GitHub menjadi provider pertama untuk capability yang tersedia.
+Model work/change tetap berada pada application/workflow layer dan
+connector contract.
+
+Boundary:
+- Git-specific provider operations tetap di connector;
+- work/change orchestration tetap di V4;
+- approval tetap melalui security authority;
+- evidence commit/push/PR harus dapat dikaitkan dengan Work.
 
 DoD: User dapat membawa work yang tervalidasi menuju external change
 workflow dengan approval dan evidence yang sesuai.

@@ -1,7 +1,11 @@
 {
-  "version": "correction-03",
-  "reason": "Compatibility with existing connection service contract and minimal provider test double; no behavior change to durable credential/recovery paths.",
+  "type": "delta",
+  "correction": "05",
   "files": [
-    "apps/agentic/backend/github.js"
-  ]
+    "apps/agentic/backend/application.js",
+    "apps/agentic/backend/server.js",
+    "tests/apps/agentic-deployment-security.mjs",
+    "tests/apps/agentic-execution.mjs"
+  ],
+  "notes": "Wiring recovery into application, preserving realtime, enforcing deployment middleware, adding resume endpoint and integration tests."
 }

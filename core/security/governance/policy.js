@@ -77,13 +77,15 @@ function fingerprint(tool, input) {
   return crypto.createHash("sha256").update(`${tool}:${JSON.stringify(redactSecrets(normalized))}`).digest("hex");
 }
 
-export function issueApproval({ tool, input = {}, sessionId = null, reason = "" } = {}) {
+export function issueApproval({ tool, input = {}, principalId = null, sessionId = null, executionId = null, reason = "" } = {}) {
   const policy = getToolPolicy(tool);
   if (policy.permission !== "approval") throw new Error(`Tool '${tool}' tidak memerlukan approval khusus`);
   const token = crypto.randomUUID();
   approvals.set(token, {
     tool,
+    principalId: principalId || null,
     sessionId: sessionId || null,
+    executionId: executionId || null,
     fingerprint: fingerprint(tool, input),
     reason: String(reason || "").slice(0, 500),
     createdAt: Date.now(),
@@ -91,17 +93,26 @@ export function issueApproval({ tool, input = {}, sessionId = null, reason = "" 
     used: false
   });
   auditEvent({ actor: "user", action: "approval-issued", tool, input, outcome: "approved", meta: { expiresInMs: 5 * 60 * 1000 } });
-  return { token, tool, expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString() };
+  return { token, tool, principalId: principalId || null, sessionId: sessionId || null, executionId: executionId || null, expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString() };
 }
 
-export function consumeApproval({ token, tool, input = {}, sessionId = null } = {}) {
+export function revokeApproval(token) {
+  if (!token) return false;
+  const removed = approvals.delete(token);
+  if (removed) auditEvent({ actor: "user", action: "approval-revoked", outcome: "revoked" });
+  return removed;
+}
+
+export function consumeApproval({ token, tool, input = {}, principalId = null, sessionId = null, executionId = null } = {}) {
   if (!token) return { ok: false, error: "Human approval token wajib diisi" };
   const record = approvals.get(token);
   if (!record) return { ok: false, error: "Approval token tidak valid" };
   if (record.used) return { ok: false, error: "Approval token sudah digunakan" };
   if (Date.now() > record.expiresAt) return { ok: false, error: "Approval token sudah kedaluwarsa" };
   if (record.tool !== tool) return { ok: false, error: "Approval token tidak cocok dengan tool" };
+  if (record.principalId && record.principalId !== principalId) return { ok: false, error: "Approval token tidak cocok dengan principal" };
   if (record.sessionId && record.sessionId !== sessionId) return { ok: false, error: "Approval token tidak cocok dengan session" };
+  if (record.executionId && record.executionId !== executionId) return { ok: false, error: "Approval token tidak cocok dengan execution" };
   if (record.fingerprint !== fingerprint(tool, input)) return { ok: false, error: "Approval token tidak cocok dengan parameter tool" };
   record.used = true;
   auditEvent({ actor: "user", action: "approval-consumed", tool, input, outcome: "approved" });
@@ -116,7 +127,7 @@ export function assertSecretSafeInput(tool, input = {}) {
   }
 }
 
-export function authorizeTool({ tool, input = {}, sessionId = null, approvalToken = null, definition = null } = {}) {
+export function authorizeTool({ tool, input = {}, principalId = null, sessionId = null, executionId = null, approvalToken = null, definition = null } = {}) {
   const policy = getToolPolicy(tool, definition);
   assertSecretSafeInput(tool, input);
   try {
@@ -133,7 +144,7 @@ export function authorizeTool({ tool, input = {}, sessionId = null, approvalToke
   }
 
   if (policy.permission === "approval") {
-    const approval = consumeApproval({ token: approvalToken, tool, input, sessionId });
+    const approval = consumeApproval({ token: approvalToken, tool, input, principalId, sessionId, executionId });
     if (!approval.ok) {
       auditEvent({ actor: "agent", action: "tool-authorize", tool, input, outcome: "blocked", meta: { reason: approval.error } });
       return { ok: false, status: 403, blocked: true, requiresApproval: true, risk: policy.risk, error: approval.error };

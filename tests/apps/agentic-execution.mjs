@@ -246,3 +246,23 @@ test(
     assert.equal(result.execution.status, "cancelled");
   }
 );
+
+
+test("recovered execution resumes through the Agentic application lifecycle", async () => {
+  const calls = [];
+  const app = await seededApp(async (args) => {
+    calls.push(args.executionId);
+    return { text: "resumed", plan: [] };
+  });
+  const u = await app.auth.register({ email: "resume@example.com", password: "password-a-123" });
+  const session = await app.createChatSession(u.id, { title: "Recovery test" });
+  const execution = { id: "recover-me", ownerId: u.id, sessionId: session.id, taskId: "task-recover", status: "running", prompt: "resume this", checkpoint: { turn: 1 }, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  await app.store.putTask(u.id, { id: execution.taskId, sessionId: session.id, status: "running" });
+  await app.store.putExecution(u.id, execution);
+  const found = await app.recovery.scan(u.id);
+  assert.equal(found.length, 1);
+  const result = await app.resumeExecution(u.id, execution.id);
+  assert.equal(result.execution.id, execution.id);
+  assert.equal(result.execution.status, "completed");
+  assert.deepEqual(calls, [execution.id]);
+});

@@ -15,7 +15,7 @@ export const TOOL_CATALOG = {
 
 export async function executeTool(name, input = {}, governance = {}) {
   const definition = TOOL_DEFINITIONS.find(tool => tool.name === name) || null;
-  const authorization = authorizeTool({ tool: name, input, definition, sessionId: governance.sessionId, approvalToken: governance.approvalToken });
+  const authorization = authorizeTool({ tool: name, input, definition, principalId: governance.principal?.userId || governance.principalId || null, sessionId: governance.sessionId, executionId: governance.executionId || null, approvalToken: governance.approvalToken });
   if (!authorization.ok) return authorization;
 
   auditEvent({ actor: "agent", action: "tool-execute-start", tool: name, input, outcome: "started" });

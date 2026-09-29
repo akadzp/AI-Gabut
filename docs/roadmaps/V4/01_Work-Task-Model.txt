@@ -1,44 +1,126 @@
-V4 — WORK & TASK MODEL
+V4 — BATCH 01 — WORK & TASK MODEL
 
-Tujuan: menjadikan pekerjaan user sebagai resource utama yang dapat
-dilihat, dijalankan, dihentikan, dilanjutkan, dan diaudit.
+STATUS
+======
+IMPLEMENTED — pending local repository validation.
 
-Work adalah abstraction product-level di atas session dan execution.
+PURPOSE
+=======
+Work menjadi resource product-level utama untuk pekerjaan user. Work tidak
+menggantikan session, task, atau execution; Work mengorkestrasi referensi
+ketiganya sebagai satu unit pekerjaan yang dapat dilihat dan dikendalikan.
 
-MODEL
-
-Project
-  ↓
-Work
-  ├── objective
-  ├── context
-  ├── plan
-  ├── task(s)
-  ├── execution(s)
-  ├── changes
-  ├── evidence
-  ├── approval(s)
-  └── result
-
-Scope:
+BOUNDARY
+========
+V4 application/work layer owns:
 - work identity
 - objective
-- work state
-- task decomposition
-- execution association
-- ownership
+- project/workspace context reference
+- work lifecycle
 - priority
-- lifecycle
-- cancellation
-- resume
-- result / outcome
+- references to tasks, executions, changes, evidence, approvals
+- result/outcome
 
-AI + GitHub relevance:
-- work harus dapat membawa repository/project context;
-- task dapat memicu execution pada Agent Engine;
-- changes dan evidence menjadi bagian dari work;
-- external outcome seperti PR dapat direferensikan tanpa menjadikan
-  GitHub sebagai identity Work.
+V2/V3 remain owners of:
+- Agent Engine execution capability
+- security/approval authority
+- storage primitives
+- GitHub connector and external provider identity
+- workspace and connection foundation
 
-DoD: User dapat membuat work nyata dan melihat lifecycle work tanpa
-mencampurkan session, task, dan execution menjadi satu resource.
+CONTRACT
+========
+Work shape:
+- id
+- ownerId
+- projectId|null
+- workspaceId|null
+- objective
+- context
+- plan|null
+- taskIds[]
+- executionIds[]
+- changeIds[]
+- evidenceIds[]
+- approvalIds[]
+- result|null
+- state
+- priority
+- createdAt
+- updatedAt
+- startedAt|null
+- finishedAt|null
+- cancelledAt|null
+
+Lifecycle:
+draft → ready → running
+running → waiting_approval | paused | completed | failed | cancelled | stopped
+waiting_approval → running | paused | cancelled | failed
+paused → ready | running | cancelled | stopped
+draft → ready | cancelled
+ready → running | cancelled
+
+Terminal states:
+- completed
+- failed
+- cancelled
+- stopped
+
+Terminal Work cannot be mutated or transitioned again.
+
+OWNERSHIP
+=========
+All Work operations are owner-scoped. A user cannot read, mutate, cancel,
+or attach references to another user's Work.
+
+RESOURCE SEPARATION
+===================
+Task and Execution remain independent resources. Work stores their IDs and
+does not copy their lifecycle into the Work object.
+
+REFERENCE MODEL
+===============
+Work may reference:
+- task
+- execution
+- change
+- evidence
+- approval
+
+References are explicit and append-only at this batch. Provider-specific
+objects are not embedded as Work identity.
+
+API SURFACE
+===========
+Authenticated Agentic API:
+- POST   /api/agentic/works
+- GET    /api/agentic/works
+- GET    /api/agentic/works/:id
+- PATCH  /api/agentic/works/:id
+- POST   /api/agentic/works/:id/transition
+- POST   /api/agentic/works/:id/cancel
+- POST   /api/agentic/works/:id/tasks/:taskId
+- POST   /api/agentic/works/:id/executions/:executionId
+- POST   /api/agentic/works/:id/references/:kind/:referenceId
+
+AI + GITHUB
+===========
+Work may carry workspace/project context but does not make GitHub its
+identity. GitHub remains reachable through the V3 workspace/connection/
+connector boundary.
+
+VALIDATION
+==========
+Batch tests cover:
+- creation and identity
+- lifecycle transition safety
+- terminal immutability
+- task/execution separation
+- reference association
+- ownership isolation
+
+NEXT BATCH
+==========
+Batch 02 — Agent Planning & Execution UX.
+It may consume Work only after Batch 01 is present and validated in the
+active repository.

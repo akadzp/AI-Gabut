@@ -1,132 +1,42 @@
 CURRENT STATUS
 
 PROJECT: AI-Gabut
-CURRENT PHASE: V4 — Agentic Work Platform Planning
+CURRENT PHASE: V4 — Agentic Work Platform
 CURRENT ROADMAP: V4 — Agentic Work Platform
-CURRENT BATCH: 00 — Roadmap / Architecture Preparation
+CURRENT BATCH: 01 — Work & Task Model
 
 VERSION STATUS
 --------------
-V1 — HISTORICAL
-- fase awal
-- documentation tidak lengkap
-
 V2 — COMPLETE
-- AI / Agent Foundation
-- seluruh roadmap V2 00–13 terhadap scope yang ditetapkan telah selesai
-- foundation dapat digunakan secara reusable oleh application
-- V2 dipertahankan sebagai historical baseline
-
 V3 — COMPLETE + VALIDATED
-- Agentic Application + Integration Foundation
-- roadmap 01–15 selesai terhadap scope yang ditetapkan
-- final validation: 29 Agentic tests PASS / 0 FAIL
-- core/platform validation PASS
-- V3 frontend baseline selesai
-- GitHub adalah salah satu integration/provider, bukan identity permanen Agentic
+V4 — IN PROGRESS
 
-V4 — PLANNED
-- Agentic Work Platform
-- fokus pada work/task model, planning UX, execution control,
-  verification, repair/replan, change/PR/CI workflow, background work,
-  recovery UX, artifacts/evidence, collaboration, dan autonomous
-  end-to-end workflow
+V4 BATCH 01
+-----------
+- Work domain resource implemented at application/work layer.
+- Owner-scoped persistence added through Agentic state storage.
+- Work lifecycle and terminal-state protection implemented.
+- Task and Execution remain independent resources and are referenced by ID.
+- Authenticated API surface added for Work creation, inspection, lifecycle,
+  cancellation, and resource association.
+- Batch-specific tests added.
+
+VALIDATION IN THIS RUN
+----------------------
+- Static source generation completed.
+- Batch test file created.
+- Full repository test suite could not be executed against the remote
+  repository snapshot because the automation environment has no local clone
+  and repository network download is unavailable.
+- The user must apply the generated delta ZIP to the local repository and
+  run the normal validation suite there.
 
 NORTH STAR
 ----------
-
-Tujuan awal AI-Gabut adalah membangun AI development platform yang
-menjadikan AI sebagai execution capability dan external systems sebagai
-modular capabilities.
-
-AI + GitHub adalah proving workflow pertama:
-
-    V2 AI Foundation
-          +
-    V3 GitHub / Integration Foundation
-          ↓
-    V4 Development Work Platform
-          ↓
-    real development workflow
-
-Target workflow:
-
-    Understand
-      → Plan
-      → Authorize / Approve
-      → Modify
-      → Verify
-      → Repair / Replan
-      → Commit / Push
-      → PR
-      → CI / External Feedback
-      → Repair / Replan
-      → Result
-
-V4 tidak berarti GitHub menjadi milik Agentic. GitHub tetap berada di
-integration boundary dan dapat digunakan oleh application lain.
-
-ARCHITECTURAL POSITION
-----------------------
-
-    V2
-    AI / Agent Foundation
-          ↓
-    V3
-    Application + Integration Foundation
-          ↓
-    V4
-    Agentic Work Platform
-          ↓
-    AI + GitHub Development Workflow
-
-V2 dan V3 adalah foundation.
-V4 adalah product/workflow layer yang menggunakan foundation tersebut.
-
-FRONTEND POSITION
------------------
-
-V3 frontend baseline:
-- login / registration
-- sessions / chat
-- connections
-- GitHub repository / branch selection
-- workspace binding
-- file tree / file content
-- activity visibility
-
-V4 frontend target:
-- project / work context
-- objective
-- plan
-- execution timeline
-- approval / intervention
-- diff / change review
-- verification / tests
-- repair / replan state
-- artifacts / evidence
-- background work
-- recovery / resume
-- final result / external outcome
-
-VALIDATION EVIDENCE
--------------------
-
-Final local validation reported:
-- CORE CHECK PASS — 120 JavaScript files
-- Platform contracts: PASS
-- Platform dependency/health: PASS
-- PLATFORM RUNTIME VALIDATION PASS
-- Operations runtime contract: PASS
-- Production configuration contract: PASS
-- Security secret/sandbox contract: PASS
-- security audit observability: PASS
-- Storage / State / Workspace / Task / Sync / Connector / Media / API /
-  Application contracts: PASS
-- Agentic tests: 29 PASS / 0 FAIL / 0 cancelled / 0 skipped
+V4 continues to build the Development Work Platform above V2 + V3.
+AI + GitHub remains the proving workflow; GitHub is not Work identity.
 
 NEXT
 ----
-
-V4 harus dimulai dari audit terhadap foundation V2/V3 dan frontend V3,
-bukan dari perubahan core secara langsung.
+Batch 02 — Agent Planning & Execution UX, after Batch 01 has been locally
+applied and validated.

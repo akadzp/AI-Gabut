@@ -2,7 +2,7 @@ import { createStateService } from "../../../core/storage/state/index.js";
 import { createStorage } from "../../../core/storage/index.js";
 import { createId } from "./ids.js";
 
-const SCOPES=["users","auth-sessions","chat-sessions","chat-messages","connections","connection-credentials","workspaces","tasks","executions","activities","memories"];
+const SCOPES=["users","auth-sessions","chat-sessions","chat-messages","connections","connection-credentials","workspaces","tasks","executions","activities","memories","works"];
 
 export function createAgenticStore({storage=createStorage()}={}) {
   const state=createStateService({storage,namespace:"agentic",scopes:SCOPES});
@@ -64,6 +64,9 @@ export function createAgenticStore({storage=createStorage()}={}) {
     putMemory:(u,m,o={})=>putOwned("memories",u,m.id,m,o),
     getMemory:(u,id)=>getOwned("memories",u,id),
     listMemories:u=>listOwned("memories",u),
-    removeMemory:(u,id)=>removeOwned("memories",u,id)
+    removeMemory:(u,id)=>removeOwned("memories",u,id),
+    putWork:(u,w,o={})=>putOwned("works",u,w.id,w,o),
+    getWork:(u,id)=>getOwned("works",u,id),
+    listWorks:u=>listOwned("works",u)
   });
 }

@@ -1,22 +1,25 @@
 {
-  "project": "AI-Gabut",
-  "purpose": "V4 documentation alignment before implementation",
-  "source_ref": "main",
-  "scope": "docs-only",
+  "batch": "V4-01",
+  "name": "Work & Task Model",
+  "base": "akadzp/AI-Gabut@main",
   "files": [
-    "docs/README.txt",
-    "docs/roadmaps/V3/00_Roadmap-Besar.txt",
-    "docs/roadmaps/V4/00_Roadmap-Besar.txt",
+    "apps/agentic/backend/application.js",
+    "apps/agentic/backend/server.js",
+    "apps/agentic/backend/store.js",
+    "apps/agentic/backend/work.js",
     "docs/roadmaps/V4/01_Work-Task-Model.txt",
-    "docs/roadmaps/V4/07_Git-Change-PR-Workflow.txt",
-    "docs/roadmaps/V4/08_CI-External-Feedback-Loop.txt",
-    "docs/roadmaps/V4/15_End-to-End-Autonomous-Workflows.txt",
-    "docs/roadmaps/V4/17_Definition-of-Done.txt",
     "docs/status/00_Current-Status.txt",
     "docs/status/01_Implementation-Status.txt",
-    "docs/technical/ARCHITECTURE-V3-AGENTIC.txt",
-    "docs/technical/ARCHITECTURE-V4-WORK-PLATFORM.txt"
+    "tests/apps/agentic-work.mjs"
   ],
-  "key_change": "Make AI + GitHub the explicit V4 proving workflow while preserving V2/V3 boundaries.",
-  "source_code_changed": false
+  "validation": {
+    "batch_test": "PASS (5/5)",
+    "syntax_check": "PASS (work.js, store.js, application.js, server.js)",
+    "full_repository_suite": "NOT_RUN: no local repository clone and network download unavailable in automation environment"
+  },
+  "notes": [
+    "Actual source/test/docs delta; no apply script.",
+    "Work is owner-scoped and remains separate from Task and Execution.",
+    "GitHub remains behind the existing V3 workspace/connection boundary."
+  ]
 }

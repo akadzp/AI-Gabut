@@ -1,116 +1,42 @@
-IMPLEMENTATION STATUS — V2 / V3 / V4
+CURRENT STATUS
 
-V2 HISTORICAL ROADMAP
-=====================
+PROJECT: AI-Gabut
+CURRENT PHASE: V4 — Agentic Work Platform
+CURRENT ROADMAP: V4 — Agentic Work Platform
+CURRENT BATCH: 01 — Work & Task Model
 
-01 CORE FOUNDATION & RUNTIME                         DONE + VALIDATED
-02 AI / AGENT INTELLIGENCE ENGINE                    DONE + VALIDATED
-03 SECURITY, AUTHORITY & GOVERNANCE                  DONE + VALIDATED
-04 STATE, STORAGE & PERSISTENCE                      DONE + VALIDATED
-05 LOCAL SYSTEM & EXECUTION CAPABILITIES             DONE + VALIDATED
-06 WORKSPACE & CHANGE SYSTEM                         DONE + VALIDATED
-07 TASK, JOB & EXECUTION ORCHESTRATION               DONE + VALIDATED
-08 SYNCHRONIZATION & RECONCILIATION                  DONE + VALIDATED
-09 EXTERNAL CONNECTOR & INTEGRATION LAYER            DONE + VALIDATED
-10 MEDIA & ADVANCED CAPABILITIES                     DONE + VALIDATED
-11 API & SYSTEM INTERFACE                             DONE + VALIDATED
-12 APPLICATION / PRODUCT LAYER                       DONE + VALIDATED
-13 OPERATIONS, RECOVERY & PRODUCTION READINESS       DONE + VALIDATED
+VERSION STATUS
+--------------
+V2 — COMPLETE
+V3 — COMPLETE + VALIDATED
+V4 — IN PROGRESS
 
-V2 STATUS
----------
-COMPLETE against the V2 roadmap scope.
+V4 BATCH 01
+-----------
+- Work domain resource implemented at application/work layer.
+- Owner-scoped persistence added through Agentic state storage.
+- Work lifecycle and terminal-state protection implemented.
+- Task and Execution remain independent resources and are referenced by ID.
+- Authenticated API surface added for Work creation, inspection, lifecycle,
+  cancellation, and resource association.
+- Batch-specific tests added.
 
-V3 AGENTIC APPLICATION + INTEGRATION FOUNDATION
-================================================
+VALIDATION IN THIS RUN
+----------------------
+- Static source generation completed.
+- Batch test file created.
+- Full repository test suite could not be executed against the remote
+  repository snapshot because the automation environment has no local clone
+  and repository network download is unavailable.
+- The user must apply the generated delta ZIP to the local repository and
+  run the normal validation suite there.
 
-01 Application Runtime                              DONE + VALIDATED
-02 Identity, Authentication & Multi-user             DONE + VALIDATED
-03 Sessions & Conversation                           DONE + VALIDATED
-04 Agent Execution Activation                        DONE + VALIDATED
-05 Memory & Context                                  DONE + VALIDATED
-06 Connections Framework                             DONE + VALIDATED
-07 GitHub Provider                                   DONE + VALIDATED
-08 Workspace & Project Context                       DONE + VALIDATED
-09 Agentic Frontend                                  DONE + VALIDATED
-10 Realtime, Activity & Progress                     DONE + VALIDATED
-11 Approval, Security & Credential Governance        DONE + VALIDATED
-12 Persistence, Recovery & Continuity                DONE + VALIDATED
-13 Deployment & Operations                            DONE + VALIDATED
-14 Testing, Validation & Reliability                 DONE + VALIDATED
-15 Final Definition of Done                          DONE + VALIDATED
+NORTH STAR
+----------
+V4 continues to build the Development Work Platform above V2 + V3.
+AI + GitHub remains the proving workflow; GitHub is not Work identity.
 
-V3 VALIDATION
--------------
-Final reported local validation:
-- CORE CHECK PASS — 120 JavaScript files
-- platform/runtime/security/application contracts PASS
-- Agentic test suite: 29 PASS / 0 FAIL
-
-V3 STATUS
----------
-COMPLETE against the V3 roadmap scope.
-
-IMPORTANT SCOPE NOTE
---------------------
-V3 is the application and integration foundation.
-
-V3 is not defined as the complete autonomous AI development product.
-GitHub is one provider implementation inside the integration layer.
-
-V3 therefore supplies the primitives required by V4:
-- Agentic application lifecycle
-- user/session isolation
-- memory/context
-- connection/provider relationship
-- GitHub capability
-- workspace context
-- activity/realtime
-- approval/security
-- persistence/recovery
-- frontend/backend boundary
-
-V4 owns the higher-level development work workflow:
-- understand repository
-- plan work
-- modify workspace
-- verify
-- repair/replan
-- commit/push/PR
-- consume CI/external feedback
-- continue bounded autonomous work
-- report external outcome
-
-V4 — AGENTIC WORK PLATFORM
-===========================
-
-00 Roadmap / Architecture Preparation                  CURRENT
-01 Work & Task Model                                    PLANNED
-02 Agent Planning & Execution UX                       PLANNED
-03 Approval & Human Intervention UX                    PLANNED
-04 Workspace, Diff & Change Experience                 PLANNED
-05 Verification & Test Loop                            PLANNED
-06 Autonomous Repair & Replan Loop                     PLANNED
-07 Git / Change / Pull Request Workflow                PLANNED
-08 CI / External Feedback Loop                         PLANNED
-09 Long-running Work & Background Agent                PLANNED
-10 Recovery / Resume / Continuity UX                   PLANNED
-11 Artifacts, Evidence & Results                       PLANNED
-12 Human / Agent Collaboration                         PLANNED
-13 Observability & Work History                        PLANNED
-14 Agentic Frontend V4                                 PLANNED
-15 End-to-End Autonomous Workflows                     PLANNED
-16 Testing, Reliability & Safety                       PLANNED
-17 Final Definition of Done                            PLANNED
-
-V4 NORTH STAR
-=============
-
-The first proving workflow is AI + GitHub development.
-
-V4 is successful when the existing V2 AI foundation and V3 GitHub /
-integration foundation can be composed into a real, governed,
-observable and recoverable development workflow.
-
-GitHub remains a connector/provider.
-Development work orchestration remains a V4/application concern.
+NEXT
+----
+Batch 02 — Agent Planning & Execution UX, after Batch 01 has been locally
+applied and validated.

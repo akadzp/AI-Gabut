@@ -3,61 +3,35 @@ CURRENT STATUS
 PROJECT: AI-Gabut
 CURRENT PHASE: V4 — Agentic Work Platform
 CURRENT ROADMAP: V4 — Agentic Work Platform
-CURRENT BATCH: 03 — Approval & Human Intervention UX
+CURRENT BATCH: 04 — Workspace, Diff & Change Experience
 
-VERSION STATUS
---------------
 V2 — COMPLETE
 V3 — COMPLETE + VALIDATED
 V4 — IN PROGRESS
 
-V4 BATCH 01
------------
-- Work domain resource implemented at application/work layer.
-- Owner-scoped persistence added through Agentic state storage.
-- Work lifecycle and terminal-state protection implemented.
-- Task and Execution remain independent resources and are referenced by ID.
-- Authenticated API surface added for Work creation, inspection, lifecycle,
-  cancellation, and resource association.
-- Batch-specific tests added and included in the Agentic validation gate.
+GitHub main remains the source of truth. HEAD audited this cycle:
+2b61f0bbc73f1c57c0793bcc31077291d9efef7b
 
-VALIDATION IN THIS RUN
-----------------------
-- Focused Batch 01 tests pass locally.
-- Full repository validation is run from the local checkout before the
-  Batch 01 checkpoint.
+Architecture correction:
+V2 already owns core/workspace/change-system.js. Batch 04 therefore adds an
+Agentic Change envelope around the V2 foundation instead of duplicating the
+change engine.
 
-NORTH STAR
-----------
-V4 continues to build the Development Work Platform above V2 + V3.
-AI + GitHub remains the proving workflow; GitHub is not Work identity.
+Current delta:
+- owner-scoped changes persistence
+- Work -> Change reference
+- Workspace binding
+- V2 change identity
+- provenance
+- bounded snapshot and rollback evidence
+- backend API
+- frontend Change surface
+- focused tests
+- test:agentic registration
 
-NEXT
-----
-Batch 04 — Workspace, Diff & Change Experience.
-
-V4 BATCH 02
------------
-- V4 Work planning uses the public V2 planner boundary and stores an
-  inspectable plan before execution.
-- Work execution creates separate owner-scoped Task and Execution records.
-- Progress is persisted and published as work-scoped observable activity.
-- Pause, resume, stop, and cancel retain lifecycle authority in the backend.
-- Approval requirements continue through canonical security authority.
-- Focused Batch 02 tests and the full repository validation suite pass locally.
-
-V4 BATCH 03
------------
-- Approval requests now persist a human-readable risk, capability, affected
-  resource, action input, expiry, and decision state on the work execution.
-- Approval, rejection, pause, cancellation, and instruction revision are
-  owner-scoped work controls with observable activity records.
-- Approval tokens are not returned to the frontend or stored in the approval
-  request. They are issued only after approval through canonical security
-  authority, bound to the exact execution, then used to resume that same
-  execution.
-- Expired, pending, rejected, and superseded approval states are explicit.
-- The Agentic frontend has an Approval & Intervention control surface for
-  review and decisions; it remains a client of backend/security authority.
-- Focused Batch 03 execution tests and the full repository validation suite
-  pass locally.
+Validation:
+- new source/test syntax can be statically checked
+- npm test was not run
+- GitHub branch creation/write returned HTTP 403
+- Batch 04 is NOT Done
+- Batch 05 remains locked

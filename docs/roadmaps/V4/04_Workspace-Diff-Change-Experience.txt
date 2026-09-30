@@ -1,23 +1,40 @@
-V4 — WORKSPACE, DIFF & CHANGE EXPERIENCE
+V4 Batch 04 — Workspace, Diff & Change Experience
 
-Tujuan: membuat perubahan Agent terhadap workspace dapat diperiksa dan
-dipahami manusia.
+Audit result:
+V2 already contains core/workspace/change-system.js. Therefore V4 must NOT
+create a competing planner/editor/reviewer. The V4 Change resource is an
+owner-scoped Work envelope around the V2 Change foundation.
 
-Scope:
-- changed files
-- diff viewer
-- file context
-- change grouping
-- before / after
-- validation status
-- snapshot
-- rollback
-- change provenance
-- human vs agent change origin
-- conflict visibility
+V4 owns:
+- Work/Workspace relationship
+- owner scope
+- human vs agent origin
+- execution provenance
+- bounded snapshots
+- review/rollback evidence exposed to the Work UI
 
-V4 menggunakan workspace/change foundation V2 dan workspace context
-V3; tidak membuat model perubahan kedua.
+V2 owns:
+- change planning
+- workspace file access
+- safe editing and stale-write protection
+- change review
+- V2 change lifecycle
 
-DoD: User dapat melihat perubahan Agent, memahami sumbernya, dan
-menyetujui atau menolak hasil perubahan sesuai capability yang tersedia.
+V3 Workspace remains repository/branch context. It is not silently treated as
+a writable local checkout.
+
+DoD:
+1. Durable owner-scoped Change envelope.
+2. Mandatory Work -> Workspace binding.
+3. v2ChangeId links to the V2 change foundation.
+4. Baseline SHA-256 and bounded snapshot are persisted.
+5. Edit/review delegate to V2.
+6. Rollback is conflict-safe.
+7. Authenticated list/get/create/capture/edit/review/rollback/close API.
+8. Frontend Change review surface.
+9. Focused tests registered in test:agentic.
+10. Full npm test passes before Batch 04 is declared Done.
+
+Validation limitation:
+GitHub write is blocked by the connected integration (HTTP 403 Resource not
+accessible by integration). npm test is not claimed and was not run here.

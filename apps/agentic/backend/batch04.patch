@@ -1,0 +1,69 @@
+--- a/apps/agentic/backend/store.js
++++ b/apps/agentic/backend/store.js
+@@
+-const SCOPES=["users","auth-sessions","chat-sessions","chat-messages","connections","connection-credentials","workspaces","tasks","executions","activities","memories","works"];
++const SCOPES=["users","auth-sessions","chat-sessions","chat-messages","connections","connection-credentials","workspaces","tasks","executions","activities","memories","works","changes"];
+@@
+-    listWorks:u=>listOwned("works",u)
++    listWorks:u=>listOwned("works",u),
++    putChange:(u,c,o={})=>putOwned("changes",u,c.id,c,o),
++    getChange:(u,id)=>getOwned("changes",u,id),
++    listChanges:u=>listOwned("changes",u)
+--- a/apps/agentic/backend/application.js
++++ b/apps/agentic/backend/application.js
+@@
+ import { createWorkExecutionService } from "./work-execution.js";
++import { createWorkChangeService } from "./work-changes.js";
+@@
+   const workExecution=createWorkExecutionService({store,work,realtime,agentRunner,planner:workPlanner,approvalAuthority:issueApproval,approvalPolicy:getToolPolicy});
++  const workChanges=createWorkChangeService({store,work,workspace:workspaces});
+@@
+-  return Object.freeze({store,auth,connections,workspaces,github,work,workExecution,realtime,recovery,
++  return Object.freeze({store,auth,connections,workspaces,github,work,workExecution,workChanges,realtime,recovery,
+@@
+-    attachWorkReference:work.attachReference,
++    attachWorkReference:work.attachReference,
++    listChanges:workChanges.list,
++    getChange:workChanges.get,
++    createChange:workChanges.create,
++    captureChange:workChanges.capture,
++    editChange:workChanges.edit,
++    reviewChange:workChanges.review,
++    rollbackChange:workChanges.rollback,
++    closeChange:workChanges.close,
+--- a/apps/agentic/backend/server.js
++++ b/apps/agentic/backend/server.js
+@@
+ app.get("/api/agentic/me",(q,r)=>r.json({ok:true,user:q.agentic.user}));
++app.get("/api/agentic/changes",async(q,r)=>{try{r.json({ok:true,changes:await application.listChanges(q.agentic.user.id,{workId:q.query.workId||null,workspaceId:q.query.workspaceId||null})})}catch(e){err(r,e)}});
++app.get("/api/agentic/changes/:id",async(q,r)=>{try{r.json({ok:true,change:await application.getChange(q.agentic.user.id,q.params.id)})}catch(e){err(r,e)}});
++app.post("/api/agentic/works/:id/changes",async(q,r)=>{try{r.status(201).json({ok:true,change:await application.createChange(q.agentic.user.id,q.params.id,q.body||{})})}catch(e){err(r,e)}});
++app.post("/api/agentic/changes/:id/capture",async(q,r)=>{try{r.json({ok:true,file:await application.captureChange(q.agentic.user.id,q.params.id,q.body?.path)})}catch(e){err(r,e)}});
++app.post("/api/agentic/changes/:id/edit",async(q,r)=>{try{r.json({ok:true,result:await application.editChange(q.agentic.user.id,q.params.id,q.body||{})})}catch(e){err(r,e)}});
++app.post("/api/agentic/changes/:id/review",async(q,r)=>{try{r.json({ok:true,review:await application.reviewChange(q.agentic.user.id,q.params.id,q.body||{})})}catch(e){err(r,e)}});
++app.post("/api/agentic/changes/:id/rollback",async(q,r)=>{try{r.json({ok:true,result:await application.rollbackChange(q.agentic.user.id,q.params.id,q.body?.path)})}catch(e){err(r,e)}});
++app.post("/api/agentic/changes/:id/close",async(q,r)=>{try{r.json({ok:true,change:await application.closeChange(q.agentic.user.id,q.params.id,q.body?.status||"completed")})}catch(e){err(r,e)}});
+--- a/apps/agentic/frontend/index.html
++++ b/apps/agentic/frontend/index.html
+@@
+-<button data-view="activity">Activity</button><button id="logout">Logout</button>
++<button data-view="activity">Activity</button><button data-view="changes">Changes</button><button id="logout">Logout</button>
+@@
+ <section id="activityView" class="hidden"><h2>Task & Activity</h2><div id="activity"></div></section>
++<section id="changesView" class="hidden"><div class="view-heading"><div><h2>Changes</h2><p>Agent changes, baseline, provenance, review and rollback.</p></div><button id="refreshChanges">Refresh</button></div><div id="changes"></div></section>
+--- a/apps/agentic/frontend/app.js
++++ b/apps/agentic/frontend/app.js
+@@
+ async function activity(){const r=await api("/api/agentic/activity");$(\"activity\").innerHTML=\"\";r.activity.slice(0,100).forEach(x=>{const d=document.createElement(\"div\");d.className=\"card\";d.textContent=`${x.action} · ${x.status} · ${x.label}`;$(\"activity\").appendChild(d)})}
++async function changes(){const q=s.workspaceId?`?workspaceId=${encodeURIComponent(s.workspaceId)}`:"";const r=await api(`/api/agentic/changes${q}`);$(\"changes\").innerHTML=\"\";if(!r.changes.length){$(\"changes\").textContent=\"Belum ada Change.\";return}r.changes.forEach(c=>{const d=document.createElement(\"article\");d.className=\"card change-card\";const h=document.createElement(\"strong\");h.textContent=c.task;const m=document.createElement(\"p\");m.textContent=`${c.status} · ${c.origin} · execution ${c.executionId||\"—\"}`;const f=document.createElement(\"pre\");f.textContent=JSON.stringify({files:c.files,review:c.lastReview,history:c.history},null,2);d.append(h,m,f);$(\"changes\").append(d)})}
+@@
+-[\"chat\",\"approvals\",\"connections\",\"files\",\"activity\"].forEach(v=>$(`${v}View`).classList.add(\"hidden\"));
++[\"chat\",\"approvals\",\"connections\",\"files\",\"activity\",\"changes\"].forEach(v=>$(`${v}View`).classList.add(\"hidden\"));
+@@
+ if(b.dataset.view===\"activity\")await activity()
++if(b.dataset.view===\"changes\")await changes()
+--- a/package.json
++++ b/package.json
+@@
+-    "test:agentic":"node --test tests/apps/agentic.mjs tests/apps/agentic-execution.mjs tests/apps/agentic-sessions.mjs tests/apps/agentic/memory.mjs tests/apps/agentic-connections.mjs tests/apps/agentic-github-provider.mjs tests/apps/agentic-workspaces.mjs tests/apps/agentic-work.mjs tests/apps/agentic-work-execution.mjs tests/apps/agentic-realtime.mjs tests/apps/agentic-credentials-recovery.mjs tests/apps/agentic-deployment-security.mjs",
++    "test:agentic":"node --test tests/apps/agentic.mjs tests/apps/agentic-execution.mjs tests/apps/agentic-sessions.mjs tests/apps/agentic/memory.mjs tests/apps/agentic-connections.mjs tests/apps/agentic-github-provider.mjs tests/apps/agentic-workspaces.mjs tests/apps/agentic-work.mjs tests/apps/agentic-work-execution.mjs tests/apps/agentic-realtime.mjs tests/apps/agentic-credentials-recovery.mjs tests/apps/agentic-deployment-security.mjs tests/apps/agentic-work-changes.mjs",

@@ -9,29 +9,41 @@ V2 — COMPLETE
 V3 — COMPLETE + VALIDATED
 V4 — IN PROGRESS
 
-GitHub main remains the source of truth. HEAD audited this cycle:
-2b61f0bbc73f1c57c0793bcc31077291d9efef7b
+GitHub main remains the source of truth.
 
-Architecture correction:
-V2 already owns core/workspace/change-system.js. Batch 04 therefore adds an
-Agentic Change envelope around the V2 foundation instead of duplicating the
-change engine.
+BATCH 04 IMPLEMENTATION HANDOVER
+--------------------------------
+Batch 04 implementation is delivered as a local patch package for user-side
+validation.
 
-Current delta:
-- owner-scoped changes persistence
+Implemented delta:
+- owner-scoped Change persistence under Agentic state
 - Work -> Change reference
-- Workspace binding
-- V2 change identity
-- provenance
-- bounded snapshot and rollback evidence
-- backend API
-- frontend Change surface
-- focused tests
-- test:agentic registration
+- mandatory active Workspace binding
+- V2 Change foundation identity
+- human/agent provenance
+- bounded baseline snapshots
+- stale/conflict-safe rollback evidence
+- delegated V2 planning/edit/review/lifecycle
+- authenticated Change API
+- frontend Change review surface
+- focused Batch 04 tests registered in test:agentic
 
-Validation:
-- new source/test syntax can be statically checked
-- npm test was not run
-- GitHub branch creation/write returned HTTP 403
-- Batch 04 is NOT Done
-- Batch 05 remains locked
+BOUNDARY
+--------
+V4 owns the Agentic Change envelope and Work-level provenance.
+V2 remains owner of generic workspace/change machinery.
+V3 Workspace remains repository/branch application context.
+
+VALIDATION
+----------
+- npm test has NOT been run by the assistant.
+- User-side npm test is the validation gate for this batch.
+- Batch 04 is not declared Done until npm test passes without error.
+- Batch 05 remains locked until the user confirms the validation gate passed.
+
+HANDOFF RULE
+------------
+User applies the ZIP to the current checkout, runs npm test, and commits only
+if the validation passes. The next batch begins only after the user says:
+"next".

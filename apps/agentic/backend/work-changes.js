@@ -1,7 +1,10 @@
 import crypto from "node:crypto";
 import { AgenticError } from "./errors.js";
 import { createId } from "./ids.js";
-import { readWorkspaceFile, writeWorkspaceFile } from "../../../core/workspace/manager.js";
+import {
+  readWorkspaceFile as defaultReadWorkspaceFile,
+  writeWorkspaceFile as defaultWriteWorkspaceFile
+} from "../../../core/workspace/manager.js";
 import { workspaceChangeSystem } from "../../../core/workspace/change-system.js";
 
 const TERMINAL = new Set(["completed", "aborted"]);
@@ -57,13 +60,20 @@ export function createWorkChangeService({
   store,
   work,
   workspace,
-  changeSystem = workspaceChangeSystem
+  changeSystem = workspaceChangeSystem,
+  fileSystem = {
+    read: defaultReadWorkspaceFile,
+    write: defaultWriteWorkspaceFile
+  }
 } = {}) {
   if (!store?.putChange || !store?.getChange || !store?.listChanges) {
     throw new TypeError("Work change membutuhkan change store contract");
   }
   if (!work?.raw || !work?.attachReference || !workspace?.raw) {
     throw new TypeError("Work change membutuhkan work dan workspace contract");
+  }
+  if (typeof fileSystem?.read !== "function" || typeof fileSystem?.write !== "function") {
+    throw new TypeError("Work change membutuhkan file-system contract");
   }
 
   async function raw(ownerId, id) {
@@ -72,6 +82,14 @@ export function createWorkChangeService({
       throw new AgenticError("CHANGE_NOT_FOUND", "Change set tidak ditemukan", 404);
     }
     return record;
+  }
+
+  async function mutableWorkspace(ownerId, record) {
+    const boundWorkspace = await workspace.raw(ownerId, record.workspaceId);
+    if (boundWorkspace.state !== "active") {
+      throw new AgenticError("WORKSPACE_INACTIVE", "Workspace tidak aktif", 409);
+    }
+    return boundWorkspace;
   }
 
   async function foundation(record) {
@@ -96,6 +114,10 @@ export function createWorkChangeService({
       throw new AgenticError("WORKSPACE_REQUIRED", "Work harus terikat ke workspace", 409);
     }
     const boundWorkspace = await workspace.raw(ownerId, currentWork.workspaceId);
+    if (boundWorkspace.state !== "active") {
+      throw new AgenticError("WORKSPACE_INACTIVE", "Workspace tidak aktif", 409);
+    }
+
     const task = text(input.task || currentWork.objective).slice(0, 12000);
     if (!task) throw new AgenticError("INVALID_CHANGE_TASK", "Change task wajib diisi");
 
@@ -149,11 +171,13 @@ export function createWorkChangeService({
 
   async function capture(ownerId, id, relativePath) {
     const record = await raw(ownerId, id);
+    await mutableWorkspace(ownerId, record);
     if (TERMINAL.has(record.status)) {
       throw new AgenticError("CHANGE_TERMINAL", "Change set terminal", 409);
     }
+
     const path = safePath(relativePath);
-    const file = await readWorkspaceFile(path);
+    const file = await fileSystem.read(path);
     const snap = snapshot(file);
 
     await changeSystem.capture(record.v2ChangeId, path);
@@ -183,9 +207,11 @@ export function createWorkChangeService({
 
   async function edit(ownerId, id, input = {}) {
     const record = await raw(ownerId, id);
+    await mutableWorkspace(ownerId, record);
     if (TERMINAL.has(record.status)) {
       throw new AgenticError("CHANGE_TERMINAL", "Change set terminal", 409);
     }
+
     const path = safePath(input.path);
     const baseline = record.files[path] || await capture(ownerId, id, path);
 
@@ -217,6 +243,9 @@ export function createWorkChangeService({
 
   async function review(ownerId, id, options = {}) {
     const record = await raw(ownerId, id);
+    if (TERMINAL.has(record.status)) {
+      throw new AgenticError("CHANGE_TERMINAL", "Change set terminal", 409);
+    }
     const result = await changeSystem.review(record.v2ChangeId, options);
     record.lastReview = { at: now(), result };
     record.history = [...(record.history || []), { at: now(), action: "reviewed" }]
@@ -227,6 +256,7 @@ export function createWorkChangeService({
 
   async function rollback(ownerId, id, relativePath) {
     const record = await raw(ownerId, id);
+    await mutableWorkspace(ownerId, record);
     if (TERMINAL.has(record.status)) {
       throw new AgenticError("CHANGE_TERMINAL", "Change set terminal", 409);
     }
@@ -237,7 +267,7 @@ export function createWorkChangeService({
       throw new AgenticError("CHANGE_SNAPSHOT_MISSING", "Snapshot rollback tidak tersedia", 409);
     }
 
-    const current = await readWorkspaceFile(path);
+    const current = await fileSystem.read(path);
     const expectedCurrentHash = entry.lastEdit?.afterHash || entry.baselineHash;
     const currentHash = sha256(current.content);
     if (currentHash !== expectedCurrentHash) {
@@ -249,7 +279,7 @@ export function createWorkChangeService({
       );
     }
 
-    await writeWorkspaceFile(path, entry.snapshot);
+    await fileSystem.write(path, entry.snapshot);
     const restoredHash = sha256(entry.snapshot);
     if (restoredHash !== entry.baselineHash) {
       throw new AgenticError("ROLLBACK_INTEGRITY_FAILED", "Hash snapshot rollback tidak cocok");

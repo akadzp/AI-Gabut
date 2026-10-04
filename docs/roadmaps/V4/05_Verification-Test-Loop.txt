@@ -3,17 +3,27 @@ V4 — VERIFICATION & TEST LOOP
 Tujuan: memastikan Agent tidak berhenti pada perubahan file tetapi
 mampu memverifikasi outcome.
 
-Scope:
-- test command / capability selection
-- test execution state
-- stdout / stderr evidence
-- pass / fail normalization
-- failure extraction
-- verification result
-- retry policy
-- timeout
-- resource limit
-- test artifact retention
+IMPLEMENTED BATCH 05
+--------------------
+- explicit verification command selection without shell execution
+- durable verification records scoped to Work owner
+- running test state normalized to passed / failed / timed_out
+- bounded stdout / stderr capture with truncation evidence
+- failure extraction from test output
+- bounded retry policy with attempt history
+- explicit local execution directory boundary
+- timeout and output resource limits
+- retained verification evidence linked to Work.evidenceIds
+- Work result records verification evidence rather than Agent claim alone
+- authenticated verification API
+- focused verification tests registered in test:agentic
+
+BOUNDARY
+--------
+V4 owns verification evidence and Work-level outcome semantics.
+The verifier does not become a second Agent Engine and does not execute
+through a shell. A local cwd must be explicit; V3 remote Workspace context
+is not silently treated as a filesystem checkout.
 
 DoD: Work dapat menyatakan hasil berdasarkan evidence verification,
 bukan hanya berdasarkan klaim Agent.

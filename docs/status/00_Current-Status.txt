@@ -3,7 +3,7 @@ CURRENT STATUS
 PROJECT: AI-Gabut
 CURRENT PHASE: V4 — Agentic Work Platform
 CURRENT ROADMAP: V4 — Agentic Work Platform
-CURRENT BATCH: 04 — Workspace, Diff & Change Experience
+CURRENT BATCH: 05 — Verification & Test Loop
 
 V2 — COMPLETE
 V3 — COMPLETE + VALIDATED
@@ -11,36 +11,36 @@ V4 — IN PROGRESS
 
 GitHub main remains the source of truth.
 
-BATCH 04 IMPLEMENTATION HANDOVER
+BATCH 05 IMPLEMENTATION HANDOVER
 --------------------------------
-Batch 04 implementation is delivered as a local patch package for user-side
+Batch 05 implementation is delivered as a local patch package for user-side
 validation.
 
 Implemented delta:
-- owner-scoped Change persistence under Agentic state
-- Work -> Change reference
-- mandatory active Workspace binding
-- V2 Change foundation identity
-- human/agent provenance
-- bounded baseline snapshots
-- stale/conflict-safe rollback evidence
-- delegated V2 planning/edit/review/lifecycle
-- authenticated Change API
-- frontend Change review surface
-- focused Batch 04 tests registered in test:agentic
+- owner-scoped durable Verification evidence
+- explicit test command/capability selection without shell execution
+- normalized pass/fail/timeout states
+- bounded stdout/stderr evidence retention
+- failure extraction
+- bounded retry attempts and history
+- timeout and output resource limits
+- explicit local execution-directory boundary
+- Work evidence reference and verification-backed result
+- authenticated Verification API
+- focused Batch 05 tests registered in test:agentic
 
 BOUNDARY
 --------
-V4 owns the Agentic Change envelope and Work-level provenance.
-V2 remains owner of generic workspace/change machinery.
-V3 Workspace remains repository/branch application context.
+V4 owns verification evidence and Work-level outcome semantics.
+The verifier is not a second Agent Engine. V3 Workspace remains repository/branch
+application context and is not silently treated as a local filesystem checkout.
 
 VALIDATION
 ----------
 - npm test has NOT been run by the assistant.
 - User-side npm test is the validation gate for this batch.
-- Batch 04 is not declared Done until npm test passes without error.
-- Batch 05 remains locked until the user confirms the validation gate passed.
+- Batch 05 is not declared Done until npm test passes without error.
+- Batch 06 remains locked until the user confirms the validation gate passed.
 
 HANDOFF RULE
 ------------

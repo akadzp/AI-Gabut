@@ -2,7 +2,7 @@ import { createStateService } from "../../../core/storage/state/index.js";
 import { createStorage } from "../../../core/storage/index.js";
 import { createId } from "./ids.js";
 
-const SCOPES=["users","auth-sessions","chat-sessions","chat-messages","connections","connection-credentials","workspaces","tasks","executions","activities","memories","works","changes","verifications"];
+const SCOPES=["users","auth-sessions","chat-sessions","chat-messages","connections","connection-credentials","workspaces","tasks","executions","activities","memories","works","changes","verifications","repair-checkpoints"];
 
 export function createAgenticStore({storage=createStorage()}={}) {
   const state=createStateService({storage,namespace:"agentic",scopes:SCOPES});
@@ -73,6 +73,9 @@ export function createAgenticStore({storage=createStorage()}={}) {
     listChanges:u=>listOwned("changes",u),
     putVerification:(u,v,o={})=>putOwned("verifications",u,v.id,v,o),
     getVerification:(u,id)=>getOwned("verifications",u,id),
-    listVerifications:u=>listOwned("verifications",u)
+    listVerifications:u=>listOwned("verifications",u),
+    putRepairCheckpoint:(u,v,o={})=>putOwned("repair-checkpoints",u,v.id,v,o),
+    getRepairCheckpoint:(u,id)=>getOwned("repair-checkpoints",u,id),
+    listRepairCheckpoints:u=>listOwned("repair-checkpoints",u)
   });
 }

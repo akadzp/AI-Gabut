@@ -18,3 +18,12 @@ Scope:
 DoD: Agent dapat memperbaiki failure yang berada dalam capability dan
 authority yang diizinkan, atau berhenti dengan alasan dan evidence yang
 jelas.
+
+Batch 06 implementation:
+- failure classification dari execution/verification evidence
+- durable repair checkpoint + realtime activity
+- bounded repair/replan max 3 iteration
+- failed Work dapat dibuka kembali ke ready melalui explicit repair boundary
+- repair plan tetap melalui planner V2/V4 yang sudah ada
+- execution tetap melalui Work Execution dan approval authority yang sama
+- final repair status + history tersimpan pada Work.result.repair

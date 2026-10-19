@@ -1,0 +1,17 @@
+Agentic AI V4 — Batch 100
+Mission Control Recovery Observability: Orphaned Error Repair Recovery
+
+Scope
+- Add an owner-scoped recovery operation for the durable observability intent produced by Batch 99.
+- Retry event emission using the same deterministic event type and mission-scoped dedupe key.
+- Clear pending/error markers only after successful event emission and a version-checked write.
+- Preserve malformed intents and orphaned error markers; fail closed on invalid metadata.
+- Bound retries and error text; expose the operation through the application boundary.
+
+Validation
+- Focused Batch 100 regression tests: 14/14 PASS.
+- Batch 99 + Batch 100 focused regression tests: 26/26 PASS.
+- Full cumulative npm test: 534/539 PASS. The same five baseline failures reproduced before Batch 100 remain: missing core/storage/state/index.js imports in artifacts and work recovery, missing core/security/index.js in work Git, external-feedback ID/provenance mismatch, and missing github.workflowRuns mock. No new failures were introduced.
+- JavaScript/MJS syntax: 114/114 PASS.
+- Application-boundary mapping: PASS.
+- ZIP integrity validated before and after extraction.

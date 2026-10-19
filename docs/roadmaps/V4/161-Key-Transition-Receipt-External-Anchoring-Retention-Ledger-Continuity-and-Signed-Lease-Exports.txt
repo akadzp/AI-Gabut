@@ -1,0 +1,33 @@
+Batch 161 — Key-Transition Receipt External Anchoring, Retention-Review Revocation-Ledger Continuity, and Signed Lease Audit Exports
+
+Objective
+---------
+Add an independent external checkpoint for trusted key registry-transition receipts, validate retention-review approval/revocation linkage before a manifest-approval ledger checkpoint can advance, and sign lease audit exports with Ed25519 while binding each export to the current receipt checkpoint.
+
+Scope
+-----
+- Add a distinct `cross_domain_attestation_key_transition_receipts` external checkpoint trust domain with explicit enrollment, freshness/status, audit, and one-receipt continuity reconciliation.
+- Build the checkpoint source from retained transition receipt identifiers/digests and reject unhealthy or unproven registry drift rather than reconstructing receipts against a changed registry.
+- Include local retention-review approval/revocation audit in the manifest-approval ledger source validation, so broken challenge, approval, revocation, or replacement links block checkpoint reads and reconciliation.
+- Sign lease audit exports with the currently active Ed25519 key and bind the signed payload to receipt checkpoint digest, sequence, source digest/count, policy digest, freshness, and history status.
+- Verify the outer signature and digest, inner lease export integrity, key lifecycle sequence/current key, and current checkpoint binding separately.
+- Add authenticated HTTP routes, regression tests, release notes, and this roadmap entry.
+
+Safety invariants
+-----------------
+- Enrollment is explicit and marks pre-enrollment history as unproven.
+- External checkpoint reconciliation advances only when exactly one new receipt can be removed to reproduce the previously anchored snapshot.
+- Registry drift, receipt-chain corruption, stale checkpoint state, or a broken retention approval/revocation link fails closed.
+- Signed exports exclude raw lease tokens. Historical signature validity is distinct from current decision usability.
+- A signed export bound to a checkpoint whose history is unproven remains historically verifiable but is not usable for a current decision.
+- Retention review remains non-destructive; no receipt compaction or evidence deletion is performed.
+
+Validation
+----------
+- Batch 161 regression tests cover receipt checkpoint enrollment/reconciliation, signed export integrity and checkpoint binding, revocation-link corruption rejection, and API/HTTP route exposure.
+- Full cumulative test suite and syntax/import/archive checks are run on the source tree and again after clean extraction.
+- No GitHub commit is made.
+
+Next unfinished stage
+---------------------
+Batch 162 — Receipt-Checkpoint Recovery Intent/Crash Finalization, Retention-Ledger Multi-Event Gap Diagnostics, and Signed Lease Export Key-Cutoff Verification.

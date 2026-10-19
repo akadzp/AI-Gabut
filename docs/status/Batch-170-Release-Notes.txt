@@ -1,0 +1,46 @@
+Agentic AI V4 — Batch 170 Release Notes
+======================================
+
+Batch
+-----
+170 — Remediation-Execution Receipt External Anchoring, Policy-Binding Receipt Lifecycle/Revocation, and Cross-Ledger Remediation Crash-Recovery.
+
+Implemented
+-----------
+- Added an independent external snapshot checkpoint for cross-domain remediation recovery intents and execution receipts. The source snapshot verifies immutable record digests and deterministic event ordering; recovery intents are checkpointed before remediation side effects when the provider is configured.
+- Added status, enrollment, reconciliation, and audit APIs for the remediation execution checkpoint. The checkpoint uses a dedicated trust domain and must not share a provider endpoint with other domains.
+- Added durable recovery intents bound to the exact remediation plan digest, allowed action, original confirmation digest, state fingerprint, and expiry. A different action cannot reuse the intent.
+- Added recovery for interrupted remediation. If the execution receipt exists but its external checkpoint is pending, recovery retries the checkpoint and finalizes only after the checkpoint postcondition is verified. If no execution receipt exists, recovery may resume only the original plan/action and fails closed when the target checkpoint state cannot prove safe continuation.
+- Added retained finalization records binding the recovery intent, execution receipt, and checkpoint sequence/digest. Local-only executions remain non-current; externally anchored executions with `historyNotProven` remain non-usable for current decisions.
+- Added append-only policy-binding receipt revocation and replacement workflows. Challenges bind receipt digest, lifecycle snapshot digest/count, domain checkpoint fingerprint, and policy digest; they expire after 10 minutes.
+- Added deterministic replacement receipt IDs and idempotent retry handling. A replacement receipt remains `replacement_pending` until its lifecycle link is persisted; the original receipt is retained and becomes `superseded` after the replacement event is recorded.
+- Added an independent external checkpoint for policy-binding receipt lifecycle events, including revocation/replacement challenges and completed events. Enrollment preserves `historyNotProven`; reconciliation is limited to the generic checkpoint's proven continuity rules.
+- Extended cross-ledger consistency audit to include policy-binding receipt lifecycle checkpoint status.
+- Added authenticated APIs and HTTP routes for remediation checkpoint status/enrollment/reconciliation/audit, remediation recovery inspection/retry, policy-binding receipt revocation/replacement, and lifecycle checkpoint operations.
+- Added six focused regression tests for append-only lifecycle transitions, external lifecycle anchoring, pending-intent recovery, CAS conflict recovery, tamper detection, and API/route exposure.
+
+Validation
+----------
+- Batch 170 regression tests: 6/6 PASS.
+- Full cumulative `npm test`: 1152/1152 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax validation: 249/249 PASS.
+- Relative import resolution: 478 references checked, zero missing.
+- ZIP integrity (`zip -T` and `unzip -t`): PASS.
+- Clean-extraction regression recheck: PASS.
+- Clean-extraction syntax/import recheck and per-file source hash comparison: PASS; no missing, extra, or content-different source files.
+- No GitHub commit was made.
+
+Operational Boundaries
+----------------------
+- External checkpoint enrollment retains `historyNotProven` for pre-enrollment history; enrollment does not retroactively prove older events.
+- A configured execution checkpoint must be enrolled before the first protected remediation action. A required provider that is unavailable or stale blocks the action while preserving the recovery intent.
+- If an execution receipt is persisted but its checkpoint CAS fails, the operation remains recoverable and is not represented as externally anchored until reconciliation succeeds.
+- A receipt replacement does not confer current usability if its target checkpoint is stale, policy-drifted, or history-unproven.
+- Policy-binding receipts are digest-bound evidence, not digital signatures. External anchoring protects checkpoint continuity, not signer identity for those receipts.
+- External CAS, provider durability, endpoint independence, and cross-store recovery remain deployment responsibilities.
+- No evidence deletion or automatic compaction is performed.
+- HTTP listener startup was not smoke-tested because the `express` package is unavailable in the validation environment. Syntax, application-level tests, API/route wiring, and archive integrity were verified.
+
+Next Unfinished Stage
+---------------------
+Batch 171 — Remediation Execution Attestation/Finalization External Binding, Policy-Binding Receipt Lifecycle Crash-Recovery, and Cross-Domain Checkpoint Freshness/Replay Audit.

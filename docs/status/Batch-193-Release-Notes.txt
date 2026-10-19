@@ -1,0 +1,16 @@
+Agentic AI V4 — Batch 193 Release Notes
+
+Scope:
+- Signed marker-recovery journal checkpoint attestation.
+- Explicit renewal/revocation lifecycle with idempotent replay.
+- Marker-journal continuity included in aggregate closure freshness.
+- Recovery-receipt external CAS response-loss recovery.
+- Signing-key cutoff, expiry, supersession, and revocation enforcement.
+- Strict-mode decision-gate enforcement.
+
+Validation:
+- Batch 193 focused regression tests: 10/10 PASS.
+- Batch 191–193 regression tests: 24/24 PASS.
+- Syntax/import/archive checks are performed on the cumulative source ZIP.
+
+No GitHub commit was performed.

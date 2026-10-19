@@ -1,0 +1,22 @@
+Batch 248 — External Attestation for Batch 247 Lifecycle Finalization Receipts, Cross-Generation Receipt Continuity, and Independent Checkpoint Recovery
+
+Objective:
+Bind every Batch 247 lifecycle finalization receipt to a signed, append-only external attestation with cross-generation continuity and independent checkpoint recovery.
+
+Scope:
+- Signed Batch 248 external-attestation event and strict ledger schema validation.
+- Receipt ID/digest/generation and lifecycle-finalization event binding.
+- Source receipt-chain prefix digest, lifecycle audit digest, source checkpoint fingerprint, and signing-key lifecycle binding.
+- Monotonic attestation generations with predecessor ID/digest continuity.
+- Key-cutoff detection and revalidation metadata.
+- Independent checkpoint snapshot inclusion and recovery-gate convergence.
+- Owner-scoped application APIs and authenticated HTTP routes for attest, audit, snapshot, and reconcile.
+- Deterministic operation IDs and read-only empty-history behavior.
+
+Fail-closed rules:
+Missing attestations or stale checkpoints require recovery; invalid signatures or chain bindings are unhealthy; terminal source revocation remains decision-blocked.
+
+Validation:
+See docs/status/Batch-248-Release-Notes.txt for the final focused regression, syntax, import, and archive integrity results. Full cumulative test success and direct HTTP startup are only claimed if fully exercised.
+
+Next stage: Batch 249 — Renewal/Revocation Lifecycle for Batch 248 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery.

@@ -1,0 +1,52 @@
+Agentic AI V4 — Batch 126
+Finalization Attestation Key Rotation, Revocation, and Historical Receipt Verification Policy
+
+Objective
+- Support controlled rotation and revocation of Ed25519 finalization-attestation keys.
+- Preserve historical signature verification while separating cryptographic validity from current authorization.
+- Fail closed when a receipt was signed after retirement/revocation or within a declared compromise window.
+- Support emergency revocation and replacement of a compromised active key through a separately configured recovery authority.
+
+Implementation
+- Added a durable owner-scoped key-policy record with bootstrap trust pinned to the configured root public-key registry and initial active key. The policy event chain is replay-validated, signature-validated, digest-checked, and snapshot-checked.
+- Added short-lived transition challenges bound to policy revision/digest, owner, action, reason, nonce, and an effective timestamp covered by the authorization signature. Stale challenges and replays are rejected.
+- Key rotation requires current active-key authorization and a proof-of-possession signature from the new Ed25519 key. Rotation retires the old key and activates the new key.
+- Key revocation records a revocation timestamp and optional `invalidateBefore` compromise cutoff. A normal revocation preserves authorization for receipts signed before revocation; a compromise cutoff rejects receipts signed at or after the cutoff while still reporting whether the cryptographic signature itself is valid.
+- A separately configured recovery authority can revoke an active key and, when no active key remains, authorize a replacement rotation with new-key proof-of-possession.
+- Finalization receipt verification and SLO/promotion integrity gates now consult persisted key lifecycle state. A receipt reports `signatureValid`, `authorizedForCurrentUse`, `signingKeyActive`, policy revision, and historical trust status separately.
+- Added application APIs and authenticated HTTP endpoints for policy inspection/audit, challenge creation, and transition application.
+
+Configuration
+- `recoverySloFinalizationPublicKeys`: pinned bootstrap Ed25519 public-key registry. Keep the original bootstrap trust roots configured across restarts while this policy version is active.
+- `recoverySloFinalizationKeyId`: bootstrap active key ID. The external signer callback must route based on `payload.keyId`, because the persisted policy selects the active key after rotation.
+- `recoverySloFinalizationRecoveryPublicKeys`: separately managed recovery-authority Ed25519 public keys. Keep the recovery authority public key configured to validate recovery-authorized policy events.
+- The external signer and recovery private keys remain outside application storage.
+
+New application APIs
+- `getRecoverySloFinalizationKeyPolicy(ownerId)`
+- `auditRecoverySloFinalizationKeyPolicy(ownerId)`
+- `createRecoverySloFinalizationKeyTransitionChallenge(ownerId, input)`
+- `applyRecoverySloFinalizationKeyTransition(ownerId, challengeId, input)`
+
+New HTTP endpoints
+- GET `/api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor/slo/finalization-keys`
+- GET `/api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor/slo/finalization-keys/audit`
+- POST `/api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor/slo/finalization-keys/challenges`
+- POST `/api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor/slo/finalization-keys/challenges/:id/apply`
+
+Validation
+- Batch 126 regression tests: 10/10 PASS.
+- Full cumulative `npm test`: 833/833 PASS.
+- JavaScript/MJS syntax and relative import resolution: PASS.
+- ZIP integrity and extracted-source validation: required for the cumulative artifact.
+- No GitHub commit was made.
+
+Security boundaries
+- Bootstrap roots and recovery-authority public keys are configuration trust anchors. Configuration drift that no longer matches the bootstrap roots fails closed.
+- Retired/revoked receipts are authorized only when their signed time predates the applicable boundary; an explicit compromise cutoff can invalidate older receipts retroactively from that timestamp.
+- The policy ledger is hash-linked and transitions are signed, but it is not yet externally rollback-anchored. A full storage snapshot rollback remains possible if the attacker can restore an earlier valid policy record.
+- Emergency active-key revocation and replacement require an independently configured recovery authority; protect its private key separately from routine signing infrastructure.
+- HTTP route mapping and tests were validated, but the HTTP listener was not boot-tested in this environment.
+
+Next stage
+Batch 127 — Finalization Key-Policy External Anchoring and Rollback-Resistant Trust-State Reconciliation.

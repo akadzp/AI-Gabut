@@ -1,0 +1,21 @@
+V4 Batch 86 — Mission Control Recovery Observability Status View
+
+Scope:
+- adds a read-only status view for the durable observability intent recovered by Batch 85
+- reports clear, pending, and error phases without mutating mission state or emitting events
+- validates reconciliation ID, creation timestamp, and retry marker with stable issue codes
+- treats nullable reconciliation IDs as valid under the durable intent contract
+- marks an intent recoverable only when pending metadata is valid
+- bounds exposed reconciliation metadata to 200 characters, timestamps to 100 characters, and errors to 1,000 characters
+- detects malformed pending intent and orphaned error markers without attempting repair
+- preserves owner-scoped mission access and exposes the view through the application boundary
+
+Validation:
+- dedicated Batch 86 regression tests: 9/9 PASS
+- cumulative npm test: 384/389 PASS; the same five pre-existing failures remain (missing core/storage/state/index.js imports in artifacts and work recovery, missing core/security/index.js in work Git, external-feedback ID/provenance expectation mismatch, and missing github.workflowRuns mock); no new failures
+- JavaScript/MJS syntax validation: 100/100 PASS
+- application-boundary mapping: PASS
+- ZIP integrity validation: PASS (`zip -T` and `unzip -t`); extracted-archive regression recheck: 9/9 PASS; extracted syntax validation: 100/100 PASS; extracted cumulative npm test: 384/389 PASS with the same five baseline failures
+- no GitHub commit
+
+Next unfinished stage: Batch 87.

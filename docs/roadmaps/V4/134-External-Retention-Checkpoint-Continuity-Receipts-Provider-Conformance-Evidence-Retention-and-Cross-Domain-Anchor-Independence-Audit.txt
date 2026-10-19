@@ -1,0 +1,32 @@
+Batch 134 — External Retention-Checkpoint Continuity Receipts, Provider Conformance Evidence Retention, and Cross-Domain Anchor Independence Audit
+
+Scope
+- Sign and verify retention-checkpoint continuity receipts with Ed25519, binding owner, checkpoint revision/digest, external anchor digest/sequence, retention duration, issuance time, key ID, and the explicit historical-completeness limitation for legacy enrollment.
+- Keep signature validity distinct from currentness: a receipt may remain historically valid after a checkpoint advances, while `current` becomes false.
+- Automatically retain completed recovery-journal provider conformance reports as owner-scoped evidence with digest verification, configurable 1–3650 day retention, bounded capacity, audit, and digest-preserving tombstone pruning.
+- Audit cross-domain anchor independence across attestation, finalization key-policy, recovery-journal, and retention-checkpoint providers. Detect shared provider objects, duplicate stable backend/endpoint identities, missing providers, and providers without an inspectable identity.
+- Expose authenticated application APIs and HTTP routes for receipt creation/verification, retained evidence listing/audit/pruning, and trust-domain independence audit.
+
+Configuration
+- `recoverySloRetentionContinuitySigner`: external signing callback; private keys remain outside application storage.
+- `recoverySloRetentionContinuityKeyId`: Ed25519 key identifier.
+- `recoverySloRetentionContinuityPublicKeys`: independently configured trusted public-key registry.
+- `requireRecoverySloRetentionSignedContinuityReceipt` or `AGENTIC_REQUIRE_RETENTION_SIGNED_CONTINUITY_RECEIPT=true`: fail closed at application initialization if signing configuration is incomplete.
+- `recoverySloAnchorEvidenceRetentionDays`: conformance/continuity evidence retention in days, 1–3650; default 90.
+- HTTP anchor providers expose a non-secret `providerIdentity` derived from normalized base URL to support identity-collision audits.
+
+Safety boundaries
+- Receipt creation requires a currently anchored retention checkpoint and a working configured signer; receipt verification separates cryptographic validity from current checkpoint binding.
+- Provider conformance reports are retained automatically after completion. If retention storage fails, the completed challenge remains durable and retrying the same challenge retries retention instead of silently treating retention as successful.
+- Retention evidence capacity is bounded at 500 active records and 2000 total records per owner; each pruning operation is bounded at 100 records. Pruning refuses to proceed when retained evidence audit is unhealthy.
+- Cross-domain independence audit hashes stable identity values and does not return raw endpoints or tokens. A `healthy` result means no collisions were found among observable identities; it does not cryptographically prove that independently administered backing stores cannot share infrastructure.
+- Historical receipts are not rejected solely because the checkpoint later advances. Their `current` flag is recalculated independently.
+
+Validation
+- Batch 134 regression tests: 12/12 PASS.
+- Full cumulative `npm test`: 924/924 PASS on the final successful run.
+- JavaScript/MJS syntax: 179/179 PASS.
+- Relative import resolution, ZIP integrity, and post-extraction source validation: required for the release archive.
+- No GitHub commit was made.
+
+Next unfinished stage: Batch 135 — Cross-Domain Independence Attestation, Retention Evidence Chain Anchoring, and Provider Identity Drift Monitoring.

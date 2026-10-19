@@ -1,0 +1,40 @@
+Agentic AI V4 Roadmap — Batch 169
+=================================
+
+Objective
+---------
+Close the Batch 168 gaps around proof of policy-binding state, independent external anchoring of receipt-retention approval lifecycle, and guarded cross-ledger drift remediation.
+
+Deliverables
+------------
+1. Policy-binding verification receipt:
+   - Bind owner, checkpoint domain, source digest/count, anchor digest/sequence, policy digests, freshness, and policy-binding approval-chain digest.
+   - Verify digest integrity and compare the recorded binding with current checkpoint state.
+   - Distinguish historical validity from current usability; do not treat pre-enrollment history as proven.
+2. Retention approval lifecycle external checkpoint:
+   - Independently anchor retention-review challenge, approval, revocation-challenge, and revocation events.
+   - Preserve immutable event identity when a prepared challenge is finalized in place.
+   - Require one-event continuity proof before normal reconciliation; fail closed on policy drift, ambiguity, source corruption, and CAS conflicts.
+3. Cross-ledger drift remediation plan/execution guard:
+   - Prepare a short-lived plan bound to a stable cross-ledger state fingerprint.
+   - Whitelist only safe single-event checkpoint reconciliation actions with unique continuity proof.
+   - Revalidate state immediately before execution; reject stale plans and action substitution.
+   - Persist execution evidence for idempotent replay and never delete/compact evidence.
+4. Authenticated application API and HTTP route integration.
+
+Validation baseline
+-------------------
+- Batch 169 focused tests: 5/5 PASS.
+- Cumulative test suite: 1146/1146 PASS.
+- Syntax/import checks and clean-extraction ZIP integrity: PASS.
+
+Known boundaries
+----------------
+- Policy-binding verification receipts are digest-bound, not signed.
+- External enrollment cannot retroactively prove legacy history.
+- External CAS/durability and actual provider independence must be validated in deployment.
+- HTTP listener startup remains unverified when `express` is not installed in the validation environment.
+
+Next
+----
+Batch 170 — Remediation-Execution Receipt External Anchoring, Policy-Binding Receipt Lifecycle/Revocation, and Cross-Ledger Remediation Crash-Recovery.

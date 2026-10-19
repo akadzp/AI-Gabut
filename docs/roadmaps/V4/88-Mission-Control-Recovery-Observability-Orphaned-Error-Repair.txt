@@ -1,0 +1,21 @@
+V4 Batch 88 — Mission Control Recovery Observability Orphaned Error Repair
+
+Scope:
+- adds a bounded repair operation for the orphaned durable error marker detected by the Batch 87 integrity verifier
+- clears the error marker only when the verifier returns exactly the stable ERROR_WITHOUT_PENDING finding
+- preserves all non-null pending intents, including malformed intents, and their associated error markers
+- performs owner-scoped, optimistic-concurrency-safe writes with bounded retries
+- returns a no-op result for clear state and fails closed on unexpected verifier findings
+- emits no observability event during repair
+- exposes the repair operation through the application boundary
+
+Validation:
+- dedicated Batch 88 regression tests: 8/8 PASS
+- cumulative npm test: 401/406 PASS; the same five baseline failures remain: missing core/storage/state/index.js imports in artifacts and work recovery, missing core/security/index.js in work Git, external-feedback ID/provenance mismatch, and missing github.workflowRuns mock; no new failures
+- JavaScript/MJS syntax validation: 102/102 PASS
+- application-boundary mapping: PASS
+- ZIP integrity validation: PASS (`zip -T` and `unzip -t`)
+- extracted-archive regression recheck: 8/8 PASS; extracted syntax validation: 102/102 PASS; extracted cumulative npm test: 401/406 PASS with the same five baseline failures
+- no GitHub commit
+
+Next unfinished stage: Batch 89.

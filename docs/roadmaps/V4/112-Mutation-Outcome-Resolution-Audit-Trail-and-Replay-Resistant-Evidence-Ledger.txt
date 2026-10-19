@@ -1,0 +1,41 @@
+Agentic AI V4 — Batch 112
+Mutation Outcome Resolution Audit Trail and Replay-Resistant Evidence Ledger
+
+Objective
+- Preserve a durable, owner-scoped audit trail for outcome evidence capture and explicit mutation-claim resolution.
+- Detect tampering, omitted events, broken ordering, replay, contradictory outcome evidence, and divergence between the ledger and approval guard history.
+- Keep auditing read-only and fail closed when the ledger cannot be verified.
+
+Implementation
+- Added a per-owner mutation outcome ledger stored as one atomically updated evidence record. Each event has a deterministic event ID, monotonically increasing sequence, previous hash, SHA-256 hash, and owner/approval/evidence/claim bindings. The ledger head and complete snapshot also have a canonical SHA-256 digest.
+- Outcome evidence capture appends an `outcome_evidence_captured` event. Resolution appends `claim_resolution_started` before changing approval guard state and `claim_resolution_completed` after the state transition is persisted. A crash between the two leaves an explicit incomplete intent for the audit to report; retrying the same resolution is idempotent and can complete the missing ledger event.
+- Duplicate append attempts are idempotent when their stable bindings match. Reusing an event ID with different outcome, evidence, approval, action, intent, or precondition bindings is rejected. Conflicting outcome evidence for one claim is reported by audit and blocks claim resolution. The ledger never automatically prunes entries; it fails closed at a bounded capacity of 2,000 entries.
+- Added read-only ledger summary, bounded entry listing, and integrity audit APIs. The audit validates chain order, event IDs, hashes, record digest, owner scope, evidence/approval bindings, capture-before-resolution ordering, approval guard resolution history, missing ledger entries, unfinalized intents, duplicate history, and conflicting outcome evidence for the same mutation attempt.
+- Added authenticated HTTP endpoints for ledger summary, bounded entries, and audit. The audit and all ledger reads are owner-scoped and explicitly disallow automatic repair/execution.
+- Audit findings are bounded to 500 stored findings and a caller-selected response limit. Status is `empty`, `healthy`, `degraded`, or `unhealthy`; truncation is explicit. Corrupt approval guard state is reported rather than escaping as an unhandled audit exception.
+
+Regression coverage
+- Empty ledger behavior and read-only audit.
+- Evidence capture append, sequence/hash-chain verification, and cross-record audit.
+- Resolution intent/completion ordering and guard-history reconciliation.
+- Sequential and concurrent replay idempotency for capture and resolution.
+- Chain tampering rejection and fail-closed future append.
+- Missing evidence event and missing completion event detection.
+- Owner isolation, bounded pagination, route/application API mapping, corrupt guard handling, and contradictory outcomes for one claim.
+
+Validation
+- Batch 112 regression tests: 13/13 PASS.
+- Full cumulative `npm test`: 675/675 PASS.
+- JavaScript/MJS syntax validation: 143/143 PASS.
+- Relative import resolution: PASS, 0 missing imports.
+- ZIP integrity (`zip -T` and `unzip -t`): PASS.
+- Extracted-source regression, cumulative test, syntax, and import checks: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+- The ledger is a tamper-evident SHA-256 hash chain, not a signed or keyed log. An actor able to rewrite the storage and recompute every hash can forge a new chain; stronger authenticity requires an external signing key or write-once storage.
+- The ledger is owner-scoped and atomically updated for processes sharing the filesystem-backed storage root. It is not a cross-host distributed transaction.
+- A crash after guard-state resolution but before the completion event leaves a detectable ledger gap. Replaying the same evidence/claim resolution can append the missing completion event; audit itself remains read-only.
+- The HTTP listener was not boot-tested in this isolated environment because Express is unavailable. Server syntax, route mapping, and application API contracts are tested.
+
+Next unfinished stage: Batch 113 — Ledger Gap Recovery and Tamper-Evidence Escalation Policy.

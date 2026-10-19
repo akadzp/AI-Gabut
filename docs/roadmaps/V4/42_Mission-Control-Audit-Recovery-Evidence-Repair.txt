@@ -1,0 +1,11 @@
+V4 Batch 45 — Mission Control Audit Recovery Evidence Repair
+
+Tujuan: menyediakan bounded, owner-scoped repair boundary untuk metadata recovery evidence yang sudah valid tetapi menyisakan durable error marker.
+
+Scope:
+- expose read-only verification as the precondition for repair
+- clear only a stale recovery-evidence error marker when pending metadata is structurally valid
+- fail closed for malformed recovery evidence instead of guessing or rewriting canonical metadata
+- preserve pending recovery evidence, reconciliation authority, idempotency, concurrency, and execution authority
+
+DoD: valid pending recovery evidence with a stale error marker can be repaired without rerunning reconciliation; valid clean state is a no-op; malformed state is rejected without mutation; repair uses optimistic versioning.

@@ -1,0 +1,46 @@
+Agentic AI V4 — Batch 165 Release Notes
+=======================================
+
+Batch
+-----
+165 — Attestation-Lifecycle External Checkpointing, Multi-Event Finalization Receipt Anchoring, and Receipt-Ledger Crash-Recovery/Gap Diagnostics.
+
+Implemented
+-----------
+- Added a dedicated external snapshot checkpoint for recovery-intent attestation revocation/renewal lifecycle events. The snapshot binds lifecycle sequence, event digest, prior-event digest, challenge, target attestation, and renewal linkage. Enrollment remains explicit and preserves the unproven-history flag.
+- Lifecycle mutations attempt a one-event checkpoint advance after the lifecycle event and challenge are finalized. Reconciliation requires a unique removal proof against the prior anchored snapshot. Required lifecycle anchoring prevents attestation verification from treating the lifecycle as current while the checkpoint is missing, stale, or history-unproven.
+- Added an independent external checkpoint for multi-event manifest-ledger gap-finalization receipts. Finalization receipts bind the approved candidate set, approval/challenge digests, prior manifest-ledger anchor, resulting anchor, source snapshot, and finalization time. Receipt checkpoint reconciliation accepts only one new finalization receipt per ordinary reconciliation.
+- Added durable verification-receipt recovery intents. Each intent has an immutable event digest for stable chain continuity plus a mutable, digest-protected state. The intent is written before its verification receipt; recovery can safely mark a prepared intent abandoned when no receipt was persisted, complete intents covered by a verified checkpoint, or retain a recovery-required state when evidence is inconsistent.
+- Added read-only verification-receipt ledger gap diagnostics with a bounded 50,000-combination search. Diagnostics can prove a unique single- or multi-receipt gap, report ambiguity, or fail closed on missing sequence/history evidence. Recovery automatically advances at most one proven receipt and never auto-finalizes a multi-receipt gap.
+- Added application APIs, authenticated HTTP routes, environment configuration, provider/endpoint independence checks, and five focused regression tests for lifecycle checkpointing, finalization receipt anchoring, receipt recovery after checkpoint enrollment, single-receipt gap recovery after a CAS conflict, abandoned-intent finalization, and API exposure.
+
+Validation
+----------
+- Batch 165 regression tests: 5/5 PASS.
+- Full cumulative `npm test`: 1128/1128 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax and relative-import validation run against the complete source tree and clean extraction.
+- ZIP integrity checked with `zip -T` and `unzip -t`.
+- Extracted source equivalence checked per file; no missing, extra, or content-different files.
+- No GitHub commit was made.
+
+Configuration
+-------------
+- `AGENTIC_CROSS_DOMAIN_RECOVERY_INTENT_ATTESTATION_LIFECYCLE_ANCHOR_URL`
+- `AGENTIC_CROSS_DOMAIN_RECOVERY_INTENT_ATTESTATION_LIFECYCLE_ANCHOR_TOKEN`
+- `AGENTIC_REQUIRE_CROSS_DOMAIN_RECOVERY_INTENT_ATTESTATION_LIFECYCLE_ANCHOR`
+- `AGENTIC_CROSS_DOMAIN_MANIFEST_APPROVAL_LEDGER_GAP_FINALIZATION_ANCHOR_URL`
+- `AGENTIC_CROSS_DOMAIN_MANIFEST_APPROVAL_LEDGER_GAP_FINALIZATION_ANCHOR_TOKEN`
+- `AGENTIC_REQUIRE_CROSS_DOMAIN_MANIFEST_APPROVAL_LEDGER_GAP_FINALIZATION_ANCHOR`
+
+Operational boundaries
+----------------------
+- Checkpoint enrollment is explicit; initial enrollment cannot retroactively prove earlier history.
+- The two new checkpoint domains require independent providers/endpoints when configured. Provider durability and atomic compare-and-set behavior remain deployment responsibilities.
+- Multi-event receipt diagnostics are read-only. Only one uniquely proven receipt is automatically reconciled by the recovery path; multi-event gaps remain blocked from automatic advancement.
+- A prepared receipt intent with no saved receipt is finalized as abandoned and retained for audit. A missing receipt after a save-state intent remains recovery-required.
+- Receipt-ledger recovery does not delete receipts, compact evidence, or expose raw lease tokens.
+- HTTP listener startup smoke test remains outside the verified boundary because `express` is not installed in this environment. Syntax, route mapping, imports, regression tests, and archive integrity were verified.
+
+Next unfinished stage
+---------------------
+Batch 166 — Lifecycle-Checkpoint Crash Recovery/Gap Diagnostics, Approval-Bound Finalization Receipt Recovery, and Receipt-Ledger Policy-Binding/Retention Audit.

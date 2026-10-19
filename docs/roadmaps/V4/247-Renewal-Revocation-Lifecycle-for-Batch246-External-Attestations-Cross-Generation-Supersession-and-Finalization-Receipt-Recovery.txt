@@ -1,0 +1,7 @@
+# Agentic AI V4 — Batch 247
+
+Implement renewal and terminal revocation for Batch 246 external attestations. Add signed append-only lifecycle events, generation-safe supersession, lifecycle finalization receipts, deterministic replay-safe recovery, independent checkpoint convergence, and owner-scoped endpoints.
+
+Validation must verify empty-history fail-closed behavior, required current Batch 246 source attestation, event schema and digest bindings, checkpoint inclusion, application API wiring, and route registration. Do not claim the full cumulative test suite or positive end-to-end lifecycle as passing unless those runs finish successfully.
+
+No GitHub commit.

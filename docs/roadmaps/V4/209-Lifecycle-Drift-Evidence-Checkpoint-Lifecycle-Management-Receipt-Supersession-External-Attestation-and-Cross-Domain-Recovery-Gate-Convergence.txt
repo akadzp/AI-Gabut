@@ -1,0 +1,9 @@
+Batch 209 — Lifecycle Drift-Evidence Checkpoint Lifecycle Management, Receipt-Supersession External Attestation, and Cross-Domain Recovery-Gate Convergence.
+
+Added an independent external checkpoint dedicated to proof-continuity revocation-receipt lifecycle events (intent, renewal, supersession, revocation, and finalization). The deterministic projection excludes unrelated events and is independently enrolled, audited, advanced one event at a time, and reconciled. Provider/endpoint reuse, rollback, policy drift, and unproven gaps fail closed.
+
+Receipt lifecycle prepare/apply now require enabled receipt-lifecycle checkpoint currentness, reconcile provable one-event lag, and advance the checkpoint after each lifecycle phase. Retries reuse persisted operation IDs and do not duplicate receipt lifecycle events. The cross-domain convergence audit binds proof-continuity, lifecycle, drift-evidence, receipt-lifecycle checkpoint snapshots, receipt lifecycle audit, and closure generation state into a deterministic generationBindingDigest. Terminal revocation remains decision_blocked; stale receipt-lifecycle anchoring blocks current-decision use.
+
+Batch 209 focused regressions: 5/5 PASS in separate executions. Targeted Batch 208 regressions: 3/3 PASS. JavaScript/MJS/CJS syntax, relative imports, ZIP integrity, and clean-extraction equivalence are validated. Full cumulative npm test is not claimed as passed. HTTP listener startup remains unverified because express is unavailable in the validation environment. No GitHub commit was made.
+
+At completion of Batch 209, next unfinished stage: Batch 210 — Receipt-Lifecycle Checkpoint Lifecycle Attestation, Drift-Resolution Supersession Receipt, and Multi-Checkpoint Recovery-Intent Finalization.

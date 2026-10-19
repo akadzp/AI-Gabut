@@ -1,0 +1,13 @@
+V4 Batch 33 — Mission Control Integrity Gate Integration
+
+Tujuan: menempatkan mission control integrity sebagai guard sebelum operator transition sehingga pause/resume/cancel tidak berjalan di atas durable control state yang korup.
+
+Scope:
+- tambah mission-control-integrity-gate
+- inspect sebelum control transition
+- bounded repair dipersist sebelum operator transition
+- mode validation tanpa mutasi
+- expose gate pada application boundary
+- pertahankan owner-scoping dan execution authority
+
+DoD: mission control transition hanya berjalan setelah control metadata/evidence state lolos integrity gate atau berhasil diperbaiki secara bounded; state yang tidak dapat diperbaiki ditolak tanpa membuat transition baru.

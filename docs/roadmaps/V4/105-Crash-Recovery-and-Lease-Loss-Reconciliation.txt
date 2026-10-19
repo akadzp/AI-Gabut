@@ -1,0 +1,47 @@
+Batch 105 — Crash Recovery and Lease-Loss Reconciliation
+
+Objective
+- Reconcile Work, task, and execution records after a process crash or lost durable execution lease.
+- Ensure a stale runner cannot regain authority after a recovery scan takes over its lease.
+- Avoid treating an intentional, fresh waiting-for-approval state as a crash merely because its execution lease was released.
+- Make repeated or concurrent recovery scans safe and bounded.
+
+Implementation
+- `createMissionExecutionLease()` now exposes a sanitized `inspect(ownerId, resourceId)` view with active, expired, and released lease state.
+- Lease acquisition accepts an optional `minFence`, allowing recovery to advance beyond a Work fence when the lease record is missing or incomplete.
+- Application wiring injects the durable Work execution lease and Work service into `createRecoveryService()`.
+- Recovery scans can detect fresh `running` executions whose lease is absent, released, or expired, while leaving fresh `waiting_approval` executions untouched when the Work remains in `waiting_approval`.
+- A recovery scan takes over an expired lease with a unique recovery execution ID and higher fencing number before mutating a non-terminal Work.
+- Recovery transitions running or waiting-approval Work to `paused`, persists bounded recovery metadata and checkpoint provenance, and reconciles the associated execution and task.
+- If Work is already terminal, the terminal Work state is treated as authoritative and the stale execution/task are reconciled to it without reopening Work.
+- Recovery uses optimistic version checks with bounded retries for execution, task, and recovery metadata writes.
+- A repeated scan repairs partial recovery states (for example, Work was paused before the process crashed but execution/task status was not yet updated).
+- Concurrent recovery scanners compete through the durable lease, so only one scanner performs reconciliation for the same interrupted Work at a time.
+- Legacy callers that construct the recovery service without a Work lease service retain the previous compatibility path.
+
+Regression coverage
+- Active durable lease prevents recovery of a stale execution.
+- Expired lease takeover fences the old runner and reconciles Work, execution, and task.
+- A fresh running record without an active lease is reconciled as lease loss.
+- Fresh waiting-approval state with an intentionally released lease is not treated as a crash.
+- Terminal Work state resolves stale execution/task without reopening Work.
+- Partial recovery after Work pause is completed idempotently.
+- Missing lease record respects the minimum Work fencing number.
+- Concurrent recovery scans reconcile one interrupted execution once.
+
+Validation
+- Batch 105 focused regression tests: 8/8 PASS.
+- Full cumulative `npm test`: 590/590 PASS.
+- JavaScript/MJS syntax validation: 134/134 PASS.
+- Relative import resolution: covered by the cumulative Batch 102 regression test.
+- Full cumulative tests and focused Batch 105 tests are rerun after extracting the final ZIP.
+- ZIP integrity is checked with `zip -T` and `unzip -t`.
+- No GitHub commit is made.
+
+Operational boundaries
+- Lease and recovery coordination applies to processes sharing the same filesystem-backed storage root; it is not a multi-host distributed transaction.
+- Cross-record reconciliation is made idempotent and recoverable, but storage does not provide a single atomic transaction spanning Work, task, execution, and lease records.
+- A process crash can leave a partially reconciled state; a later scan repairs it after the recovery lease is available.
+- External provider side effects completed before lease loss cannot be rolled back by local recovery.
+
+Next unfinished stage: Batch 106 — Recovery Reconciliation Audit and Status Integrity.

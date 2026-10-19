@@ -1,0 +1,30 @@
+Agentic AI V4 — Batch 243 Release Notes
+
+Title
+Renewal/Revocation Lifecycle for Batch 242 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery
+
+Scope
+- Adds signed Batch 243 intent, renewed, revoked, superseded, finalized, and finalization-receipt events for Batch 242 external attestations.
+- Binds lifecycle generation, target attestation, source finalization receipt, reason digest, intent/action event digests, replacement attestation, signing-key lifecycle binding, cutoff state, checkpoint fingerprint, and receipt predecessor.
+- Enforces deterministic operation IDs and challenge confirmation, and rejects stale ledger state before mutation.
+- Audits event signatures, phase order, generation continuity, target/predecessor consistency, terminal revocation, receipt completeness, and receipt-chain integrity.
+- Includes Batch 243 events in the independent checkpoint snapshot and overall recovery-gate convergence.
+- Adds owner-scoped prepare/apply/audit/snapshot/reconcile API routes beneath the Batch 242 external-attestation root.
+
+Recovery behavior
+- Empty lifecycle history remains not_initialized and does not fabricate receipts.
+- Mutation requires a current Batch 242 external-attestation source and current independent checkpoint when enabled.
+- Incomplete phases or missing finalization receipts yield recovery_required.
+- Invalid signature/binding/phase/receipt predecessor yields unhealthy.
+- Terminal revocation remains decision_blocked and cannot be renewed.
+- Key-cutoff evidence is recorded and revalidation is tied to the current signing-key lifecycle.
+
+Validation
+- Focused regression suite: Batch 102 and Batches 223–243, 57/57 passing after extraction.
+- JavaScript/MJS/CJS syntax: 335/335 passing.
+- Relative import resolution is covered by the Batch 102 regression test; zero missing relative imports.
+- ZIP integrity and extracted-source SHA-256 equality are validated separately.
+- Full cumulative npm test is not claimed as passed unless it finishes with a passing summary.
+
+GitHub
+- No commit performed.

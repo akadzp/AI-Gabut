@@ -1,0 +1,21 @@
+Agentic AI V4 — Batch 139 Roadmap
+
+Objective
+---------
+Make provider-identity trust-policy anchoring behaviorally testable, recover a compromised active policy authority through an independent root trust path, and reconcile retention evidence across independent stores without repairing or hiding integrity failures.
+
+Implementation
+--------------
+1. Conformance: challenge-bound CAS probes on a disposable namespace; validate provider metadata, genesis, read-after-write, stale-CAS rejection, monotonic continuity, namespace isolation, and concurrent single-winner behavior.
+2. Root recovery: maintain a root-key registry separate from operational authority keys; bind root authorization and target proof of possession to the exact policy revision/digest; append a verifiable root-recovery event; revoke the compromised active key with a cutoff and activate a preconfigured standby key.
+3. Retention reconciliation: audit registry records, chain ledger, conformance reports, and policy-authority state; block when cross-store integrity or trust state cannot be proven; only advance a behind external chain anchor when its local history is valid.
+4. Expose owner-scoped application methods and authenticated HTTP routes.
+
+Acceptance Criteria
+-------------------
+- Invalid/stale conformance challenge or provider behavior is not reported as conformant.
+- Probe writes remain scoped to disposable namespaces.
+- Root recovery rejects untrusted root signatures, invalid proof of possession, stale policy digest/revision, expired/replayed challenges, unconfigured roots, and key-material reuse.
+- Root recovery event validates on subsequent reads and historical authorization checks; the old key is not trusted at/after compromise cutoff.
+- Retention reconciliation detects missing/tampered retained evidence and blocks automatic repair.
+- No GitHub commit; cumulative source ZIP is syntax-checked, test-checked, archive-checked, and revalidated after extraction.

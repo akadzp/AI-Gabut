@@ -1,0 +1,26 @@
+Batch 159 — Key-Lifecycle Checkpoint Policy-Rotation Continuity, Manifest-Ledger Retention Review Approval Binding, and Lease Recovery Idempotency/Observability
+
+- Added explicit key-lifecycle checkpoint classification for trusted public-key registry drift and checkpoint policy drift. A same-count source rewrite is reported as registry-rotation continuity unproven and cannot be silently advanced; policy drift requires the existing explicit policy-binding workflow.
+- Added challenge-bound manifest-approval ledger retention review decisions (`retain` or `escalate`). Challenges bind the exact source snapshot/count, overdue event IDs/digests, external anchor digest/sequence, and policy digest. Apply rechecks all bindings and target digests, records a retained approval, and advances the external ledger checkpoint by one provable event. No deletion or compaction is performed.
+- Included retention review approvals in the manifest-ledger checkpoint snapshot. Audit verifies approval/challenge binding, target digest integrity, and whether the decision is represented in the current anchored snapshot. A `retain` decision can clear review-due flags only for the exact reviewed event digests; unproven pre-enrollment history remains visible.
+- Made lease recovery idempotent by optional caller-provided `recoveryRequestId`. Replaying a completed recovery request returns the same recovery event without appending another event or increasing the fencing token. Lease audit now exposes recovered/reclaimed event counts, unique recovery request IDs, last recovery time/digest, and per-lease recovery summaries.
+- Added authenticated application APIs and HTTP routes for manifest-ledger retention review preparation/application/audit; lease recovery now accepts a recovery request ID. Added regression tests for registry/policy drift, bound retention approvals, stale challenge rejection, idempotent lease recovery, and route/API exposure.
+
+Validation:
+- Batch 159 regression tests: 5/5 PASS.
+- Full cumulative `npm test`: 1102/1102 PASS.
+- JavaScript/MJS/CJS syntax: 238/238 PASS.
+- Relative import references: 436 checked, 0 missing.
+- ZIP integrity (`zip -T`, `unzip -t`): PASS.
+- Full cumulative `npm test` after clean extraction: 1102/1102 PASS.
+- Syntax, relative imports, and source equivalence after clean extraction: PASS.
+- No GitHub commit was made.
+
+Operational boundaries:
+- Public-key registry drift without a lifecycle event is intentionally not auto-reconciled. Restore the previous registry or perform an independently authorized, evidence-backed lifecycle transition before attempting continuity reconciliation.
+- Manifest-ledger retention approval is non-destructive. `retain` records a review decision for exact evidence digests; `escalate` leaves the retention review unresolved. Neither decision deletes evidence or authorizes compaction.
+- External checkpoint enrollment still cannot prove pre-enrollment history; the system continues to report `history_unproven` where applicable.
+- Lease recovery idempotency is durable when callers provide a stable recoveryRequestId. Shared-store atomic `mutateEvidence` remains required for cross-process safety.
+- HTTP listener startup was not directly exercised. Syntax, import resolution, API exposure, regression tests, archive integrity, and clean-extraction equivalence were checked.
+
+At completion of Batch 159, next unfinished stage: Batch 160 — Key-Lifecycle Registry-Transition Receipts, Retention-Review Approval Revocation/Replacement, and Lease Recovery Audit-Event Export/Integrity.

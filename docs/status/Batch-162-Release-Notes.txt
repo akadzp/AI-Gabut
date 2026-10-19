@@ -1,0 +1,37 @@
+Agentic AI V4 — Batch 162 Release Notes
+=======================================
+
+Batch
+-----
+162 — Receipt-Checkpoint Recovery Intent/Crash Finalization, Retention-Ledger Multi-Event Gap Diagnostics, and Signed Lease Export Key-Cutoff Verification.
+
+Implemented
+-----------
+- Added owner-scoped, digest-protected recovery intents around key-transition receipt checkpoint enrollment, single-event reconciliation, and freshness refresh. Intents bind the expected source digest/count, previous anchor digest, target sequence, operation, and enrollment challenge when applicable.
+- Added fail-closed recovery of a missing local checkpoint marker only when a prepared intent matches the current source and independently read external anchor, including exact sequence and previous-anchor linkage. Recovery finalizes the enrollment challenge and intent idempotently; a missing marker without a matching intent is not repaired automatically.
+- Added recovery-intent audit/recovery application APIs and authenticated HTTP routes. Signed lease export now refuses to issue an export while a receipt-checkpoint recovery intent is malformed or unresolved.
+- Added read-only manifest-approval-ledger gap diagnostics. It searches a bounded maximum of 50,000 candidate subsets to identify a unique prior snapshot and list the unanchored event IDs/digests. Multi-event gaps remain blocked from automatic reconciliation even when diagnostics can prove the candidate set.
+- Added signed lease export key-cutoff verification against the full validated key lifecycle sequence. Verification checks that the signing key was active at the declared sequence and that the export timestamp precedes any later revocation cutoff. A cryptographically valid signature from a key used after its revocation is not considered historically valid.
+- Added application APIs, authenticated HTTP routes, and four focused regression tests covering external-commit interruption recovery, multi-event gap diagnostics without auto-advance, historical-before-cutoff verification, and rejection of post-revocation signing.
+
+Validation
+----------
+- Batch 162 regression tests: 4/4 PASS.
+- Full cumulative `npm test`: 1114/1114 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax validation and relative-import validation run against the full source tree and clean extraction.
+- ZIP integrity checked with `zip -T` and `unzip -t`.
+- Extracted source equivalence checked per file; no missing, extra, or content-different files.
+- No GitHub commit was made.
+
+Operational boundaries
+----------------------
+- Recovery of a missing checkpoint marker requires a retained, valid intent plus exact source/anchor/sequence continuity. Without that proof, recovery fails closed.
+- Multi-event gap diagnostics are read-only and bounded to 50,000 candidate combinations. They do not advance external checkpoints or authorize a multi-event reconciliation.
+- Signed-export historical validity is distinct from current usability. A pre-revocation export may remain historically valid but cannot authorize a current decision when its key or checkpoint is no longer current.
+- Key-cutoff verification depends on an intact lifecycle chain and retained trusted public keys. External signer/KMS/HSM revocation remains a deployment responsibility.
+- External provider durability and compare-and-set semantics remain deployment responsibilities.
+- HTTP listener startup smoke check was blocked because `express` was not installed in the validation environment; `package.json` declares it, but dependency installation timed out. Route mapping, syntax, import resolution, regression tests, and archive integrity were verified.
+
+Next unfinished stage
+---------------------
+Batch 163 — Recovery-Intent External Attestation, Multi-Event Gap Approval Workflow, and Signed Export Verification Receipts.

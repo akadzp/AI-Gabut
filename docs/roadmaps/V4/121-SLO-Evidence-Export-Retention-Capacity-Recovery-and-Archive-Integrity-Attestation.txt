@@ -1,0 +1,29 @@
+Batch 121 — SLO Evidence Export, Retention-Capacity Recovery, and Archive Integrity Attestation
+
+Purpose
+- Export a self-contained, independently verifiable bundle containing the versioned SLO policy ledger, active alert ledger, archived alert segments, retained evaluation evidence, evaluation-evidence archives, and archive index.
+- Recover evidence-record capacity by compacting expired retention tombstones into bounded immutable hash-linked archive segments without losing their original digest, policy binding, or retrieval path.
+- Permit optional detached Ed25519 attestation through an externally managed signer callback; the application never stores the export private key.
+
+Implementation
+- Added owner-scoped evaluation-evidence archive segments (maximum 500 tombstones per segment) and a sequence/hash-linked archive index. Archive creation is serialized through the index record. The archive is persisted before source tombstones are removed, so an interrupted index update can be reconciled from valid archive records.
+- Added archive audit and recovery. Recovery can rebuild a missing/lagging index only from a valid contiguous archive chain and removes a duplicate source tombstone only when its digest exactly matches the archived copy. Conflicting source data, invalid archive contents, gaps, or a tampered index fail closed.
+- Evaluation evidence remains retrievable and listable after compaction; archived tombstones remain bound to alert events. Live evaluation-record capacity counts only records that remain individually stored, while archive segments retain the full verifiable tombstones.
+- Added a complete export bundle with canonical JSON SHA-256 section manifests, section counts, bundle digest, and attestation payload binding owner, export time, key ID, and bundle digest. Export is refused unless alert, policy, evidence, and archive audits are healthy/empty and is bounded to 25 MiB by default.
+- Added standalone `verifyRecoverySloEvidenceExportBundle()` so a recipient can validate the bundle without application storage. It distinguishes integrity-only verification from a signature that is present but unverified and from a verified Ed25519 signature. A configured signer failure is never silently downgraded to unsigned export.
+- Added authenticated application APIs and HTTP routes for archive status/list/audit, expired-evidence compaction, interrupted archive recovery, bundle export, and bundle verification. Verification route enforces owner match for the submitted bundle.
+
+Validation
+- Batch 121 regression tests: 11/11 PASS.
+- Full cumulative `npm test`: 779/779 PASS.
+- JavaScript/MJS syntax, relative import resolution, ZIP integrity, and extracted-source validation: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+- SHA-256 manifests prove consistency of exported bytes, not who created them. Authenticity is established only when a detached Ed25519 signature is verified with a separately trusted public key. The default deployment emits an explicitly unsigned integrity-only bundle.
+- The signer callback and private key must be managed outside the application process/storage boundary. `createAgenticApplication` accepts `recoverySloExportSigner`, `recoverySloExportKeyId`, and `recoverySloExportPublicKey`. The service checks that the returned signature matches the configured public key before labeling an export signed; the application does not persist private key material.
+- Archive/index operations recover interrupted cross-record writes but are not one atomic transaction across the whole evidence store. The archive is durable before source deletion; recovery is required if the index or cleanup phase is interrupted.
+- Bundle export may contain operational metadata and full retained evaluation evidence. Treat exports as sensitive and store them with appropriate access control and retention.
+- HTTP listener startup was not boot-tested in this isolated validation environment because Express is unavailable; route mapping and application API exposure were checked.
+
+Next unfinished stage: Batch 122 — Export Bundle Verification CLI and Controlled Evidence Import/Restore Planning.

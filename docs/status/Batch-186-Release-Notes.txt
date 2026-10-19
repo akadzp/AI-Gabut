@@ -1,0 +1,27 @@
+Agentic AI V4 — Batch 186 Release Notes
+
+Scope
+- Adds an independent external snapshot checkpoint for immutable attestation-lifecycle recovery-intent bindings.
+- Requires checkpoint preflight and explicit enrollment when the new trust domain is configured.
+- Advances the intent checkpoint by at most one uniquely proven event before a lifecycle event is persisted.
+- Adds pending-intent recovery that reuses the original challenge and deterministic intent, avoiding duplicate lifecycle/recovery receipts.
+- Detects orphaned intents, missing/mismatched challenges, immutable binding corruption, completed intents without lifecycle events, and pending intents crossing a signing-key cutoff.
+- Adds exact-anchor marker recovery with a dedicated marker-recovery intent kind.
+- Integrates intent checkpoint freshness and pending/orphan findings into the cross-domain continuity decision gate.
+
+Configuration
+AGENTIC_CROSS_DOMAIN_RECOVERY_DECISION_GATE_RECEIPT_RECOVERY_ATTESTATION_LIFECYCLE_INTENT_ANCHOR_URL=https://your-independent-anchor
+AGENTIC_CROSS_DOMAIN_RECOVERY_DECISION_GATE_RECEIPT_RECOVERY_ATTESTATION_LIFECYCLE_INTENT_ANCHOR_TOKEN=your-token
+AGENTIC_REQUIRE_CROSS_DOMAIN_RECOVERY_DECISION_GATE_RECEIPT_RECOVERY_ATTESTATION_LIFECYCLE_INTENT_ANCHOR=true
+
+Validation
+- Batch 186 regression tests: 16/16 PASS.
+- Batch 185–186 regressions: 24/24 PASS.
+- Batch 177–186 regressions: 87/87 PASS.
+- All 173 cumulative test files in bounded groups: 1,273/1,273 PASS; single-process `npm test` exceeded the 300-second environment limit.
+- Syntax, import references, ZIP integrity, and clean-extraction equivalence are checked before delivery.
+- HTTP listener startup is not verified because express is unavailable in the validation environment.
+
+GitHub: no commit performed.
+
+At completion of Batch 186, next unfinished stage: Batch 187 — Recovery-Intent Status-Transition Attestation, Explicit Orphan Disposition, and Cross-Domain Recovery Closure Enforcement.

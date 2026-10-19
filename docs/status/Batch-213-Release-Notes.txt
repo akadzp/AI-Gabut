@@ -1,0 +1,16 @@
+Agentic AI V4 — Batch 213 Release Notes
+
+Delivered: finalization-attestation lifecycle receipt continuity and independent external checkpointing.
+
+Changes:
+- Signed lifecycle receipt event for each finalized renewal or revocation operation.
+- Receipt chain with monotonic generation and predecessor ID/digest binding.
+- Separate receipt persistence phase for crash recovery and no-duplicate retry.
+- Independent external checkpoint with enrollment, status, audit, reconciliation, and provider-independence checks.
+- Recovery-gate convergence includes receipt checkpoint state and generation binding.
+
+Validation:
+- Batch 213 focused tests: 5/5 passed individually.
+- Batch 212 renewal and revocation compatibility tests: 2/2 passed individually.
+- Full cumulative npm test not claimed as passing.
+- No GitHub commit performed.

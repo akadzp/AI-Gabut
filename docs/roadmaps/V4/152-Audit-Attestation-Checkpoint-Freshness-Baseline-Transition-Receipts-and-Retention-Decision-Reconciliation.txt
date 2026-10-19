@@ -1,0 +1,29 @@
+Batch 152 — Audit-Attestation Checkpoint Freshness/Retention Enforcement, Provider-Baseline Replay-Resistant Transition Receipts, and Retention-Review External Decision Reconciliation
+
+Scope
+-----
+1. Enforce checkpoint freshness and future-skew policy before an audit attestation can be used for a current decision.
+2. Allow a stale but structurally intact checkpoint to be refreshed only after proving the local source, marker, and remote anchor are still aligned.
+3. Require overdue audit attestations to receive an explicit retention review. A retain decision becomes effective for current use only after its external review checkpoint is current when configured.
+4. Create deterministic, digest-linked transition receipts for provider identity baseline revisions and audit their sequence, linkage, and replay-resistant source binding.
+5. Reconcile a pending retention-review external checkpoint only when exactly one new approval can be proven as an append to the prior anchored snapshot.
+
+Security invariants
+-------------------
+- Historical signature validity does not imply current-decision usability.
+- Stale checkpoints are not used for current decisions; malformed/far-future timestamps fail closed.
+- Refresh does not repair or overwrite source evidence and cannot proceed if source/marker/anchor digests diverge.
+- Receipt chain gaps, tampering, missing receipts, or inconsistent baseline bindings are unhealthy. Legacy history without receipts remains marked unproven rather than silently upgraded.
+- Retention decisions remain non-destructive and replay-protected.
+- External retention-review reconciliation rejects same-count rewrites and multi-approval jumps.
+
+Validation target
+-----------------
+- Batch-specific regression suite passes.
+- Full cumulative test suite passes.
+- All JavaScript/MJS/CJS files pass syntax checking.
+- Every relative import resolves.
+- ZIP integrity and post-extraction tests pass.
+- No GitHub commit.
+
+Next stage: Batch 153 — External Checkpoint Freshness Policy Binding, Baseline Receipt Recovery/Compaction Guardrails, and Retention Decision Evidence Revalidation.

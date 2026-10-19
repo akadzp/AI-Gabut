@@ -1,0 +1,10 @@
+Agentic AI V4 — Batch 227 Release Notes
+
+Added a signed lifecycle for external attestation renewal and revocation. The flow uses challenge confirmation, target and ledger snapshot binding, deterministic phase operation IDs, a new external attestation generation for renewal, signed supersession, and finalization. Revocation is terminal. Lifecycle events are included in the independent external-attestation checkpoint snapshot and recovery-gate audit.
+
+Validation completed:
+- Batch 227 focused tests: 2/2 PASS.
+- Batch 223–226 focused tests: 9/9 PASS.
+- Combined focused run: 11/11 PASS.
+- Full positive end-to-end renewal/revocation and full cumulative `npm test` are not claimed as passing; a cumulative bootstrap attempt exceeded the execution time budget.
+- No GitHub commit.

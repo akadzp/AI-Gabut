@@ -1,0 +1,39 @@
+Batch 136 — Signed Provider-Identity Drift Events, External Baseline Anchoring, and Retained-Evidence Chain Recovery Attestation
+
+Scope
+1. Sign provider-identity drift reports with Ed25519, bind the signature to the report digest and owner, retain the event as evidence, and provide independent verification.
+2. Add a distinct external CAS trust anchor for the provider-identity baseline, including revision/digest binding, post-write read verification, a local high-water marker, and rollback detection.
+3. Advance a baseline anchor only when the local baseline is exactly one revision ahead and its previous-baseline digest matches the external anchor.
+4. Require explicit, expiring, digest-bound operator enrollment when a legacy baseline has no external history; mark that history as unproven.
+5. Fail closed when an enabled external baseline anchor is unavailable, stale, missing after enrollment, rolled back, or inconsistent. Preserve a controlled reconcile path for a baseline write that succeeded before anchor publication failed.
+6. Add Ed25519 recovery attestation for a healthy retained-evidence chain. Bind the attestation to a chain checkpoint, retain it, and verify the checkpoint remains in the validated event history.
+7. Audit retained provider-drift events and chain recovery attestations in addition to record/hash-chain integrity.
+8. Expose owner-scoped application APIs and HTTP routes for baseline anchor status, anchoring/reconciliation, legacy enrollment, drift-event attestation/verification, and chain recovery attestation/verification.
+9. Add cross-domain identity reporting for the new provider-identity-baseline anchor and reject reuse of a provider instance or configured URL across trust domains.
+
+Configuration
+- AGENTIC_PROVIDER_IDENTITY_BASELINE_ANCHOR_URL
+- AGENTIC_PROVIDER_IDENTITY_BASELINE_ANCHOR_TOKEN
+- AGENTIC_REQUIRE_PROVIDER_IDENTITY_BASELINE_ANCHOR=true
+- AGENTIC_REQUIRE_SIGNED_PROVIDER_IDENTITY_DRIFT_EVENTS=true
+- AGENTIC_REQUIRE_RETAINED_EVIDENCE_CHAIN_RECOVERY_ATTESTATION=true
+- Application options: recoverySloProviderIdentityDriftSigner, recoverySloProviderIdentityDriftKeyId, recoverySloProviderIdentityDriftPublicKeys, recoverySloRetainedEvidenceRecoverySigner, recoverySloRetainedEvidenceRecoveryKeyId, recoverySloRetainedEvidenceRecoveryPublicKeys.
+
+Acceptance criteria
+- A baseline genesis anchor is written with CAS and verified after write.
+- Baseline revision advancement succeeds only when previousBaselineDigest proves one-step continuity.
+- Local rollback against a newer external anchor is detected and the provider-identity drift audit fails closed.
+- A legacy baseline cannot be automatically enrolled when its external history is missing; explicit digest-bound operator confirmation is required and historyNotProven remains true.
+- Signed drift events are verified before retention; changed reports and untrusted signing keys are rejected.
+- Chain recovery attestation requires a healthy chain, verifies the signed checkpoint, is retained, and detects altered evidence.
+- Provider outage, anchor loss, stale CAS, and provider sharing are handled safely.
+- Owner isolation, API exports, and HTTP route mapping are tested.
+- Full cumulative tests, syntax checks, import resolution, and ZIP integrity checks pass.
+
+Known limitations
+- The baseline anchor protects state from the time it is enrolled; it cannot prove baseline history before an explicit legacy enrollment.
+- A local marker is supplementary state. If all local state and the external provider are simultaneously rolled back, this application layer cannot independently prove the former high-water mark.
+- Provider identity fingerprints do not prove independent administrative control of remote infrastructure.
+- Signed drift events are emitted through an explicit API rather than mutating a read-only audit call.
+- Recovery attestation signs the observed checkpoint; it is not a grant of mutation authority.
+- HTTP listener startup was not smoke-tested in the build environment because Express is declared in package.json but is not installed in the current runtime.

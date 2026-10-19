@@ -1,0 +1,35 @@
+Batch 149 — Cross-Domain Snapshot Anchor Conformance, Checkpoint Freshness/Retention Audit, and Recovery/Revocation Anchor Independence Reconciliation
+
+Implemented
+-----------
+- Added challenge-bound conformance probes for recovery-intent and proof-revocation snapshot checkpoint providers. Probes use random disposable namespaces and validate provider identity/contract metadata, genesis CAS, read-after-write, stale-CAS rejection without mutation, monotonic sequence/linkage, namespace isolation, and concurrent single-winner CAS. Reports are digest-bound, retained, audited, replay-idempotent, and explicitly do not claim hidden infrastructure independence.
+- Added cross-domain provider-independence auditing for provider instance reuse, observable identity collisions, duplicate endpoint fingerprints, missing required providers, and unobservable provider identities. Provider identity details are represented by fingerprints in audit output; infrastructure independence remains explicitly unproven.
+- Added checkpoint freshness and retention auditing for recovery-intent and revocation snapshot anchors. It reports stale/future/invalid anchor timestamps, pending or unsafe checkpoint states, invalid local marker/enrollment records, expired unused challenges, and records requiring retention review. Current markers are protected and no evidence is automatically deleted.
+- Added an aggregate cross-domain governance audit that combines independence, conformance integrity/outcome, and checkpoint freshness/retention findings. Nonconformant providers and identity collisions fail closed in the aggregate audit.
+- Exposed authenticated application APIs and HTTP routes for provider conformance, cross-domain independence audit, freshness/retention audit, and aggregate governance audit. Added bounded configuration for checkpoint max age, future-clock skew, and retention review windows.
+- Added anchor timestamp metadata to external snapshot checkpoint status so audits can distinguish freshness from cryptographic/digest validity without changing checkpoint state transitions.
+
+Configuration
+-------------
+- `AGENTIC_CROSS_DOMAIN_SNAPSHOT_CHECKPOINT_MAX_AGE_MS` (default 86400000; allowed 60000–2592000000).
+- `AGENTIC_CROSS_DOMAIN_SNAPSHOT_CHECKPOINT_FUTURE_SKEW_MS` (default 60000; allowed 0–600000).
+- `AGENTIC_CROSS_DOMAIN_SNAPSHOT_CHECKPOINT_RETENTION_DAYS` (default 90; allowed 1–3650).
+- Recovery-intent and proof-revocation providers are included in startup provider-instance and endpoint uniqueness checks. Runtime audits also detect observable provider identity collisions across distinct provider objects.
+
+Validation
+----------
+- Batch 149 regression tests: 7/7 PASS.
+- Full cumulative `npm test`: 1036/1036 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax: 225/225 PASS. Relative import resolution: 396 references, 0 missing. ZIP integrity and extracted-source revalidation: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+----------------------
+- Provider conformance proves only the observed CAS contract in disposable namespaces; providers without delete support may retain probe records.
+- Identity fingerprints and endpoint checks detect observable collisions but cannot prove hidden administrative or infrastructure independence.
+- Stale checkpoints are reported as degraded for current-use purposes; invalid timestamps, rollback/unhealthy checkpoint states, and tampered local records fail the governance audit.
+- Retention audit is read-only. It protects current markers and flags expired/overdue challenge/report records for review; it does not automatically delete evidence or rewrite checkpoint history.
+- External anchor durability, CAS semantics, and actual service separation remain deployment responsibilities.
+- HTTP listener startup was not exercised in this isolated validation run; route mapping, syntax, imports, cumulative tests, and archive integrity were checked.
+
+Next unfinished stage: Batch 150 — Cross-Domain Checkpoint Audit Attestation, Provider-Identity Drift Baselines, and Retention Review Approval.

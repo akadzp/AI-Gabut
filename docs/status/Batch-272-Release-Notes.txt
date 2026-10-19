@@ -1,0 +1,5 @@
+Batch 272 adds signed external attestations for Batch 271 lifecycle finalization receipts, with receipt binding, cross-generation predecessor continuity, signing-key lifecycle checks, independent checkpoint coverage, and overall recovery-gate convergence.
+
+Validation: 34/34 selected regression tests PASS (Batch 102, artifact tests, and Batch 267–272 regression tests); JavaScript/MJS/CJS syntax and archive integrity are recorded in BATCH272_VALIDATION_REPORT.md. Full cumulative npm test, positive end-to-end lifecycle flow, and direct HTTP listener startup are not claimed as verified. No GitHub commit was made.
+
+Next unfinished stage: Batch 273.

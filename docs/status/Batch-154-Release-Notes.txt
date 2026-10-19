@@ -1,0 +1,14 @@
+Batch 154 — Policy-Binding Approval Audit Chain, Baseline Receipt Compaction Manifest Design, and Retention-Revalidation Decision Cache Invalidation
+
+- Added per-domain digest-linked policy-binding audit events. External checkpoint commits that outlive local finalization can recover their event idempotently.
+- Added audit-chain validation for event sequence, digest linkage, applied challenge binding, and legacy approvals that lack event records.
+- Added persistent baseline receipt compaction manifest drafts that preserve receipt heads, revision ranges, previous-receipt linkage, source challenge/report digests, and historyNotProven flags.
+- Added manifest verification against current receipt and external-checkpoint state. Manifest generation is non-destructive; compaction is never performed or automatically authorized.
+- Added retention-decision revalidation cache with a fingerprint over owner evidence, target retention classification, policy, checkpoint identity/status, and policy-binding audit heads. Fingerprint changes invalidate entries before they can be reused.
+- Added authenticated HTTP routes for policy-binding audit-chain review, compaction manifest creation/verification, and revalidation-cache inspection.
+- Added Batch 154 regression tests for healthy and tampered audit chains, legacy history gaps, manifest preservation and staleness, cache hits and invalidation, and API exposure.
+
+
+Validation: Batch 154 regression tests 8/8 PASS; full cumulative npm test 1076/1076 PASS; JavaScript/MJS/CJS syntax 232/232 PASS; relative import references 415 checked, 0 missing; ZIP integrity and post-extraction validation PASS. No GitHub commit was made.
+
+Next stage: Batch 155 — Policy-Binding Audit-Chain External Checkpointing, Compaction Manifest Approval Workflow, and Cache Invalidation Race/Freshness Tests.

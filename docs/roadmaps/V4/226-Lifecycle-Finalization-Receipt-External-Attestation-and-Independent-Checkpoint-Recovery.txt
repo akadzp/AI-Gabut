@@ -1,0 +1,31 @@
+Agentic AI V4 — Batch 226
+Lifecycle Finalization-Receipt External Attestation, Cross-Generation Renewal and Revocation Proof, and Independent Checkpoint Recovery
+
+Objective
+Create a signed external attestation bound to the Batch 225 lifecycle finalization receipt, bind its action/finalization/target-receipt chain and current signing-key lifecycle, and protect the attestation history with an independent external snapshot checkpoint.
+
+Implementation
+1. Add the signed event `proof_continuity_finalization_receipt_binding_attestation_lifecycle_attestation_receipt_external_attested`.
+2. Bind each attestation to the exact Batch 225 finalization receipt and finalization event, action event, target receipt, optional replacement receipt, lifecycle audit digest, source checkpoint fingerprint, and signing-key lifecycle digest.
+3. Enforce monotonic attestation generations with predecessor ID/digest continuity and deterministic operation IDs for idempotent retries.
+4. Verify historical signatures, per-generation binding digests, predecessor linkage, latest finalization-receipt correspondence, current key binding, and checkpoint freshness.
+5. Keep revocation terminal: a verified revocation remains `decision_blocked`; external attestation does not restore a revoked receipt to current-decision use.
+6. Add the independent checkpoint domain `cross_domain_finalization_receipt_lifecycle_attestation_receipts`, provider/endpoint independence checks, enrollment, audit, advancement, and reconciliation.
+7. Include the checkpoint in multi-checkpoint advancement and cross-domain convergence so configured strict deployments fail closed while an attestation or checkpoint is stale/missing.
+8. Add HTTP endpoints for attestation, audit, checkpoint status/audit, enrollment, and reconciliation.
+
+Validation
+- Batch 226 focused tests: 2/2 PASS after extraction.
+- Batch 223–225 focused regression tests: 7/7 PASS after extraction.
+- Total focused tests in the final targeted run: 9/9 PASS.
+- JavaScript syntax and import checks are performed across the cumulative archive.
+- Independent checkpoint empty-history behavior and provider-reuse rejection are covered.
+- End-to-end positive attestation against a fully finalized Batch 224 renewal/revocation chain is not claimed as verified in this run. The earlier cumulative lifecycle bootstrap path can stall; full cumulative `npm test` and live HTTP startup remain unverified.
+- No GitHub commit.
+
+Deployment configuration
+- `AGENTIC_CROSS_DOMAIN_RECOVERY_INTENT_CLOSURE_RECOVERY_GATE_PROOF_CONTINUITY_FINALIZATION_RECEIPT_BINDING_ATTESTATION_LIFECYCLE_ATTESTATION_RECEIPT_ANCHOR_URL`
+- `AGENTIC_CROSS_DOMAIN_RECOVERY_INTENT_CLOSURE_RECOVERY_GATE_PROOF_CONTINUITY_FINALIZATION_RECEIPT_BINDING_ATTESTATION_LIFECYCLE_ATTESTATION_RECEIPT_ANCHOR_TOKEN`
+- `AGENTIC_REQUIRE_CROSS_DOMAIN_RECOVERY_INTENT_CLOSURE_RECOVERY_GATE_PROOF_CONTINUITY_FINALIZATION_RECEIPT_BINDING_ATTESTATION_LIFECYCLE_ATTESTATION_RECEIPT_ANCHOR=true`
+
+When configured, the checkpoint is treated as a required independent trust domain. The provider/endpoint must not be reused by another registered trust domain. Secrets and private keys are not included in the source ZIP.

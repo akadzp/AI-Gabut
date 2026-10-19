@@ -1,0 +1,13 @@
+V4 Batch 27 — Mission Observability Integrity Integration & Safe Execution Guard
+
+Tujuan: menghubungkan integrity guard observability ke mission lifecycle tanpa menjadikan evidence corruption sebagai jalan untuk melewati atau mengubah execution/approval authority.
+
+Scope:
+- observability integrity gate membaca timeline sebelum mission stage execution
+- unhealthy evidence direconcile dengan bounded observability-only repair
+- repair failure tidak menghentikan Work execution; failure dicatat sebagai observability evidence
+- healthy evidence menjadi no-op
+- scheduler mengembalikan hasil reconciliation untuk auditability
+- application layer mengekspos explicit reconciliation endpoint
+
+DoD: mission execution tetap mengikuti integrity/approval/lease/journal authority yang ada; observability evidence direconcile sebelum stage execution, tetapi kegagalan evidence tidak dapat membuka, menutup, atau mengubah execution authority.

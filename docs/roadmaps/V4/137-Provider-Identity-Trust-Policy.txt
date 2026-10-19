@@ -1,0 +1,28 @@
+Batch 137 — Provider-Identity Baseline Anchor Conformance, Drift-Event Key Rotation and Revocation, and Recovery-Attestation Trust Policy
+
+Objective
+Validate the provider contract before relying on it and apply explicit, cryptographically authorized lifecycle policy to provider-identity drift-event and retained-evidence recovery-attestation signing keys.
+
+Delivered
+1. Disposable-namespace conformance challenge for the provider-identity baseline anchor.
+2. CAS, read-after-write, stale-digest rejection, owner isolation, monotonicity, and concurrent winner checks.
+3. Persisted per-owner trust policy for drift-event and recovery-attestation key lifecycle.
+4. Policy-authority-signed rotation/revocation challenges and target-key proof of possession.
+5. Historical verification rules for retired keys and compromise cutoffs.
+6. Application APIs and authenticated HTTP routes for policy status, audit, conformance, rotation, and revocation.
+
+Validation baseline
+- Batch tests: 10/10 PASS.
+- Cumulative tests: 950/950 PASS.
+- Syntax: 187/187 JavaScript/MJS files PASS.
+- Relative imports: 312 checked, 0 missing.
+- Archive and extracted-source validation: PASS.
+
+Known boundaries
+- The trust-policy hash chain remains local and needs external anchoring for stronger rollback resistance.
+- Policy-authority public keys and key-aware external signers are deployment configuration.
+- Historical receipt verification requires retaining the corresponding public keys.
+- Provider conformance records may remain in a provider that lacks deletion support.
+- HTTP startup was not exercised directly in this environment.
+
+Next stage: Batch 138 — External Trust-Policy Checkpoint Anchoring, Policy-Authority Rotation and Revocation, and Conformance Evidence Retention.

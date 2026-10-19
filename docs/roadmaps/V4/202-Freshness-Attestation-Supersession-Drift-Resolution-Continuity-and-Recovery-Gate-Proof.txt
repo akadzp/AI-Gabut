@@ -1,0 +1,36 @@
+Agentic AI V4 — Batch 202
+
+Objective:
+Make freshness generations explicitly supersede predecessors, require independently auditable continuity for drift-resolution receipts, and persist signed proof of each recovery-gate decision.
+
+Scope:
+- Append signed supersession events binding the prior freshness attestation to a replacement generation.
+- Resume an interrupted supersession using the same operation ID and reconcile its external recovery-receipt checkpoint before issuing the replacement attestation.
+- Audit supersession history for replay, conflicting targets, invalid signatures, missing replacement generations, and predecessor ordering.
+- Append a signed drift-resolution continuity receipt after each signed drift-resolution event.
+- Keep drift evidence unresolved until the continuity receipt is present and the external recovery-receipt checkpoint covers it.
+- Resume interrupted drift-resolution/continuity pairs without duplicate events.
+- Persist a signed, CAS-protected recovery-gate proof ledger bound to checkpoint, freshness, lifecycle, drift, closure, receipt-checkpoint, and key-lifecycle state.
+- Revalidate stored proof against current evidence; a changed anchor, expired freshness attestation, key cutoff, or changed closure digest makes the proof stale.
+- Expose read-only supersession and recovery-gate proof audit endpoints.
+
+Operational invariants:
+- A predecessor freshness attestation cannot be used for current decisions after a signed supersession event.
+- A supersession without a replacement remains pending and blocks current-decision use.
+- Drift resolution is not complete until its continuity receipt is signed, persisted, and covered by the current external recovery-receipt checkpoint.
+- A recovery-gate proof of a blocked decision is auditable but never decision-usable.
+- Proof replay with identical inputs is idempotent; changed bindings require a distinct proof generation.
+- External anchors are never rewritten to conceal rollback.
+- Private signing keys are not distributed in source archives.
+
+Validation:
+- Batch 202 tests: 6/6 PASS.
+- Batch 201 tests: 7/7 PASS across individual test-name runs.
+- Batch 200 tests: 6/6 PASS.
+- Batch 198 tests: 6/6 PASS.
+- Batch 199 tests 1–10 passed in a grouped run; tests 11–13 passed individually after the grouped execution exceeded the environment runtime.
+- Syntax, relative-import, ZIP integrity, and post-extraction validation are part of the release checks.
+- Direct HTTP listener startup and a full cumulative test-suite pass are not claimed.
+- No GitHub commit.
+
+Next: Batch 203 — Recovery-Gate Proof External Checkpointing, Supersession Recovery Reconciliation, and Decision-Proof Freshness Enforcement.

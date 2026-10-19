@@ -1,0 +1,37 @@
+Agentic AI V4 — Batch 115
+Attestation Trust Rotation, Revocation, and Quarantine Recovery Audit
+
+Scope
+- Support controlled lifecycle management for the Ed25519 public keys that authorize critical ledger-integrity attestations.
+- Prevent stale or revoked-key attestations from clearing a critical quarantine.
+- Audit the trust transition history and report historical attestations signed by revoked keys.
+
+Implementation
+- Added an owner-scoped persistent trust policy, bootstrapped from `integrityAttestationPublicKeys` or `AGENTIC_INTEGRITY_ATTESTATION_PUBLIC_KEYS` on first use. The registry stores public keys only, key fingerprints, lifecycle revisions, and a bounded history. Existing persisted registry state takes precedence after bootstrap.
+- Added one-use transition challenges for `rotate` and `revoke`, each bound to the current trust-policy revision/digest and a five-minute maximum expiry.
+- A rotation requires majority authorization by currently active keys and proof-of-possession from the new Ed25519 private key. A revocation requires majority authorization, a 12–240 character reason, and cannot remove the final active key. A key ID is never reused.
+- Trust transitions are recorded in a hash-linked event history with authorization signatures and rotation proof-of-possession. The audit revalidates the event chain, signatures, quorum, rotation proof, revocation target, key-state revisions, and bounded attestation inventory.
+- Ledger-integrity attestation challenges now bind `trustRevision` and `trustDigest`. Trust changes invalidate outstanding challenges/attestations for clearance; revoked keys are not accepted for new challenges or quarantine acknowledgements. Pre-Batch-115 attestations remain inspectable for historical compatibility, are reported as lacking a trust binding, and cannot authorize a new critical-quarantine clearance.
+- Added application APIs: `getRecoveryReconciliationMutationOutcomeLedgerAttestationTrustPolicy`, `createRecoveryReconciliationMutationOutcomeLedgerAttestationTrustTransitionChallenge`, `applyRecoveryReconciliationMutationOutcomeLedgerAttestationTrustTransition`, and `auditRecoveryReconciliationMutationOutcomeLedgerAttestationTrust`.
+- Added authenticated HTTP endpoints under `/api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust` for policy inspection, audit, challenge creation, and transition application.
+
+Operational procedure
+1. Bootstrap at least one trusted Ed25519 public key using the configured trust-key map. Keep private keys outside the application and storage.
+2. To rotate, create a `rotate` challenge with a new, never-used key ID and its public key. Sign the returned canonical payload with a majority of current active keys and sign `{domain: "agentic-v4-attestation-trust-proof-of-possession", payload}` with the new key. Submit both authorization signatures and proof to the apply endpoint.
+3. Verify the trust audit is healthy. Only then create new ledger-integrity attestation challenges; old challenges are invalidated by the trust revision/digest change.
+4. To revoke an old key, create a `revoke` challenge with a reason, collect majority signatures from current active keys, and apply it. The system prevents revoking the final active key.
+5. Run the trust audit after every change. Historical verified attestations signed by a revoked key are reported and cannot be used for a new critical-quarantine clearance.
+
+Validation
+- Batch 115 regression tests: 13/13 PASS.
+- Full cumulative `npm test`: 709/709 PASS.
+- JavaScript/MJS syntax and relative import resolution: validated across the complete source tree.
+- ZIP integrity (`zip -T`, `unzip -t`) and extracted-source validation: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+- Initial trust bootstrap depends on administrator-controlled configuration. Trust changes require possession of the currently trusted private keys and new-key proof-of-possession. If the current quorum is unavailable, recovery requires an out-of-band trust-root recovery procedure; there is no unauthenticated bypass.
+- SHA-256 hash links and stored signatures detect tampering but cannot alone prevent rollback by an actor who can rewrite all application storage. Whole-store rollback resistance requires an external monotonic anchor or write-once audit store.
+- Atomicity is limited to processes sharing the supported storage root. HTTP listener startup was not boot-tested because Express is unavailable in this validation environment.
+
+Status update: Batch 116 completed the external-anchor integration and rollback-detection stage. Next unfinished stage: Batch 117 — External Anchor Service Conformance and Cross-Store Recovery Protocol.

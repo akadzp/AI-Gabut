@@ -1,0 +1,43 @@
+Agentic AI V4 — Batch 141 Release Notes
+
+Stage
+-----
+Root-Recovery Trust External Checkpoint Anchoring, Reconciliation Attestation Freshness Policy, and Conformance Drift Event Retention
+
+Changes
+-------
+- Added a dedicated external CAS anchor domain for the root-recovery trust lifecycle. Checkpoints bind owner scope, root-trust policy revision/digest, previous policy digest, anchor sequence, previous anchor digest, anchor type, and history limitation flags. Bootstrap and successful lifecycle transitions advance the remote anchor and verify read-after-write.
+- Root-trust operations fail closed when the configured external anchor is missing, rolled back, mismatched, unavailable, or cannot prove continuity. A failed remote advance after a committed local transition is reported as behind_local; only a provable one-revision advance can be reconciled. Rollback behind a newer local marker is not automatically repaired.
+- Added explicit, digest-bound, ten-minute legacy enrollment for pre-existing root-trust policies. Enrollment retains historyNotProven and does not claim to prove pre-enrollment history. The root_recovery_trust provider is registered as an independent trust domain and duplicate provider instances/endpoints are rejected.
+- Added a freshness policy to signed retention-reconciliation attestations. The default maximum age is 24 hours with 60 seconds of allowed future skew; both are configurable. Verification now separates historical signature/retention validity from freshness and current-decision usability. Stale or too-far-future evidence remains historically inspectable but is not valid for current use.
+- Added owner-scoped retention for provider conformance drift events. Captures bind a drift audit snapshot digest and reason, are idempotent, and use the existing retained-evidence chain. Audit validates event bindings; explicit pruning can target only this event type and leaves digest-preserving tombstones.
+- Added authenticated HTTP routes for root-trust anchor status/reconciliation/enrollment and conformance drift event capture/list/audit/pruning.
+
+Configuration
+-------------
+- `AGENTIC_ROOT_RECOVERY_TRUST_ANCHOR_URL` and `AGENTIC_ROOT_RECOVERY_TRUST_ANCHOR_TOKEN` configure a separate external anchor provider.
+- `AGENTIC_REQUIRE_ROOT_RECOVERY_TRUST_ANCHOR=true` requires the provider at startup and makes anchor trust mandatory for root lifecycle operations.
+- `AGENTIC_RETENTION_RECONCILIATION_ATTESTATION_MAX_AGE_MS` configures the maximum attestation age (60,000 ms to 30 days; default 86,400,000 ms).
+- `AGENTIC_RETENTION_RECONCILIATION_ATTESTATION_FUTURE_SKEW_MS` configures allowed future skew (0 to 600,000 ms; default 60,000 ms).
+- `AGENTIC_PROVIDER_CONFORMANCE_DRIFT_RETENTION_DAYS` configures drift event retention (1 to 3,650 days; default 90 days).
+- Root-recovery trust anchoring must use a provider/endpoint independent from all other configured trust domains. Private keys remain outside application storage.
+
+Validation
+----------
+- Batch 141 regression tests: 7/7 PASS.
+- Full cumulative `npm test`: 976/976 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax checks: 199/199 PASS.
+- Relative import resolution: PASS, no missing relative imports.
+- ZIP integrity (`zip -T`, `unzip -t`) and extracted-source revalidation: PASS.
+- GitHub commit: none.
+
+Operational boundaries
+----------------------
+- External anchor durability and append-only CAS semantics remain responsibilities of the independently operated provider.
+- A legacy enrollment establishes trust only from enrollment forward; `historyNotProven` remains true.
+- If local policy commits but remote anchoring fails, the policy is not treated as trusted until safe reconciliation completes. A non-provable gap or rollback is blocked.
+- Freshness does not erase historical signature validity; callers must use `usableForCurrentDecision`/`fresh` when making current decisions.
+- Drift event pruning audits retained evidence first and only tombstones expired records of the requested artifact type; unrelated evidence is not selected for pruning.
+- HTTP listener startup was not exercised in this isolated environment; syntax, import resolution, API exports, route mapping, tests, and archive integrity were validated.
+
+Next unfinished stage: Batch 142 — Root-Recovery Trust Anchor Provider Conformance, Freshness Enforcement at Decision Boundaries, and Drift-Retention Chain Reconciliation.

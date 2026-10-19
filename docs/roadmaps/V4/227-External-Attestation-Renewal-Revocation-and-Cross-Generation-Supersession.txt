@@ -1,0 +1,29 @@
+Agentic AI V4 — Batch 227
+External Attestation Renewal and Revocation Lifecycle, Cross-Generation Supersession, and Key-Cutoff Recovery-Gate Enforcement
+
+Objective
+Add a signed, challenge-confirmed lifecycle for Batch 226 external attestations. Renewal must create a new external attestation generation linked to its predecessor; revocation must be terminal and block current-decision use. Lifecycle events must participate in the independent external-attestation checkpoint snapshot.
+
+Implementation
+1. Add signed intent, renewed, revoked, superseded, and finalized events for external-attestation lifecycle operations.
+2. Bind each operation to the current external attestation ID/digest/generation, ledger snapshot, challenge, reason digest, lifecycle generation, and signing-key lifecycle binding.
+3. Require explicit confirmation and a bounded challenge TTL. Reject stale targets, conflicting operation IDs, duplicate pending operations, and renewals across a signing-key cutoff.
+4. Renew by issuing a new Batch 226 external attestation whose binding includes the lifecycle-renewal event, then record signed predecessor/replacement supersession and finalization events.
+5. Recover idempotently when interrupted after intent, renewal, new attestation issuance, supersession, revocation, or finalization.
+6. Treat finalized revocation as terminal. A revoked external attestation cannot be renewed or re-issued; recovery-gate audits return `decision_blocked`.
+7. Include lifecycle events in the independent external-attestation checkpoint snapshot and recovery-gate convergence status.
+8. Add prepare/apply/audit application methods and HTTP routes.
+
+Validation
+- Batch 227 focused tests: 2/2 PASS after source extraction.
+- Batch 223–226 focused regression tests: 9/9 PASS in the targeted combined run.
+- Total tests in the final targeted run: 11/11 PASS.
+- JavaScript syntax checks and relative import resolution are required across the cumulative archive.
+- Empty history does not invent an attestation lifecycle; lifecycle mutation fails closed without a current external attestation.
+- Full positive end-to-end renewal/revocation against a complete Batch 226 attestation chain was not verified in this run. A cumulative bootstrap attempt exceeded the execution time budget; full `npm test` and live HTTP startup remain unverified.
+- No GitHub commit.
+
+Operational notes
+- Existing Batch 226 independent checkpoint configuration is reused; no new credential or provider is introduced.
+- The checkpoint snapshot includes Batch 227 lifecycle events, so configured checkpoint strictness covers intent, action, supersession, and finalization.
+- Revocation remains a terminal `decision_blocked` state, even if a checkpoint needs subsequent reconciliation.

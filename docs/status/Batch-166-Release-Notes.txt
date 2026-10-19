@@ -1,0 +1,37 @@
+Agentic AI V4 — Batch 166 Release Notes
+=======================================
+
+Batch
+-----
+166 — Lifecycle-Checkpoint Crash Recovery/Gap Diagnostics, Approval-Bound Finalization Receipt Recovery, and Receipt-Ledger Policy-Binding/Retention Audit.
+
+Implemented
+-----------
+- Added a generic, read-only external checkpoint marker-recovery inspection API. It compares the current source snapshot, trusted remote anchor, local marker, and current policy digest; recovery is offered only when source and policy still match the anchor and marker continuity is either absent or exactly one provable step behind.
+- Added durable, digest-chained recovery intents for recovery-intent attestation lifecycle checkpoint marker recovery. Each intent binds the domain, expected anchor digest/sequence, previous anchor digest, source digest/count, policy digest, and lifecycle event head. Recovery uses the generic exact-match marker finalizer, persists completion evidence, and verifies the resulting checkpoint postcondition.
+- Added approval-bound recovery for manifest-ledger gap-finalization receipt checkpoints. Recovery is blocked unless the finalization ledger audit is healthy and the latest receipt still binds to its approval, challenge, candidate digest, source snapshot, and recorded source-current condition. Recovery intents preserve those approval/finalization references and are independently audited.
+- Added a read-only signed verification-receipt ledger policy/retention audit. It verifies receipt digest and checkpoint-binding integrity, compares the receipt's policy binding against the source checkpoint that it actually references, evaluates retention age and timestamp skew, includes checkpoint policy-binding approval-chain audit, and reports review-due conditions without deleting or compacting evidence.
+- Added application APIs and authenticated HTTP routes for lifecycle checkpoint recovery inspection/recovery/audit, approval-bound finalization checkpoint recovery inspection/recovery/audit, and verification-receipt ledger policy/retention audit.
+- Added four focused regression tests covering marker recovery and idempotency, approval-bound finalization receipt recovery, read-only policy/retention review, and API/route exposure.
+
+Validation
+----------
+- Batch 166 regression tests: 4/4 PASS.
+- Full cumulative `npm test`: 1132/1132 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax and relative imports validated against the complete source tree and clean extraction.
+- ZIP integrity checked with `zip -T` and `unzip -t`.
+- Extracted source equivalence checked per file; no missing, extra, or content-different files.
+- No GitHub commit was made.
+
+Operational boundaries
+----------------------
+- Marker recovery is blocked when the current source snapshot advanced beyond the external anchor, policy binding drifted, or marker-to-anchor continuity cannot be proven.
+- Initial external checkpoint enrollment continues to mark pre-enrollment history as unproven; recovery does not remove that condition.
+- Finalization recovery requires a valid approval/challenge/candidate binding and a finalization record whose source-current flag is still true.
+- Receipt retention audit is read-only. Retention review due is reported, but no receipt deletion or compaction is performed.
+- External CAS durability and trust-provider independence remain deployment responsibilities.
+- HTTP listener startup smoke test remains outside the verified boundary because `express` is not installed in this validation environment. Syntax, import resolution, API mapping, regression tests, and archive integrity were verified.
+
+Next unfinished stage
+---------------------
+Batch 167 — Recovery-Intent Ledger External Anchoring, Finalization-Recovery Replay/Conflict Resolution, and Receipt-Retention Review Approval Binding.

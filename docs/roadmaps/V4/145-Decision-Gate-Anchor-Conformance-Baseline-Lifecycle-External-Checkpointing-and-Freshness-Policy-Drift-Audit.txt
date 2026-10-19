@@ -1,0 +1,31 @@
+Agentic AI V4 — Batch 145 Roadmap Entry
+
+Objective
+---------
+Harden external decision-gate anchoring, root-trust baseline lifecycle checkpoint continuity, and audit visibility for changes to signed freshness policy.
+
+Scope delivered
+---------------
+1. Decision-gate anchor provider conformance challenge/run/audit using disposable namespaces and CAS contract probes.
+2. External checkpoint chain for root-trust baseline lifecycle events, with marker binding, monotonic sequence, rollback detection, explicit legacy enrollment, and bounded reconciliation.
+3. Fail-closed integration so configured lifecycle anchoring failure cannot be presented as a successful baseline rotation or current-baseline result.
+4. Read-only freshness-policy drift audit over retained signed reconciliation attestations.
+5. Owner-scoped application methods and authenticated HTTP endpoints.
+
+Acceptance criteria
+-------------------
+- Conformance tests do not write to production anchor namespaces.
+- Stale CAS must not mutate provider state; concurrent CAS must have one winner.
+- External checkpoint entries bind lifecycle event digest, retained record digest, baseline digest, sequence, and previous anchor digest.
+- A failed initial anchor can be retried only while local history is verifiable and no prior anchor/marker indicates rollback.
+- Multi-event legacy history requires explicit enrollment and remains history-unproven.
+- A configured but untrusted external lifecycle checkpoint blocks current-baseline usability and further rotation.
+- Freshness-policy drift audit validates signed payload digest and retained payload digest, and distinguishes drift from malformed evidence.
+- Cumulative tests, syntax checks, import resolution, ZIP integrity, and post-extraction tests pass.
+
+Known limitations
+-----------------
+- Provider conformance cannot prove administrative independence or hidden infrastructure topology.
+- External anchor durability and CAS semantics remain deployment responsibilities.
+- Freshness-policy audit is read-only; changing the policy does not rewrite old signed attestations.
+- HTTP listener startup was not directly exercised in the isolated validation environment.

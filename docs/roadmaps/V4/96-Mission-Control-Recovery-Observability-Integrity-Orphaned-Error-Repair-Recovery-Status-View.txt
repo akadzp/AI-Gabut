@@ -1,0 +1,28 @@
+V4 Batch 96 — Mission Control Recovery Observability Integrity Orphaned Error Repair Recovery Status View
+
+Scope:
+- adds a read-only status view for the durable observability intent handled by Batch 95
+- reports clear, pending, or error phase without mutating mission state or emitting events
+- validates pending-intent object shape, nullable reconciliation ID, creation timestamp, and retry marker
+- derives and exposes the same mission-scoped deterministic dedupe key used by Batch 95 when it is within the 260-character bound
+- fails closed for malformed pending metadata, orphaned error markers, and invalid or oversized dedupe keys
+- bounds reconciliation ID to 200 characters, timestamp to 100 characters, dedupe key to 260 characters, and error text to 1,000 characters
+- remains owner-scoped and does not expose arbitrary fields from malformed pending objects
+- exposes the status view through the mission-control service and application boundary
+
+Validation:
+- dedicated Batch 96 regression tests: 11/11 PASS
+- cumulative `npm test`: 488/493 PASS; the same five Batch 95 baseline failures remain, with no new failures
+- JavaScript/MJS syntax validation: 110/110 PASS
+- application-boundary mapping: PASS (service export and application mapping checked)
+- ZIP integrity validation: PASS (`zip -T` and `unzip -t`)
+- extracted-archive regression recheck: 11/11 PASS; extracted cumulative `npm test`: 488/493 PASS with the same five baseline failures; extracted JavaScript/MJS syntax: 110/110 PASS; application-boundary mapping: PASS
+- no GitHub commit
+
+Known baseline failures (unchanged from Batch 95):
+- `core/storage/state/index.js` is missing for the artifacts and work-recovery tests
+- `core/security/index.js` is missing for the work-Git test
+- external-feedback ID/provenance expectation mismatch
+- GitHub CI mock does not provide `github.workflowRuns`
+
+Next unfinished stage: Batch 97.

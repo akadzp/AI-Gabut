@@ -1,0 +1,20 @@
+V4 Batch 80 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Repair Recovery Status Recovery Status Recovery Status Recovery Status Recovery Status Recovery
+
+Scope completed:
+- adds explicit bounded recovery for the durable observability intent created by Batch 79
+- reuses Batch 79's event type and mission-scoped deterministic dedupe key
+- clears pending intent and durable error only after successful event emission and a version-checked write
+- persists bounded errors and retains retryable intent when event emission fails
+- rejects malformed pending intent and orphaned durable error markers without mutation
+- retries optimistic-concurrency conflicts within the established bounded retry limit
+- preserves owner-scoped access and exposes the operation through the application boundary
+
+Validation:
+- dedicated regression tests: 10/10 PASS
+- cumulative npm test: 326/331 PASS; the same five baseline failures remain (missing core/storage/state/index.js in artifacts and work-recovery, missing core/security/index.js in work-git, external-feedback ID/provenance expectation mismatch, and missing github.workflowRuns mock)
+- JavaScript/MJS syntax validation: 94/94 PASS
+- application-boundary export mapping: PASS
+- ZIP integrity: PASS (zip -T and unzip -t); extracted regression tests: 10/10 PASS; extracted syntax validation: 94/94 PASS
+- no GitHub commit
+
+Next unfinished stage: Batch 81.

@@ -1,0 +1,27 @@
+V4 Batch 97 — Mission Control Recovery Observability Integrity Orphaned Error Repair Recovery Status View Integrity
+
+Scope:
+- adds a read-only, owner-scoped integrity verifier for the Batch 96 recovery-observability status view
+- validates pending-intent object shape, nullable reconciliation ID, creation timestamp, retry marker, and mission-scoped deterministic dedupe key
+- detects malformed pending intent and orphaned durable error markers using stable issue codes
+- bounds reconciliation ID to 200 characters, timestamp to 100 characters, dedupe key to 260 characters, and error output to 1,000 characters
+- returns normalized primitive metadata only; arbitrary fields from malformed pending objects are never exposed
+- performs no mutation, retry, recovery, repair, or event emission
+- exposes the verifier through the mission-control service and application boundary
+
+Validation:
+- dedicated Batch 97 regression tests: 11/11 PASS
+- cumulative `npm test`: 499/504 PASS; the same five baseline failures from Batch 96 remain, with no new failures
+- JavaScript/MJS syntax validation: 111/111 PASS
+- application-boundary mapping: PASS (service export and application mapping verified)
+- ZIP integrity validation: PASS (`zip -T` and `unzip -t`)
+- extracted-archive regression recheck: 11/11 PASS; extracted cumulative `npm test`: 499/504 PASS with the same five baseline failures; extracted JavaScript/MJS syntax: 111/111 PASS; application-boundary mapping: PASS
+- no GitHub commit
+
+Known baseline failures from Batch 96:
+- `core/storage/state/index.js` is missing for the artifacts and work-recovery tests
+- `core/security/index.js` is missing for the work-Git test
+- external-feedback ID/provenance expectation mismatch
+- GitHub CI mock does not provide `github.workflowRuns`
+
+Next unfinished stage: Batch 98.

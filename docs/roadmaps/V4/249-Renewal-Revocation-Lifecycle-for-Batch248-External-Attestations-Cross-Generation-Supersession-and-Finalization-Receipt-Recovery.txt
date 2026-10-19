@@ -1,0 +1,15 @@
+Batch 249 — Renewal/Revocation Lifecycle for Batch 248 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery
+
+Implement signed, challenge-bound renewal and terminal revocation for Batch 248 external attestations. Bind lifecycle intent, action, predecessor/replacement, finalization, and finalization receipt to the source attestation and its Batch 247 lifecycle finalization receipt. Enforce monotonic generations, deterministic replay-safe operation IDs, signing-key cutoff tracking, receipt predecessor continuity, independent checkpoint coverage, and overall recovery-gate convergence.
+
+Validation requirements:
+- Empty-history audit/snapshot/reconcile remain read-only and cannot fabricate lifecycle events or receipts.
+- Lifecycle mutation requires a healthy, current Batch 248 external-attestation source and a current independent checkpoint.
+- Renewal and revocation phases bind to one challenge and the active source generation.
+- Terminal revocation blocks descendants and subsequent renewal.
+- Missing receipts are recoverable; invalid signatures, broken bindings, orphan phases, and invalid receipt predecessors fail closed.
+- Application APIs and authenticated owner-scoped HTTP routes are registered.
+- Independent checkpoint snapshots include Batch 249 events.
+- ZIP integrity, source syntax/imports, and clean-extraction equivalence are verified.
+
+Do not claim full cumulative npm test or positive end-to-end lifecycle success unless the full run completes and produces a final summary. No GitHub commit.

@@ -1,0 +1,5 @@
+Batch 268 — External Attestation for Batch 267 Lifecycle Finalization Receipts
+
+Scope: signed receipt attestations, cross-generation continuity, signing-key lifecycle binding, checkpoint-aware reconciliation, and recovery-gate convergence.
+
+Next: Batch 269 renewal/revocation lifecycle for Batch 268 external attestations.

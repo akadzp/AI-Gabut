@@ -1,0 +1,32 @@
+Agentic AI V4 — Batch 135 Release Notes
+
+Stage: Cross-Domain Independence Attestation, Retention Evidence Chain Anchoring, and Provider Identity Drift Monitoring
+
+Delivered
+- Signed Ed25519 attestation for cross-domain anchor-independence reports. The attestation signs the report digest and report payload, is verified against a separately configured trusted public-key registry, and is retained as owner-scoped evidence. A signed report is explicitly not an approval and does not claim cryptographic proof of infrastructure independence.
+- Persistent append-only hash-chain ledger for retained evidence. Each retain and prune transition creates a sequenced event containing the retained-record digest, payload digest, status, timestamp, previous event digest, and event digest.
+- Optional external anchoring of retained-evidence chain heads with CAS, monotonic anchor sequence, post-write read-back, and a local marker to detect anchor removal/rollback. The retained-evidence chain uses a distinct provider/URL trust domain and can be required by deployment policy.
+- Explicit provider-identity baseline enrollment and rotation. Baseline challenges bind the identity fingerprint snapshot and current baseline digest, expire after ten minutes, require digest-bound confirmation, and fail if provider identities change between preparation and application.
+- Provider identity drift audit reports missing baselines, invalid baseline integrity, drifted domains, and unverifiable identities without exposing raw endpoint values.
+- HTTP endpoints for independence attestation, retained-evidence chain status/audit/reconciliation, and provider-identity baseline/drift operations.
+
+New configuration
+- recoverySloRetainedEvidenceAnchor / AGENTIC_RETAINED_EVIDENCE_ANCHOR_URL / AGENTIC_RETAINED_EVIDENCE_ANCHOR_TOKEN
+- requireRecoverySloRetainedEvidenceAnchor / AGENTIC_REQUIRE_RETAINED_EVIDENCE_ANCHOR=true
+- recoverySloIndependenceAttestationSigner
+- recoverySloIndependenceAttestationKeyId
+- recoverySloIndependenceAttestationPublicKeys
+- requireRecoverySloSignedIndependenceAttestation / AGENTIC_REQUIRE_ANCHOR_INDEPENDENCE_ATTESTATION=true
+
+Security notes
+- The retained-evidence chain anchor must use a separate provider instance and endpoint from attestation, finalization key policy, recovery journal, and retention checkpoint anchors.
+- If external chain anchoring is not configured, the local hash chain reports local_only; deployments requiring external anchoring must enable strict mode.
+- Baselines are never silently enrolled or refreshed. Identity changes require an explicit baseline rotation challenge and current baseline digest.
+- A signed independence report is an authenticated audit statement, not a policy approval and not cryptographic proof that backing infrastructure is independently administered.
+- Local hash chains do not by themselves prevent an attacker with full write access from rewriting all local history; external anchoring strengthens rollback detection.
+
+Validation
+- Batch 135 regression tests: 9/9 pass.
+- Cumulative npm test suite: 933/933 pass.
+- JavaScript/MJS syntax and relative imports are validated separately for the release archive.
+- GitHub commit: none.

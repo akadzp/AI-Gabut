@@ -1,0 +1,40 @@
+Agentic AI V4 — Batch 156 Roadmap
+
+Objective
+
+Bind policy-binding audit checkpoint freshness to signed evidence, make manifest approval supersession/revocation explicit and auditable, and ensure overlapping retention-decision revalidation requests cannot independently publish conflicting outcomes.
+
+Implemented in Batch 156
+
+1. Policy-binding audit checkpoint freshness attestation
+   - Ed25519 signature and trusted-key verification.
+   - Snapshot digest includes the active max-age and future-skew policy.
+   - Historical signature validity is distinct from currentness and current-decision usability.
+   - Unproven pre-enrollment history remains visible and cannot authorize a current decision.
+
+2. Manifest approval supersession and revocation
+   - Read-only audit derives superseded status when the approved manifest no longer matches the current source/checkpoint state.
+   - Revocation requires a ten-minute challenge bound to approval, manifest, and the exact observed stale source state.
+   - Source changes or restoration of eligibility invalidate the challenge.
+   - Revocation is recorded separately; the original approval is immutable and no compaction/deletion is executed.
+
+3. Concurrent revalidation consistency
+   - Per-process single-flight coordination coalesces overlapping calls for the same owner and approval.
+   - Generation conflicts remain fail-closed and are not cached.
+   - Expired checkpoint freshness is reported as pending rather than misclassified as a source race.
+   - Cache observability includes coalesced and in-flight counts.
+
+Validation results before archive extraction
+
+- Cumulative npm tests: 1088/1088 PASS.
+- JavaScript/MJS/CJS syntax: 235/235 PASS.
+- Relative imports: 424 checked, 0 missing.
+- Final clean-extraction validation: 1088/1088 tests PASS; syntax 235/235 PASS; relative imports 424 checked, 0 missing; ZIP `zip -T` and `unzip -t` PASS; extracted source diff empty.
+
+Known limitations
+
+- In-flight coalescing is process-local; multi-process coordination depends on shared store/provider CAS semantics.
+- The revalidation cache is in-memory and not an authority source.
+- Attestations for unproven legacy history are historical-only.
+- Manifest approval revocation does not execute compaction or deletion.
+- HTTP listener startup remains outside the verified test boundary.

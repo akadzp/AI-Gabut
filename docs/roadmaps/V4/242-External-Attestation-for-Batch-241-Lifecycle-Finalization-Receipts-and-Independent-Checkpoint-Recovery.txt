@@ -1,0 +1,19 @@
+Batch 242 — External Attestation for Batch 241 Lifecycle Finalization Receipts
+
+Deliverables
+1. Signed external attestation for each Batch 241 lifecycle finalization receipt.
+2. Receipt-prefix and predecessor attestation integrity verification.
+3. Signing-key cutoff tracking and revalidation.
+4. Checkpoint snapshot coverage and checkpoint-aware reconciliation.
+5. Authenticated owner-scoped API routes and overall recovery-gate convergence.
+6. Focused regression tests, syntax/import checks, and complete source ZIP validation.
+
+Acceptance criteria
+- Empty source receipt history is read-only and not_initialized.
+- No attestation is created when source receipts are missing, unhealthy, or not current.
+- Attestations bind source receipt and lifecycle event digests, generation, source audit, checkpoint, key binding, and predecessor.
+- Missing attestation/checkpoint lag is recovery_required; invalid chain/signature is unhealthy.
+- Terminal revocation remains decision_blocked.
+- ZIP extraction reproduces every source file byte-for-byte.
+
+GitHub commit: not performed.

@@ -1,0 +1,11 @@
+Batch 190 roadmap
+
+1. Add an independent external snapshot checkpoint for the closure recovery-intent/finalization/freshness receipt ledger.
+2. Require a current enrolled checkpoint before new receipt-ledger mutations when anchoring is configured or mandatory.
+3. Advance the receipt anchor only when removing exactly one event uniquely reconstructs the previous anchored snapshot.
+4. Resume local-append/external-CAS interruption using the same operation ID and without duplicate receipts.
+5. Add challenge-bound freshness-attestation renewal and revocation with target digest, checkpoint snapshot, receipt-ledger head, anchor, and signing-key lifecycle bindings.
+6. Reject stale lifecycle challenges after key rotation, checkpoint drift, ledger changes, expiry, or incorrect confirmation.
+7. Detect revocation, expiration, key cutoff, source-count drift, one-event pending gaps, multi-event gaps, rollback, and policy drift.
+8. Integrate receipt checkpoint continuity and freshness lifecycle results into closure and current-decision audits.
+9. Add regression tests for independent anchoring, crash recovery, idempotence, renewal/revocation, key cutoff, and API route exposure.

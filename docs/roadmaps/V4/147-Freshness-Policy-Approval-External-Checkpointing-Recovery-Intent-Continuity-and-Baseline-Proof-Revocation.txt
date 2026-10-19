@@ -1,0 +1,42 @@
+Agentic AI V4 — Batch 147 Roadmap Entry
+
+Objective
+---------
+Externally checkpoint freshness-policy approval history, audit durable decision-gate recovery-intent continuity, and introduce a source-trust-aware revocation policy for root-trust baseline continuity proofs.
+
+Scope delivered
+---------------
+1. Freshness-policy approval events are anchored one revision at a time using an independent external CAS provider. The checkpoint binds owner scope, approval event digest, approved policy digest, event time, sequence, and previous anchor digest.
+2. Approval-anchor status detects missing anchors after enrollment, marker loss, remote rollback, stale local markers, source-event mismatch, and provider unavailability. Recovery advances only a provably continuous history; multi-event legacy histories require explicit enrollment and remain historyNotProven.
+3. When configured, freshness-policy approval application attempts to checkpoint the new approval before returning success. A local approval persisted before a failed external CAS is surfaced as external_anchor_pending and can be reconciled later.
+4. Decision-gate recovery intents now preserve a digest-linked transition history for prepared, anchor_reconciled, attestation_draft_persisted, and completed phases. Existing intents without transition history are explicitly marked historyNotProven when resumed.
+5. Recovery-intent continuity audit verifies intent digests, transition-chain links, phase/state consistency, before/after checkpoint compatibility, completed attestation retention, duplicate pending intents, and recoverable interruptions.
+6. Root-trust baseline continuity proof verification distinguishes historical validity from explicit revocation. Revocation requires a challenge-bound operator confirmation and a currently observed integrity/trust failure in the lifecycle source; temporary provider unavailability alone is not sufficient.
+7. Revocation records are digest-protected, retained as evidence, and audited for missing or orphaned retention records. A revoked proof remains historically inspectable but is not valid or usable as trusted evidence.
+8. Owner-scoped application methods and authenticated HTTP routes expose approval-anchor status, advancement/reconciliation, legacy enrollment, recovery-intent audit, and baseline continuity-proof revocation.
+
+Acceptance criteria
+-------------------
+- Approval anchor sequence and digest continuity are enforced with CAS and read-after-write verification.
+- Stale CAS does not report a successful external checkpoint; recovery can resume without silently enrolling a missing previously registered anchor.
+- Multi-revision legacy approval history requires explicit enrollment and keeps historyNotProven true.
+- Recovery-intent transition hashes detect tampering and report safe interrupted phases without treating a completed intent as current after an anchor rollback.
+- Baseline continuity proof revocation is refused while source trust remains healthy and requires the source-trust snapshot to remain unchanged between challenge and application.
+- Revoked proof verification reports historical validity separately from trusted usability, and revocation evidence remains auditable.
+- Cumulative tests, syntax checks, import resolution, ZIP integrity, and post-extraction tests pass.
+
+Configuration
+-------------
+AGENTIC_RETENTION_FRESHNESS_POLICY_APPROVAL_ANCHOR_URL
+AGENTIC_RETENTION_FRESHNESS_POLICY_APPROVAL_ANCHOR_TOKEN
+AGENTIC_REQUIRE_RETENTION_FRESHNESS_POLICY_APPROVAL_ANCHOR=true
+
+Known limitations
+-----------------
+- External anchoring is only as strong as the provider's durable CAS and read-after-write semantics; independent administration must be guaranteed by deployment.
+- Legacy approval history before enrollment is not proven.
+- Recovery-intent transition history is local and digest-linked; it does not have a separate external checkpoint in this batch.
+- Proof revocation is an explicit operator action after a source-trust failure, not an automatic consequence of transient external-provider unavailability.
+- Freshness-policy approval records the target policy but does not mutate deployment configuration. Runtime alignment remains deployment-managed.
+- Revocation state is stored locally and retained through the existing evidence chain; this batch does not add a dedicated independent external checkpoint for the revocation ledger.
+- HTTP listener startup was not directly exercised in the isolated validation environment.

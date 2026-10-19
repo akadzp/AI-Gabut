@@ -1,0 +1,18 @@
+V4 Batch 68 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Repair Recovery Status Recovery Status Repair
+
+Scope completed:
+- adds a bounded repair for an orphaned durable error marker in the Batch 64/65 observability state surfaced by Batch 66 and verified by Batch 67
+- clears only the error marker when no pending intent exists
+- preserves valid pending intent and its associated error without replaying observability
+- fails closed for malformed pending intent by delegating to the Batch 67 read-only integrity verifier
+- uses owner-scoped mission lookup and optimistic-concurrency-checked writes with bounded retries
+- exposes repairMissionControlAuditRecoveryEvidenceRepairRecoveryStatusRepairRecoveryStatusRepairRecoveryStatusRecoveryStatus at the application boundary
+
+Validation:
+- Batch 68 dedicated regression tests: 7/7 PASS
+- JavaScript/MJS syntax validation: 82/82 PASS
+- cumulative npm test: 214/219 PASS; the same five baseline failures remain (two missing core/storage/state/index.js imports, one missing core/security/index.js import, and two existing external-feedback failures)
+- ZIP integrity validation: PASS (zip -T and unzip -t)
+- no GitHub commit was made
+
+Next unfinished stage: Batch 69.

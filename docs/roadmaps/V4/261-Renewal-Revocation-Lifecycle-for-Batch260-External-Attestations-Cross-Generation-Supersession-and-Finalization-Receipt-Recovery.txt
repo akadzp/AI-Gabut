@@ -1,0 +1,3 @@
+Batch 261 — Renewal/Revocation Lifecycle for Batch 260 External Attestations
+
+Add signed intent, renewed, revoked, superseded, finalized, and finalization-receipt events. Bind each phase to the active Batch 260 external attestation, source receipt, key lifecycle, challenge, and checkpoint. Preserve predecessor continuity, reject conflicting replay, enforce terminal revocation, reconcile interrupted phases, and integrate owner-scoped APIs with independent checkpoint snapshots and overall recovery-gate convergence.

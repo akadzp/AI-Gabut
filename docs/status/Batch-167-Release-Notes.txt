@@ -1,0 +1,39 @@
+Agentic AI V4 — Batch 167 Release Notes
+=======================================
+
+Batch
+-----
+167 — Recovery-Intent Ledger External Anchoring, Finalization-Recovery Replay/Conflict Resolution, and Receipt-Retention Review Approval Binding.
+
+Implemented
+-----------
+- Added a dedicated external snapshot checkpoint for the combined owner-scoped recovery-intent ledger spanning key-transition receipt checkpoint intents, recovery-intent attestation lifecycle checkpoint intents, manifest gap-finalization checkpoint intents, and signed lease-export verification-receipt intents.
+- The external ledger snapshot binds immutable intent identity and operation bindings while deliberately excluding mutable status fields. Existing schema-specific audits validate each intent family before the snapshot can be anchored. The special key-transition receipt checkpoint intent schema is audited through its own validator to avoid conflating it with the digest-chained marker-recovery intent schema.
+- Added explicit enrollment, status, audit, and single-event continuity reconciliation for the recovery-intent ledger checkpoint. Enrollment preserves the provider's history-not-proven marker; recovery operations require a current external checkpoint when strict mode is enabled. Source gaps, provider conflicts, invalid intent records, and rollback indicators fail closed.
+- Hardened manifest gap-finalization checkpoint recovery for replay and conflict handling. A completed recovery with a current marker returns an idempotent already-recovered result; a pending intent can be finalized if the external anchor already proves the exact marker postcondition; a missing marker after a previously completed recovery is treated as rollback and rejected. Conflicting unresolved finalization intents block a new recovery.
+- Added challenge-bound verification-receipt retention review approvals (`retain` or `escalate`). Each challenge and approval binds the exact receipt IDs/digests, source snapshot digest/count, receipt-ledger checkpoint digest/sequence, and policy digest. Apply revalidates the snapshot, due-target set, checkpoint, policy, and each target receipt. A current `retain` decision resolves the review-due flag for its bound receipts; `escalate` remains explicitly visible and is not treated as approval for current use.
+- Retention review is non-destructive. Evidence, signed receipts, and their historical digests remain stored; no deletion or compaction is performed.
+- Added authenticated application APIs and HTTP routes for recovery-intent ledger checkpoint enrollment/status/reconciliation/audit and verification-receipt retention review prepare/apply/audit.
+- Added four focused regression tests for recovery-intent ledger anchoring and one-event advancement, finalization recovery replay/rollback handling, receipt retention approval/idempotency, and stale challenge rejection after source drift.
+
+Validation
+----------
+- Batch 167 regression tests: 4/4 PASS.
+- Full cumulative `npm test`: 1136/1136 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax and relative import resolution validated against the complete source tree and clean extraction.
+- ZIP integrity checked with `zip -T` and `unzip -t`.
+- Extracted source equivalence checked per file; no missing, extra, or content-different files.
+- No GitHub commit was made.
+
+Operational boundaries
+----------------------
+- First enrollment of the recovery-intent ledger does not retroactively prove pre-enrollment history; `historyNotProven` remains a decision-use blocker.
+- The recovery-intent external snapshot anchors immutable intent creation/bindings, not each mutable status transition. Status integrity is validated locally by each schema-specific intent audit; a separate append-only status-transition event ledger is not introduced in this batch.
+- If more than one new intent appears between external checkpoints, ordinary reconciliation refuses to advance multiple events at once. The operator must resolve the gap without treating diagnostics as authorization.
+- A finalization marker missing after a completed recovery is treated as rollback and is not silently repaired.
+- Receipt retention approvals bind exact receipt targets and current snapshot/checkpoint/policy state. A new receipt or policy/checkpoint change makes the approval stale. `retain` does not delete evidence; `escalate` is not considered a retain decision.
+- External CAS durability and provider independence remain deployment responsibilities. HTTP listener startup was not smoke-tested in this environment because the `express` runtime package is not installed; syntax, route mapping, tests, and archive integrity were verified.
+
+Next unfinished stage
+---------------------
+Batch 168 — Recovery-Intent Ledger Policy-Drift/Rollback Recovery, Retention Approval Revocation/Replacement, and Cross-Ledger Consistency Audit.

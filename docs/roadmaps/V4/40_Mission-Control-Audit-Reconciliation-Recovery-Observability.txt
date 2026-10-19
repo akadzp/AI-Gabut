@@ -1,0 +1,10 @@
+V4 Batch 43 — Mission Control Audit Reconciliation Recovery Observability
+
+Scope:
+- emit durable evidence when an explicit audit-reconciliation recovery action completes
+- persist recovery-evidence intent before emission so evidence failure never erases the completed recovery
+- retry pending recovery evidence without rerunning the underlying reconciliation repair
+- use deterministic reconciliation-scoped dedupe keys and bounded retries
+- preserve owner scoping, concurrency safety, reconciliation authority, and execution authority
+
+DoD: an explicit recovery action that clears pending audit reconciliation state produces an idempotent owner-scoped recovery-completed timeline event; if evidence emission fails, the durable recovery remains complete and the evidence can be retried without repeating the repair.

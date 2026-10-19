@@ -1,0 +1,8 @@
+Agentic AI V4 — Batch 230
+External-Attestation Receipt Renewal and Revocation Lifecycle, Cross-Generation Supersession, and Independent Checkpoint Recovery
+
+Added a signed owner-scoped lifecycle for Batch 229 external attestations: challenge-bound intent, renewal or terminal revocation, predecessor/replacement supersession, and finalization. Renewal creates a replacement Batch 229 attestation bound to the current key lifecycle and links it to the predecessor. Revocation is terminal and propagates decision_blocked through attestation and recovery-gate audits. The Batch 229 independent checkpoint snapshot now includes Batch 230 lifecycle events; apply advances configured checkpoints and an explicit reconcile endpoint supports recovery. Added authenticated HTTP routes and regression tests.
+
+Validation: Batch 230 focused tests 2/2 PASS; focused Batch 226–230 group 11/11 PASS; Batch 225 regression 2/2 PASS. A combined Batch 220–230 command exceeded the execution budget, so full cumulative tests are not claimed. Positive end-to-end lifecycle renewal/revocation and live HTTP startup remain unverified. No GitHub commit was made.
+
+Next unfinished stage: Batch 231 — Lifecycle Finalization Receipt for External-Attestation Renewal/Revocation, Checkpoint-Aware Recovery Replay, and Revocation-Descendant Audit Enforcement.

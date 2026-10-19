@@ -1,0 +1,24 @@
+Batch 143 — Root-Trust Conformance Baseline Attestation, Decision-Gate Audit Evidence, and Drift-Chain Checkpoint Continuity
+
+Objective
+---------
+Bind provider conformance baselines to current provider identity, retain auditable outcomes at freshness decision boundaries, and make drift-chain checkpoint continuity independently inspectable.
+
+Delivered
+---------
+1. Signed root-trust conformance baseline attestation with Ed25519 verification, retained evidence, live provider identity/contract revalidation, and distinct historical/current-baseline validity.
+2. Decision-gate audit evidence for allowed and denied retention-reconciliation freshness decisions. Full attestation payloads and signatures are not duplicated into decision logs. Allow decisions fail closed if the audit record cannot be retained.
+3. Signed drift-retention chain checkpoint receipts that bind chain sequence/head digest and link to the prior receipt digest. Continuity audit follows the digest links, verifies checkpoints against the underlying evidence chain, and detects pruned, branched, missing, tampered, or discontinuous receipts.
+4. Application APIs, authenticated HTTP routes, retained-evidence type support, audit coverage, and seven regression tests.
+5. Corrected root-trust conformance evidence binding by distinguishing the completed challenge digest from the report's source challenge digest; legacy evidence is checked against the persisted challenge when available.
+
+Validation
+----------
+- Batch-specific tests: 7/7 PASS.
+- Full cumulative suite: 989/989 PASS.
+- Syntax/import/archive checks and extracted-source revalidation: PASS.
+- No GitHub commit.
+
+Next
+----
+Batch 144 — Decision-Gate Evidence Chain Anchoring, Root-Trust Baseline Rotation/Revalidation, and Drift-Checkpoint Freshness Monitoring.

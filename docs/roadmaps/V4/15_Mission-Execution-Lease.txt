@@ -1,0 +1,18 @@
+V4 Batch 15 — Mission Execution Lease / Concurrency Safety
+
+Objective:
+Prevent two scheduled executions from running the same mission concurrently.
+
+Scope:
+- owner-scoped execution lease
+- conflict detection for active leases
+- lease expiry recovery
+- explicit renew and release ownership checks
+- safe handoff to the next execution after expiry/release
+- no stage advancement or approval bypass
+
+Acceptance:
+- exactly one non-expired executionId may own a mission lease
+- expired leases are recoverable
+- renew/release reject non-owners
+- module syntax and dedicated tests pass

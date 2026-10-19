@@ -1,0 +1,5 @@
+Batch 189 — Closure Checkpoint Recovery-Intent Receipts, Cross-Domain Anchor Freshness Attestation, and Key-Cutoff-Aware Recovery Closure Finalization.
+
+Added signed, append-only recovery-intent and finalization events for transition/disposition checkpoint marker recovery; exact external-anchor and source-snapshot binding; idempotent resume after a crash between marker commit and local receipt finalization; caller-binding mismatch rejection; explicit key-cutoff recording at finalization; and signed freshness attestation across both closure checkpoints with bounded age and current-key verification. Closure audits now account for pending recovery intents, recovery receipt integrity, and required freshness attestation. Existing recovery endpoints use the durable intent/finalization workflow.
+
+Batch 189 regression tests: 5/5 PASS. Batch 185–189 regression tests: 40/40 PASS. No GitHub commit was made.

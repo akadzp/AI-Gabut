@@ -1,0 +1,9 @@
+Batch 264 — External Attestation for Batch 263 Lifecycle Finalization Receipts
+
+- Bind each attestation to its Batch 263 finalization receipt and finalization event.
+- Validate receipt prefix digest and predecessor attestation continuity.
+- Bind the source checkpoint, lifecycle audit, and signing-key lifecycle digest.
+- Reconcile source lifecycle and checkpoint before/after attestation writes.
+- Expose owner-scoped attest, audit, snapshot, and reconcile routes.
+- Include Batch 264 events in independent checkpoint snapshots and recovery-gate convergence.
+- Continue to track full cumulative and positive end-to-end validation separately.

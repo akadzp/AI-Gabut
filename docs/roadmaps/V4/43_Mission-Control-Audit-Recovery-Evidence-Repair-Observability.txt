@@ -1,0 +1,17 @@
+V4 Batch 47 — Mission Control Audit Recovery Evidence Repair Observability
+
+Tujuan: membuat explicit recovery-evidence repair dapat diaudit secara durable tanpa kehilangan hasil repair ketika observability gagal.
+
+Scope:
+- emit owner-scoped evidence setelah recovery-evidence repair berhasil dipersist
+- persist repair-evidence intent sebelum emission sehingga repair yang sudah selesai tidak dibatalkan oleh kegagalan observability
+- retry pending repair evidence tanpa mengulang canonical recovery-evidence repair
+- gunakan reconciliation-scoped deterministic dedupe key
+- pertahankan optimistic concurrency, owner scoping, reconciliation authority, idempotency, dan execution authority
+
+DoD:
+- successful repair menghasilkan `mission_control_audit_recovery_evidence_repaired`
+- event memakai dedupe key deterministik `control-audit-recovery-repair:<reconciliationId>`
+- observability failure tidak membatalkan cleared recovery-evidence error marker
+- pending repair evidence dapat diselesaikan pada retry tanpa mengulang repair
+- persistent version conflict tetap fail-closed

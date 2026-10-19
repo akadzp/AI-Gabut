@@ -1,0 +1,36 @@
+Batch 151 — Audit-Attestation External Checkpointing, Provider-Baseline Lifecycle Continuity, and Retention-Review Decision Replay Protection
+
+Implemented
+-----------
+- Added separate external snapshot checkpoint domains for signed cross-domain audit attestations, provider-baseline lifecycle history, and retention-review approval decisions. Each supports status, explicit legacy enrollment, CAS-based reconciliation, marker repair, and integrity audit.
+- Audit-attestation checkpoint snapshots bind retained attestation IDs, record digests, signed payload digests, issuance timestamps, and key IDs. Attestation verification distinguishes historical validity from current-decision usability; current usability requires an aligned external checkpoint when configured.
+- Provider-baseline lifecycle checkpointing reconstructs completed per-domain transition history from baseline challenges, validates challenge/report digests, conformance report linkage, revision order, expected previous baseline digest, result digest, and current-baseline pointer.
+- Provider-baseline checkpoint advancement requires exactly one appended transition and a prior-snapshot digest match after removing the single new terminal transition. Same-count rewrites, invalid history, and multi-step jumps are rejected.
+- Retention-review decisions use deterministic replay keys and deterministic approval IDs. A durable replay guard is reserved before approval creation, interrupted finalization can resume idempotently, concurrent requests create at most one approval, and audits detect duplicate decisions or replay-guard tampering.
+- Retention review remains non-destructive. New decisions are blocked while an existing decision is not externally checkpointed; the first decision is retained locally as pending until explicit enrollment establishes an external baseline.
+- Added authenticated application APIs and HTTP routes for all three checkpoint domains. Added provider instance and endpoint independence checks. Fixed generic external-checkpoint audit status precedence for unhealthy and pending results.
+
+Configuration
+-------------
+- `AGENTIC_CROSS_DOMAIN_SNAPSHOT_AUDIT_ANCHOR_URL` and `AGENTIC_CROSS_DOMAIN_SNAPSHOT_AUDIT_ANCHOR_TOKEN`
+- `AGENTIC_CROSS_DOMAIN_PROVIDER_BASELINE_ANCHOR_URL` and `AGENTIC_CROSS_DOMAIN_PROVIDER_BASELINE_ANCHOR_TOKEN`
+- `AGENTIC_CROSS_DOMAIN_RETENTION_REVIEW_ANCHOR_URL` and `AGENTIC_CROSS_DOMAIN_RETENTION_REVIEW_ANCHOR_TOKEN`
+- Required modes: `AGENTIC_REQUIRE_CROSS_DOMAIN_SNAPSHOT_AUDIT_ANCHOR=true`, `AGENTIC_REQUIRE_CROSS_DOMAIN_PROVIDER_BASELINE_ANCHOR=true`, and `AGENTIC_REQUIRE_CROSS_DOMAIN_RETENTION_REVIEW_ANCHOR=true`.
+- Each enabled domain must use a distinct provider instance and distinct configured endpoint. Private keys remain external and are not included in the archive.
+
+Validation
+----------
+- Batch 151 regression tests: 8/8 PASS.
+- Full cumulative `npm test`: 1054/1054 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax validation: 228/228 PASS.
+- Relative import resolution: 404 references checked, 0 missing.
+- ZIP integrity and full extracted-source revalidation: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+----------------------
+- Initial external checkpoint enrollment is explicit and marks pre-enrollment history as unproven.
+- External anchor durability and CAS semantics remain deployment responsibilities.
+- Provider identity fingerprints do not prove hidden administrative or infrastructure independence.
+- Retention review approval does not delete evidence, move archives, or compact storage.
+- HTTP listener startup was not exercised; route mapping, syntax, imports, cumulative tests, and archive integrity were verified.

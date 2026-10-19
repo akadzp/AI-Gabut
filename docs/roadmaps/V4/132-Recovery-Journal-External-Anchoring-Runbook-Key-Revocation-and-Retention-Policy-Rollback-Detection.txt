@@ -1,0 +1,30 @@
+Batch 132 — Recovery Journal External Anchoring, Runbook Key Revocation and Compromise Cutoff, and Retention Policy Rollback Detection
+
+Scope
+- Add a dedicated external anchor trust domain for contract-migration recovery journals.
+- Anchor the initial journal genesis before later transitions, then advance external journal anchors on every durable journal transition.
+- Detect local journal rollback, missing anchors for journals with history, binding mismatch, invalid anchor payloads, CAS conflicts, and provider outages. Reconciliation advances only a verified local descendant and refuses to overwrite unresolved trust conflicts.
+- Add recovery-authority-signed revocation challenges for runbook signing keys, optional compromise cutoffs, and historical receipt verification that distinguishes signatures made before the cutoff from signatures at/after it.
+- Permit replacement-key recovery after the active runbook key has been revoked, requiring a separately configured recovery authority signature and new-key proof of possession.
+- Add a retention-policy high-water checkpoint that detects rollback and same-revision substitution and blocks later retention-policy changes after a detected conflict.
+- Expose authenticated application APIs and HTTP routes for journal anchor status/anchor/reconciliation/audit and runbook key revocation. Retention rollback is surfaced through the existing retention policy audit API.
+
+Operational contract
+- Configure a dedicated provider with `AGENTIC_RECOVERY_JOURNAL_ANCHOR_URL` and `AGENTIC_RECOVERY_JOURNAL_ANCHOR_TOKEN`; enable strict enforcement with `AGENTIC_REQUIRE_RECOVERY_JOURNAL_ANCHOR=true` or `requireRecoverySloRecoveryJournalAnchor: true`.
+- The recovery-journal anchor provider must be independent from both the general attestation trust anchor and the finalization key-policy anchor. Provider instance reuse and duplicate configured environment URLs are rejected.
+- Supply `recoverySloRunbookRecoveryPublicKeys` as a registry of Ed25519 recovery-authority public keys. Recovery authority keys must not reuse an operational runbook signing public key. Keep recovery private keys outside application storage.
+- For compromise revocation, `invalidateBefore` is an ISO-compatible timestamp no later than the current clock. Runbook signatures issued at or after the cutoff are rejected; pre-cutoff signatures remain eligible for historical verification unless otherwise invalidated.
+- Retention checkpoint enrollment on first observation of a pre-existing policy is marked `legacy_enrollment`; it cannot prove the policy was never rolled back before that first enrollment. Subsequent rollback and substitution are detected while the checkpoint remains intact.
+
+Validation
+- Batch 132 regression tests: 13/13 PASS.
+- Cumulative `npm test`: 899/899 PASS.
+- JavaScript/MJS syntax and relative import checks, archive integrity, and extracted-source test recheck: PASS.
+- No GitHub commit was made.
+
+Known limits
+- Recovery-journal anchors bind the latest journal revision but the provider interface does not expose complete external anchor history. The `previousAnchorDigest` link is shape-checked but cannot be independently traversed without a historical provider API.
+- A local retention checkpoint is not an external anchor. Restoring both the retention policy and its checkpoint from the same old snapshot is outside the detection guarantee.
+- External provider durability, administrator separation, and resistance to rollback of the provider itself must be guaranteed by the independently operated anchor service.
+
+Next unfinished stage: Batch 133 — Recovery-Journal Anchor Provider Conformance and Retention Checkpoint Externalization.

@@ -1,0 +1,12 @@
+V4 Batch 29 — Mission Recovery Observability Integration
+
+Tujuan: menjadikan crash/stale mission recovery sebagai durable evidence tanpa mengubah recovery authority.
+
+Scope:
+- durable mission_recovered evidence setelah recovery state dipersist
+- deterministic dedupe key untuk setiap recovery event
+- recovery tetap owner-scoped dan lease-aware
+- evidence failure tidak membatalkan state recovery yang sudah durable
+- fresh/non-stale mission tidak menghasilkan recovery evidence
+
+DoD: setiap recovery transition yang telah dipersist memiliki evidence timeline owner-scoped yang idempotent, sementara recovery/lease/scheduler tetap menjadi satu-satunya recovery/execution authority.

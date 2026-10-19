@@ -1,0 +1,33 @@
+Agentic AI V4 — Batch 241 Release Notes
+
+Title
+Renewal/Revocation Lifecycle for Batch 240 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery
+
+Scope
+- Adds signed lifecycle events for intent, renewal, revocation, supersession, finalization, and lifecycle finalization receipts for Batch 240 external attestations.
+- Requires a verified-current Batch 240 external-attestation source and a current independent checkpoint before new lifecycle challenges.
+- Binds each lifecycle operation to the target attestation ID/digest/generation, Batch 239 source finalization receipt, reason digest, challenge, and signing-key lifecycle binding.
+- Enforces monotonically increasing lifecycle generations, predecessor/replacement continuity, phase ordering, and terminal revocation.
+- Creates a signed finalization receipt for each completed lifecycle operation, including lifecycle audit digest, source checkpoint fingerprint, key-cutoff state, and predecessor receipt binding.
+- Audits signatures, orphan phases, invalid phase binding, renewal supersession, terminal-revocation descendants, missing/duplicate/orphan receipts, and receipt predecessor continuity.
+- Adds checkpoint-aware resume and reconciliation; missing finalization receipts remain recovery-required until replay completes.
+- Includes Batch 241 lifecycle events and receipts in the independent finalization-receipt checkpoint snapshot.
+- Integrates Batch 241 audit status into overall recovery-gate convergence.
+- Adds authenticated owner-scoped prepare, apply, audit, snapshot, and reconcile routes.
+
+Recovery behavior
+- Empty source history does not fabricate a lifecycle target or receipt.
+- A non-current or unhealthy Batch 240 source blocks lifecycle preparation.
+- Missing finalization receipts yield recovery_required and can be replayed from valid finalized events.
+- Invalid source binding, lifecycle phase, signature, receipt binding, or predecessor chain yields unhealthy.
+- A finalized terminal revocation remains decision_blocked; descendants are rejected.
+- Checkpoint lag remains recovery_required until reconciled.
+- Operation IDs are deterministic and conflicting reuse is rejected by the append-only ledger contract.
+
+Validation
+- Focused regression suite: Batch 102 and Batches 223–241, 53/53 passing after extraction.
+- JavaScript syntax and relative-import integrity are validated separately for the complete source archive.
+- Full cumulative npm test is not claimed as passed by this release.
+
+GitHub
+- No commit performed.

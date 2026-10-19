@@ -1,0 +1,17 @@
+V4 — MISSION CONTROL TRANSITION AUDIT
+
+Tujuan: memperkuat auditability transition control setelah concurrency-safe transition tanpa mengambil alih execution authority.
+
+Scope:
+- menyimpan fromStatus dan toStatus pada control history baru
+- menyimpan base storage version yang menjadi precondition transition
+- memvalidasi metadata transition bila tersedia
+- memastikan retry concurrency tidak meninggalkan audit entry stale
+
+Implementation:
+- mission-control membuat audit metadata saat transition berhasil dipersiapkan
+- integrity service memvalidasi target status dan baseVersion
+- metadata bersifat backward-compatible; history lama tanpa metadata tetap valid
+- tidak mengubah lease, scheduler, approval, atau Work execution authority
+
+DoD: setiap transition control baru dapat diaudit terhadap state sebelum/sesudah dan storage version precondition; malformed audit metadata terdeteksi; concurrent retry tidak menghasilkan stale transition record.

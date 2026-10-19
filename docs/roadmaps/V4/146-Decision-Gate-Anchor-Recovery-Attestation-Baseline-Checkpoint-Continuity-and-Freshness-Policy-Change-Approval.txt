@@ -1,0 +1,32 @@
+Agentic AI V4 — Batch 146 Roadmap Entry
+
+Objective
+---------
+Add verifiable recovery attestations for decision-gate anchors, retained continuity proofs for externally anchored root-trust baseline lifecycle, and explicit approval records for freshness-policy changes.
+
+Scope delivered
+---------------
+1. Signed decision-gate anchor recovery attestations are issued only after a provably behind-local anchor is reconciled to a healthy current checkpoint. Attestations are retained, verifiable, owner-scoped, and distinguish historical validity from current checkpoint status.
+2. Root-trust baseline checkpoint continuity proofs bind the complete ordered lifecycle event/record digest history, the external checkpoint sequence/digest, and the active baseline revision/digest. Proof creation fails closed unless the external checkpoint is current and the baseline lifecycle audit is healthy.
+3. Freshness-policy change approval uses a ten-minute challenge bound to the current runtime policy digest, target policy, owner, revision, and reason. Application requires exact digest-derived confirmation, rechecks the runtime policy and revision, and persists a hash-linked approval event.
+4. An approved freshness-policy change is explicitly reported as deployment_pending until the runtime configuration matches the approved policy. The approval service does not silently mutate runtime settings or rewrite historical attestations.
+5. Owner-scoped application methods and authenticated HTTP endpoints expose recovery attestation, continuity proof creation/verification/audit, and freshness-policy approval/status/audit.
+6. Retained-evidence validation accepts the new artifact types and preserves integrity auditing and tombstone semantics.
+
+Acceptance criteria
+-------------------
+- Recovery attestation cannot be issued when the anchor is unhealthy, missing, rolled back, or not provably behind local evidence.
+- Recovery attestation signature and retained payload are verified; later checkpoint advancement marks the attestation historical rather than current.
+- Baseline continuity proof requires healthy lifecycle history, an anchored external checkpoint at the final event sequence, and a current baseline.
+- Continuity proof remains historically verifiable after a later baseline rotation but is no longer reported current.
+- Freshness-policy changes require an unexpired owner-bound challenge and exact confirmation; stale runtime digests, replay, invalid ranges, and pending deployment are rejected.
+- Approval event digest chain detects state tampering.
+- Cumulative tests, syntax checks, import resolution, ZIP integrity, and post-extraction tests pass.
+
+Known limitations
+-----------------
+- Recovery attestation requires an externally managed Ed25519 signer and trusted public-key registry.
+- Continuity proof is only as strong as the configured external anchor provider's durability and CAS semantics.
+- Freshness-policy approval is an explicit challenge-bound operator approval, not a two-person cryptographic approval workflow. It records the approved target but does not alter deployment configuration; runtime alignment must occur through deployment configuration and be verified afterward.
+- Approval history is locally persisted and hash-linked but does not yet have its own external checkpoint.
+- HTTP listener startup was not directly exercised in the isolated validation environment.

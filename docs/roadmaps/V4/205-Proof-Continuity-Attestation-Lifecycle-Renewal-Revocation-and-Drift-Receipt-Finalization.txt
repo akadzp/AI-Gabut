@@ -1,0 +1,18 @@
+Batch 205 — Proof-Continuity Attestation Lifecycle Renewal and Revocation, Drift-Resolution Receipt Finalization, and Cross-Generation Replay Enforcement
+
+Objectives
+1. Add challenge-bound renewal and terminal revocation for proof-continuity attestations.
+2. Maintain signed append-only intent, applied, supersession, and finalization evidence.
+3. Bind supersession to the predecessor and replacement generation and reject cross-generation replay.
+4. Finalize each drift-resolution continuity event with a separate signed receipt anchored by the existing independent continuity checkpoint.
+5. Resume durable operations after local commit/external checkpoint interruption without duplicating events.
+6. Preserve historical completion after key cutoff while blocking stale lifecycle evidence from current-decision use.
+
+Acceptance criteria
+- A renewal produces a monotonic generation and an auditable predecessor/replacement binding.
+- A revoked target is terminal and cannot be renewed.
+- An operation with a durable intent resumes after challenge expiry or transient external-anchor failure.
+- No drift-resolution event is considered fully finalized while its receipt is missing or unanchored.
+- Signature, digest-chain, sequence, challenge, generation, checkpoint, and signing-key bindings are independently audited.
+- Relevant focused regression tests, syntax checks, import resolution, archive integrity, and post-extraction tests pass.
+- Source ZIP is cumulative; no GitHub commit is performed.

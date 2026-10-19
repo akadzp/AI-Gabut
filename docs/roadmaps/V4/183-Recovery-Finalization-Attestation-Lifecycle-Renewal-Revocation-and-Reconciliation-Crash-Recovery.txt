@@ -1,0 +1,18 @@
+Agentic AI V4 Batch 183 — Recovery-Finalization Attestation Lifecycle Renewal/Revocation and Reconciliation Crash-Recovery
+
+Scope:
+- Add challenge-bound renewal and revocation for immutable recovery-finalization/reconciliation receipt attestations.
+- Keep original receipt evidence immutable; renew by signing the same receipt payload under the current active key with a distinct attestation identifier.
+- Anchor lifecycle events through the independently configured reconciliation-receipt checkpoint and require fresh external proof before current use.
+- Recover reconciliation checkpoint markers through a dedicated recovery-intent kind; reject rollback, policy drift, and continuity that cannot be uniquely proven.
+- Retry pending reconciliation receipt operations by reusing the existing operation key and validating the persisted postcondition, rather than appending duplicate receipts.
+- Audit persisted lifecycle event, action, sequence, target, snapshot-prefix digest, and checkpoint postcondition bindings.
+- Feed revoked/stale/unanchored lifecycle findings into finalization continuity and recovery decision-gate enforcement.
+
+Validation:
+- Batch 183 tests: 6/6 pass.
+- Batches 178–183 focused tests: 45/45 pass.
+- Cumulative suite: all 170 test files, 1,242 test cases pass in bounded groups.
+- Syntax, relative imports, ZIP integrity, and extracted source hash equality pass.
+
+No GitHub commit.

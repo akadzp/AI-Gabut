@@ -1,0 +1,25 @@
+Batch 158 — Key-Lifecycle External Checkpointing, Manifest-Ledger Freshness/Retention Audit, and Revalidation Lease Contention/Crash-Recovery Hardening
+
+- Added an independent external snapshot checkpoint for the attestation signing-key lifecycle. The checkpoint binds the initial key ID, public-key fingerprints, and digest-linked rotation/revocation events. Enrollment is explicit; reconciliation advances only one provable lifecycle event at a time. A changed public-key registry with unchanged event count is treated as source drift and cannot be silently reconciled.
+- Added application APIs and authenticated HTTP routes for key-lifecycle checkpoint status, explicit enrollment, one-event continuity reconciliation, and audit. The trust domain participates in checkpoint policy-binding audit coverage and endpoint/provider independence enforcement.
+- Added a read-only manifest-approval ledger freshness/retention audit. It reports checkpoint freshness, timestamp integrity, ledger-event age, and retention-review due state. Stale checkpoints take precedence over retention-review status; no event is deleted or compacted.
+- Hardened durable revalidation leases with schema-versioned record links, monotonic fencing-token transition validation, legal action-transition checks, expiry/renewal consistency, and explicit `recovery_required` status for expired active leases. Legacy lease records without the new record-link fields remain auditable as `history_unproven` rather than being silently treated as fully proven.
+- Added tests for key lifecycle rotation/revocation across application restart, registry drift rejection, manifest-ledger retention and stale-checkpoint behavior, real OS-process lease contention over a shared atomic store, and recovery after a crashed lease owner. The stale worker remains fenced after recovery.
+
+Validation:
+- Batch 158 regression tests: 5/5 PASS.
+- Full cumulative `npm test`: 1097/1097 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax: 237/237 PASS.
+- Relative import references: 432 checked, 0 missing.
+- ZIP integrity (`zip -T`, `unzip -t`): PASS.
+- Clean-extraction test, syntax, import, and source-equivalence checks: PASS.
+- No GitHub commit was made.
+
+Operational boundaries:
+- Key lifecycle is owner-scoped and must be mirrored to the external KMS/HSM for global revocation. Public keys needed for historical verification must remain available.
+- The key-lifecycle external checkpoint requires explicit enrollment; pre-enrollment history remains marked as unproven. Public-key registry drift without a provable single-event transition is not automatically reconciled.
+- Manifest-ledger retention audit is read-only. Retention due means review is needed; it does not authorize deletion or compaction.
+- Cross-process leases require a shared storage adapter with atomic `mutateEvidence`. Expired leases are recoverable; fencing rejects results from stale workers.
+- HTTP listener startup was not directly exercised. Syntax, route mapping, application API exposure, test coverage, and archive integrity were checked separately.
+
+At completion of Batch 158, next unfinished stage: Batch 159 — Key-Lifecycle Checkpoint Policy-Rotation Continuity, Manifest-Ledger Retention Review Approval Binding, and Lease Recovery Idempotency/Observability.

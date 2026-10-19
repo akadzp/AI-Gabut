@@ -1,0 +1,40 @@
+Batch 109 — Revalidation Evidence and Approval-Bound Preconditions
+
+Objective
+- Preserve revalidation outcomes as immutable, owner-scoped evidence.
+- Bind human approval to the exact plan, source audit evidence, revalidation evidence, and the precondition set observed at approval time.
+- Invalidate approval when relevant state changes, evidence becomes incomplete, or approval expires.
+- Keep this stage read-only with respect to Work, task, execution, and durable lease state; no automatic reconciliation is introduced.
+
+Implementation
+- Added `preconditionBindingDigest` to read-only plan revalidation output. The digest binds owner, plan/evidence IDs and digests, action/precondition references, revalidation status, bounded action results, and findings. A fresh result has a deterministic binding for unchanged preconditions; stale/incomplete results cannot be approved.
+- Added `captureRecoveryReconciliationRevalidationEvidence`, `getRecoveryReconciliationRevalidationEvidence`, and bounded owner-scoped listing. Revalidation evidence stores a sanitized, immutable snapshot and canonical SHA-256 digest.
+- Added `approveRecoveryReconciliationPlan`. Approval requires a fresh persisted revalidation-evidence record tied to the exact plan and performs a second live revalidation immediately before creating approval. Approval records bind owner, plan digest, source evidence digest, revalidation evidence digest, precondition-binding digest, approver, approval time, and expiry. TTL is bounded to 1 second–15 minutes (default 5 minutes).
+- Added `getRecoveryReconciliationApproval`, bounded approval listing, and `verifyRecoveryReconciliationApproval`. Verification rechecks current plan/evidence/preconditions and returns valid/stale/incomplete/expired without mutating records.
+- Added authenticated HTTP routes for revalidation evidence, plan approval, and approval verification. Application APIs are exposed through the application boundary.
+- All approval records explicitly retain `executionAllowed: false` and `automaticExecutionAllowed: false`; approval is not an execution command.
+
+Regression coverage
+- Captures immutable fresh revalidation evidence with a stable precondition binding digest.
+- Approves the exact plan/evidence binding and verifies a valid approval.
+- Rejects state changes between evidence capture and approval.
+- Invalidates approval when a bound record changes after approval.
+- Rejects incomplete/truncated evidence and attempts to use evidence for a different plan.
+- Enforces approval expiry, owner isolation, digest integrity, bounded listing, and read-only verification.
+- Verifies application API and HTTP route mapping.
+
+Validation
+- Batch 109 focused regression tests: 11/11 PASS.
+- Full cumulative `npm test`: 640/640 PASS.
+- JavaScript/MJS syntax: 140/140 PASS.
+- Relative import resolution: 0 missing imports.
+- ZIP integrity (`zip -T` and `unzip -t`): PASS.
+- The final ZIP is extracted to a separate directory and cumulative tests, syntax checks, and import checks are repeated there.
+- No GitHub commit is made.
+
+Operational boundaries
+- Revalidation and approval verification are point-in-time checks, not cross-record transactions. Any future mutation path must enforce current record versions and durable lease fencing atomically at the mutation boundary.
+- Approval does not execute or repair a plan. Both `executionAllowed` and `automaticExecutionAllowed` remain false.
+- HTTP listener startup is not claimed as boot-tested in this isolated environment; server syntax, application API mapping, and route presence are tested.
+
+Next unfinished stage: Batch 110 — Approval Revocation and Mutation-Boundary Authorization Guard.

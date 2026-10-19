@@ -1,0 +1,38 @@
+Agentic AI V4 Roadmap — Batch 171
+=================================
+
+Objective
+---------
+Make remediation finalization evidence independently verifiable and externally anchored, recover policy-binding lifecycle checkpoint markers after interruption, and provide a fail-closed cross-domain checkpoint freshness/replay audit.
+
+Work Items
+----------
+1. Sign remediation finalization attestations with Ed25519 and bind them to immutable finalization, execution, intent, action, checkpoint, and timestamp fields.
+2. Verify signatures and record digests independently of current checkpoint usability; stale or history-unproven attestations remain historical-only.
+3. Anchor finalization-plus-attestation as one immutable event in a dedicated external checkpoint domain.
+4. Add one-event continuity checks, enrollment, reconciliation, audit, and marker recovery for the finalization checkpoint.
+5. Add durable recovery-intent ledger entries for policy-binding receipt lifecycle marker recovery, including exact source, anchor, and policy binding.
+6. Audit all registered checkpoint services for freshness, policy drift, history proof, rollback, and cross-domain anchor-digest replay.
+7. Expose authenticated application and HTTP APIs, and add regression tests for signatures, tampering, crash recovery, stale checkpoints, and route wiring.
+
+Acceptance Criteria
+-------------------
+- A finalization attestation cannot be verified if its signature, payload digest, finalization digest, execution digest/action, or deterministic ID is changed.
+- Missing attestations required by strict configuration block finalization checkpoint source health until recovery creates a valid attestation.
+- Finalization checkpoint reconciliation advances at most one uniquely proven event.
+- Marker recovery requires exact external anchor/source/policy bindings and a verified postcondition.
+- Policy drift, rollback, ambiguous continuity, stale checkpoints, and unproven history never become current evidence automatically.
+- Duplicate anchor digests across distinct checkpoint domains are reported as replay findings.
+- All regression tests pass; syntax, import resolution, archive integrity, clean extraction, and per-file source hashes are verified.
+- No GitHub commit is made.
+
+Out of Scope
+------------
+- Automatic key rotation/revocation approval for finalization signers; this is reserved for a subsequent lifecycle/key-cutoff stage.
+- Automatic multi-event checkpoint reconciliation.
+- Cross-store distributed transactions or rollback of an external commit after local source advancement.
+- Evidence deletion, retention compaction, or silent history repair.
+
+Next Stage
+----------
+Batch 172 — Finalization Attestation Key-Cutoff/Lifecycle Binding, Cross-Domain Replay Incident Ledger, and Recovery-Intent CAS Finalization Audit.

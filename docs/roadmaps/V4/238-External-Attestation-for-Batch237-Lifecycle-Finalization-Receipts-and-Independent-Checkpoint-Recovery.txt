@@ -1,0 +1,8 @@
+Batch 238 — External Attestation for Batch 237 Lifecycle Finalization Receipts and Independent Checkpoint Recovery
+
+- Create signed external-attestation events bound to Batch 237 finalization receipt IDs, digests, generations, lifecycle finalization events, action evidence, receipt-binding digests, prefix-chain digests, source checkpoint fingerprints, and signing-key lifecycle bindings.
+- Verify historical signatures, generation ordering, predecessor links, binding digests, receipt coverage, and terminal revocation behavior.
+- Preserve idempotent replay with deterministic operation IDs and chain-linked re-attestation after signing-key binding changes.
+- Include Batch 237 and Batch 238 events in the independent external-attestation checkpoint snapshot.
+- Reconcile source receipts, advance checkpoint before attestation, persist attestations, advance checkpoint again, and perform final audit.
+- Fail closed on missing receipt attestations, invalid chain bindings, stale checkpoint evidence, or terminal revocation.

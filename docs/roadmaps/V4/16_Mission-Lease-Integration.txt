@@ -1,0 +1,12 @@
+V4 Batch 16 — Mission Execution Lease Integration
+
+Objective:
+Make the Batch 15 execution lease an actual scheduler boundary rather than a standalone primitive.
+
+Scope:
+- persist missions and mission leases in the agentic store
+- acquire an owner-scoped lease before a mission stage executes
+- propagate missionId/executionId into the Work runner
+- release the lease after the stage result is persisted
+- reject concurrent execution while an active lease exists
+- keep stage advancement and approval authority unchanged

@@ -1,0 +1,17 @@
+Agentic AI V4 Batch 219
+Finalization-Receipt Checkpoint Binding Attestation, Rollback Detection, and Cross-Generation Recovery-Gate Revalidation
+
+Scope
+- Sign an immutable binding for the independent finalization-receipt checkpoint.
+- Bind external anchor sequence/digest, snapshot/source digest and count, receipt evidence digest, and signing-key lifecycle state.
+- Verify predecessor-linked attestation generations and detect rollback/fork evidence.
+- Integrate the audit result into recovery-gate convergence and generation-binding digest.
+- Expose attestation and audit operations through the existing authenticated proof-continuity API.
+
+Acceptance criteria
+- Identical binding requests are idempotent.
+- A changed but current checkpoint binding requires a new generation.
+- A stale or revoked upstream receipt cannot become current solely because a checkpoint binding attestation exists.
+- Anchor rollback or same-sequence digest mismatch makes the audit unhealthy.
+- Strict enforcement is opt-in and blocks current-decision use while required attestation is missing or stale.
+- Source syntax, imports, focused regressions, and ZIP integrity are validated after extraction.

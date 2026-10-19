@@ -1,0 +1,40 @@
+Agentic AI V4 — Batch 111
+Indeterminate Mutation Outcome Recovery and Explicit Claim Resolution
+
+Objective
+- Recover abandoned in-progress mutation claims without assuming that their callback did not run.
+- Require immutable evidence bound to the exact mutation attempt before resolving an indeterminate outcome.
+- Distinguish applied, not-applied, and still-unresolved outcomes while preserving fail-closed behavior.
+
+Implementation
+- Added a read-only claim inspection API and bounded recovery operation. Claims whose `in_progress` age exceeds the configured threshold are quarantined as `indeterminate`; the operation never retries the mutation. Existing indeterminate claims are handled idempotently.
+- Added unique per-attempt claim IDs while retaining the deterministic idempotency key used by a trusted mutation callback. The claim ID is included in the callback context, public claim inspection, evidence, and resolution history.
+- Added immutable `recovery-reconciliation-mutation-outcome-evidence` records. Evidence binds the owner, approval digest, claim ID, idempotency key, action, intent digest, plan digest, precondition binding, observation time, outcome, verification method, external evidence reference, and SHA-256 digest of the referenced artifact. Evidence records are owner-scoped and digest-verified.
+- Certain outcomes (`applied` and `not_applied`) require a verification method other than `operator_attestation` alone and separate evidence that the attempt is quiescent (no callback/runner can still write). Observation times must be valid, cannot predate claim start, and cannot exceed capture time by more than five minutes.
+- Added explicit claim resolution: `applied` consumes the action; `not_applied` clears the active claim but does not bypass approval expiry or current precondition checks on a subsequent attempt; `unresolved` leaves the claim indeterminate. All resolutions are durably recorded in the approval's independently digested guard state.
+- Evidence replay is idempotent. Evidence tied to a prior attempt cannot resolve a later claim, even when both attempts use the same deterministic idempotency key. Cross-owner access, digest tampering, incomplete bindings, and unsupported outcomes fail closed.
+- Added application APIs and authenticated routes for claim inspection/recovery, evidence capture/list/retrieval, and explicit claim resolution. No route executes an arbitrary callback or retries a mutation automatically.
+
+Regression coverage
+- Stale claim quarantine and no automatic retry.
+- Applied, not-applied, and unresolved resolution outcomes.
+- Retry only after a not-applied resolution and fresh approval/precondition verification.
+- Cross-approval and cross-attempt evidence binding.
+- Evidence method, digest, and timestamp validation.
+- Owner isolation, immutable evidence, digest verification, replay behavior, and route mapping.
+
+Operational boundaries
+- A stale age is a reason to quarantine a claim, not proof that the callback stopped. A late callback cannot finalize a claim after it has been quarantined; its outcome remains indeterminate and requires evidence-backed resolution.
+- The implementation validates and persists the supplied evidence reference/digest but does not retrieve or authenticate the referenced external artifact. The attestation must be governed by trusted operator policy and external verification procedures.
+- A `not_applied` resolution only clears the claim. The next mutation attempt must still pass approval expiry, revocation, plan integrity, and current-precondition checks. Downstream operations should honor the stable idempotency key.
+- Durable atomicity applies to processes sharing the filesystem-backed storage root; this is not a cross-host distributed transaction. HTTP listener startup is not claimed as boot-tested in this environment.
+
+Validation
+- Batch 111 regression tests: 10/10 PASS.
+- Full cumulative `npm test`: 662/662 PASS.
+- JavaScript/MJS syntax validation: 142/142 PASS.
+- Relative import resolution: 0 missing imports.
+- ZIP integrity and extracted-source validation: PASS.
+- No GitHub commit was made.
+
+Next unfinished stage: Batch 112 — Mutation Outcome Resolution Audit Trail and Replay-Resistant Evidence Ledger.

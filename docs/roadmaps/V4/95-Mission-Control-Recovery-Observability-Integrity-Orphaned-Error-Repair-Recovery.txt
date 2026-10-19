@@ -1,0 +1,25 @@
+V4 Batch 95 — Mission Control Recovery Observability Integrity Orphaned Error Repair Recovery
+
+Scope:
+- adds explicit bounded recovery for Batch 94's durable observability intent for the verified orphaned recovery-observability integrity error-marker repair
+- emits the same mission-scoped event type and deterministic dedupe key established by Batch 94
+- validates the pending-intent object shape, nullable reconciliation ID, creation timestamp, retry marker, and mission-scoped dedupe-key length before event emission
+- retains pending intent and persists a bounded error (maximum 1,000 characters) when event emission fails
+- clears pending intent and error marker only after successful event emission and a version-checked write
+- fails closed on malformed pending intent, orphaned destination error markers, and dedupe keys exceeding the 260-character bound
+- retries optimistic-concurrency conflicts within the configured retry limit without replaying the source repair; retries reuse the same dedupe key
+- preserves the previous source error marker and remains owner-scoped
+- exposes the recovery operation through the mission-control service and application boundary
+
+Validation:
+- dedicated Batch 95 regression tests: 13/13 PASS
+- cumulative `npm test`: 477/482 PASS; the same five baseline failures remain (missing `core/storage/state/index.js` imports in artifacts and work recovery, missing `core/security/index.js` import in work Git, external-feedback ID/provenance mismatch, and missing `github.workflowRuns` mock); no new failures introduced
+- JavaScript/MJS syntax validation: 109/109 PASS
+- application-boundary mapping: PASS
+- ZIP integrity validation: PASS (`zip -T` and `unzip -t`)
+- extracted-archive regression recheck: 13/13 PASS
+- extracted cumulative `npm test`: 477/482 PASS with the same five baseline failures
+- extracted JavaScript/MJS syntax validation: 109/109 PASS
+- no GitHub commit
+
+Next unfinished stage: Batch 96.

@@ -1,0 +1,20 @@
+V4 Batch 18 — Mission Execution Idempotency & Finalization Journal
+
+Objective:
+- Close the crash window between Work completion and mission-state persistence.
+- Prevent a recovered stage from executing the same Work twice when its durable result was already finalized.
+
+Delivered:
+- Persistent per-owner mission-stage execution journal.
+- Durable running/completed/failed/waiting_approval journal states.
+- Fresh running journal conflict protection.
+- Stale journal takeover for bounded recovery.
+- Scheduler reconciliation from a completed journal instead of rerunning Work.
+- Application wiring for the mission execution lease and journal services.
+- Dedicated idempotency/finalization tests.
+
+Authority:
+- Journal reconciliation advances only the already-finalized stage.
+- Journal reconciliation never skips an unfinished stage.
+- Approval and failure states remain terminal for the current stage.
+- The journal does not grant tool or execution authority; it records execution state only.

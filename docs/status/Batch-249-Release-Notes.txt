@@ -1,0 +1,29 @@
+Batch 249 — Renewal/Revocation Lifecycle for Batch 248 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery.
+
+Implementation:
+- Added signed append-only intent, renewed, revoked, superseded, finalized, and finalization-receipt events for Batch 248 external attestations.
+- Required a healthy and current Batch 248 external-attestation source and independent checkpoint before lifecycle mutation.
+- Bound lifecycle events and receipts to source attestation, source Batch 247 finalization receipt, challenge/action, target generation, signing-key lifecycle binding, and checkpoint fingerprint.
+- Enforced monotonic generations, predecessor/replacement continuity, deterministic phase operation IDs, terminal revocation, and receipt-chain integrity.
+- Added checkpoint-aware recovery and owner-scoped application methods/HTTP routes for prepare, apply, audit, snapshot, and reconcile.
+- Added Batch 249 events to the generic ledger validator, independent checkpoint snapshot, and overall recovery-gate convergence.
+
+Validation results are recorded after the final extracted ZIP is built. Full cumulative npm test and positive end-to-end lifecycle execution are not claimed unless the respective runs finish successfully. No GitHub commit is made.
+
+Next unfinished stage: Batch 250 — External Attestation for Batch 249 Lifecycle Finalization Receipts, Cross-Generation Receipt Continuity, and Independent Checkpoint Recovery.
+
+Validation against the final cleanly extracted ZIP:
+- Batch 102 plus Batch 223–249 targeted regression group: 69/69 PASS.
+- Batch 249 dedicated regression file: 2/2 PASS.
+- JavaScript/MJS/CJS syntax checks: 341/341 PASS.
+- `package.json` JSON parsing: PASS.
+- Batch 102 relative-import/application API regression: 13/13 PASS.
+- ZIP integrity (`zip -T` and `unzip -t`): PASS.
+- Source inventory: 672 files before and after extraction; 0 missing, 0 extra, 0 SHA-256 differences.
+- Targeted regression group rerun after extraction: 69/69 PASS.
+
+Limitations:
+- Full cumulative `npm test` was not run to completion; no full-suite pass is claimed.
+- Positive end-to-end renewal/revocation through a fully populated Batch 248 source chain was not verified.
+- HTTP listener startup remains unverified because `express` is unavailable in the isolated validation environment. Route registration and application API wiring are covered by the targeted tests.
+- No GitHub commit was made.

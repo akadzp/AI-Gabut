@@ -1,0 +1,32 @@
+Batch 113 — Ledger Gap Recovery and Tamper-Evidence Escalation Policy
+
+Scope
+- Recover only appendable, evidence-backed tail gaps in the Batch 112 mutation outcome ledger.
+- Persist an owner-scoped escalation/quarantine policy outside the ledger so a broken hash chain can still be reported without rewriting the suspect chain.
+- Enforce quarantine at the trusted mutation boundary and require an explicit acknowledgement after a complete, clean audit.
+
+Implementation
+- Added deterministic owner-scoped ledger escalation state with its own canonical SHA-256 digest, bounded incident history, severity (`high`/`critical`), reason codes, and active mutation-block flag.
+- Added explicit gap recovery from immutable outcome evidence and approval resolution history. Reconstructed events are marked with a constrained recovery method and use deterministic event identities, so repeated recovery does not duplicate entries.
+- Recovery refuses to rewrite a broken hash chain, reconstruct missing events that would need insertion into the middle of an existing chain, resolve conflicting outcomes, or act on incomplete/truncated audit results.
+- Added mutation-boundary enforcement. A ledger gap or integrity finding is persisted as an escalation and prevents an approved mutation callback from running until the ledger audit is clean and a human explicitly acknowledges the active incident.
+- Added explicit escalation acknowledgement. It requires an exact active incident ID, a bounded reason, and a fresh complete audit with no findings. It cannot clear a still-unhealthy ledger.
+- Added read-only escalation inspection and authenticated HTTP routes for inspection, gap recovery, and acknowledgement.
+- The policy record is independently digested and fails closed if its own integrity check fails.
+
+Validation
+- Batch 113 regression tests: 10/10 PASS.
+- Full cumulative `npm test`: 685/685 PASS.
+- JavaScript/MJS syntax validation: 144/144 PASS.
+- Relative import resolution: validated by the cumulative Batch 102 test.
+- ZIP integrity validation (`zip -T` and `unzip -t`): PASS. Extracted-source full test suite: 685/685 PASS; syntax: 144/144 PASS; relative import resolution: 0 missing imports.
+- No GitHub commit was made.
+
+Operational boundaries
+- Gap recovery is explicit, append-only, and limited to events reconstructable from verified evidence or approval resolution history. It never repairs a broken hash chain in place.
+- A high/critical incident remains active after the ledger becomes clean; an explicit acknowledgement is required. Acknowledgement cannot proceed until a fresh full audit is clean.
+- SHA-256 digests are tamper-evident, not signatures. An actor able to rewrite all storage and recompute digests can forge a new history; stronger protection requires external signing or write-once storage.
+- Atomic updates protect processes sharing the filesystem-backed storage root, not independent hosts.
+- HTTP listener startup is not claimed as boot-tested in this environment because Express is not installed in the validation runtime.
+
+Next unfinished stage: Batch 114 — External Integrity Attestation and Quarantine State Hardening.

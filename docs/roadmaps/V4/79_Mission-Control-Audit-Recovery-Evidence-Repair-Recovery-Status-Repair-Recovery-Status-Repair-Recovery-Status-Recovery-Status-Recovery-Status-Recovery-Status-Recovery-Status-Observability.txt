@@ -1,0 +1,20 @@
+V4 Batch 79 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Repair Recovery Status Recovery Status Recovery Status Recovery Status Recovery Status Observability
+
+Scope completed:
+- adds durable, deterministic observability for Batch 78 orphaned recovery-status error-marker repair
+- atomically clears the source error marker while persisting a mission-scoped pending intent before event emission
+- reuses a stable event type and deterministic mission-scoped dedupe key for retries
+- persists bounded durable errors and retains retryable intent when event emission fails
+- retries existing valid pending intents without replaying the source repair
+- fails closed on malformed destination intents, orphaned destination errors, and malformed source pending state
+- preserves source pending intent and associated error without mutation or event emission
+- uses owner-scoped optimistic-concurrency-safe writes with bounded retries
+- exposes the operation through the application boundary
+
+Validation:
+- dedicated regression tests: 12/12 PASS
+- cumulative npm test: expected to retain five known baseline failures; no new failures
+- JavaScript/MJS syntax validation and ZIP integrity checks are recorded with the delivered archive
+- no GitHub commit
+
+Next unfinished stage: Batch 80.

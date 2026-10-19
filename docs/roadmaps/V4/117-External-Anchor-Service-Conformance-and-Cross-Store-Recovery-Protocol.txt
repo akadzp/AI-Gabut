@@ -1,0 +1,42 @@
+Agentic AI V4 — Batch 117
+External Anchor Service Conformance and Cross-Store Recovery Protocol
+
+Scope
+- Validate that an external trust-anchor provider behaves according to the monotonic compare-and-set contract before a deployment relies on it.
+- Persist a local operation journal around trust-registry changes that also require an external anchor update.
+- Recover provable partial commits without replaying the local trust transition, silently recreating an anchor, or automatically aborting an operation whose runner may still be active.
+
+Implementation
+- Added `apps/agentic/backend/external-trust-anchor-conformance.js` with `runExternalTrustAnchorProviderConformance(provider, { ownerId, allowWrites })`.
+- The conformance probe verifies an empty disposable namespace, genesis CAS, rejection of stale create requests, monotonic revision/sequence advancement, concurrent CAS with exactly one winner, rejection of stale-digest replay, rejection of sequence jumps, and owner-scope isolation.
+- The probe is intentionally write-capable and requires `allowWrites: true` plus an owner ID with the reserved `__agentic_v4_conformance__` prefix. It writes up to three revisions into that namespace. Use only a disposable test tenant/namespace; never point it at a production owner. A passing behavioral probe cannot prove remote durability, operator separation, or resistance to whole-service rollback.
+- Trust rotation/revocation now writes an owner-scoped `recovery-reconciliation-attestation-trust-transition-journal` before changing the local trust policy. Journal phases are hash-linked and digest-validated: `prepared`, `local_committed`, `challenge_applied`, `anchor_pending`, `completed`, or `blocked`.
+- The journal binds the transition ID, challenge record, action/key, payload digest, expected policy revision/digest, resulting local revision/digest/event hash, and external anchor outcome. Journal creation is idempotent for the same prepared intent and rejects a conflicting binding.
+- Added read-only journal status inspection and explicit cross-store recovery. Recovery requires exactly one trust-history event with the expected transition ID, payload digest, action/key, and next revision. It can finish the challenge record, advance a verified ancestor anchor with CAS, and close a journal when the anchor is current.
+- A missing local event for a `prepared` journal is reported as `awaiting_local_commit`. Even after its age threshold, it is not automatically aborted: elapsed time does not prove the original runner is quiescent. No local trust transition is replayed by recovery.
+- Recovery refuses corrupt journals, mismatched transition bindings, unhealthy/truncated trust audits, invalid/missing/ahead anchors, and conflicting state. It does not roll back the local registry or lower the external anchor. Concurrent recovery is idempotent and a completed journal cannot be downgraded by a stale recovery attempt.
+- Added authenticated endpoints for bounded journal status and explicit recovery under `/api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/cross-store-recovery`.
+
+Operational procedure
+1. Deploy the external anchor service independently and review its durable, append-only, atomic-CAS guarantees.
+2. Run the conformance probe only against a dedicated disposable namespace. Confirm all checks pass before enabling the provider for real owners.
+3. Configure `AGENTIC_TRUST_ANCHOR_URL` and `AGENTIC_TRUST_ANCHOR_TOKEN`, or inject a provider implementing `read(ownerId)` and `compareAndSet(ownerId, expectedDigest, candidate)`.
+4. Inspect `GET .../attestation-trust/cross-store-recovery` after trust-sensitive operations. A `recovery_required` status indicates a prepared or incomplete cross-store transition.
+5. If the provider failed after local commit, restore provider availability and call `POST .../attestation-trust/cross-store-recovery/recover`. Recovery advances only an external anchor that is a verified ancestor of the local history and only after a complete healthy local trust audit.
+6. If a journal remains `prepared` without a matching local history event, recovery reports the condition and does not automatically abort it. Determine runner quiescence and challenge validity out of band before taking any further action.
+7. If an anchor is ahead of local state, mismatched, invalid, or missing for a non-genesis registry, do not overwrite or reset it. Restore from a verified source or use a separately authorized trust-root recovery process.
+
+Validation
+- Batch 117 regression tests: 10/10 PASS.
+- Full cumulative `npm test`: 734/734 PASS.
+- JavaScript/MJS syntax and relative import resolution: validated across the complete source tree.
+- ZIP integrity and extracted-source validation: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+- The conformance probe is a behavioral check, not a cryptographic proof of the remote service's storage durability or resistance to administrator rollback.
+- The local operation journal and local trust registry share the application's storage boundary; the external anchor remains a separate store. Cross-store atomic transactions are not claimed.
+- A stale prepared journal is intentionally not auto-aborted because the system has no independent runner-quiescence attestation for that transition.
+- The HTTP listener was not startup-tested in this validation environment; endpoint syntax/mapping and cumulative tests were validated, but live HTTP boot is not claimed.
+
+Next unfinished stage: Batch 118 — Cross-Store Recovery Audit and Anchor-Service Health Telemetry.

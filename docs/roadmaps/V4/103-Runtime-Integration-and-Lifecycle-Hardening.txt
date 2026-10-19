@@ -1,0 +1,30 @@
+Batch 103 — Runtime Integration and Lifecycle Hardening
+
+Objective
+- Bound model-provider execution time and propagate cancellation through the agent runtime.
+- Prevent overlapping in-process executions for the same owner-scoped Work.
+- Make pause, stop, and cancel controls interrupt active runner waits and preserve the requested durable Work lifecycle state.
+- Keep checkpoint step accounting atomic when checkpoint values cannot be cloned.
+
+Implementation
+- `runAgent()` now passes an AbortSignal to provider adapters and races provider work against cancellation and a bounded provider timeout. Timeout is capped at 300,000 ms and defaults to 120,000 ms. Timeout returns a stopped execution with `AGENT_EXECUTION_TIMEOUT`; caller cancellation returns cancelled.
+- `ExecutionRuntime.checkpoint()` clones the proposed checkpoint before mutating its checkpoint or step count, so a clone failure cannot consume the step budget.
+- `createWorkExecutionService()` now reserves one in-process run per owner/work key and rejects overlapping calls with `WORK_EXECUTION_IN_PROGRESS`.
+- Work execution races injected runners against its AbortSignal so even adapters that ignore cancellation cannot keep the Work lifecycle waiting indefinitely after pause/stop/cancel.
+- Pause, stop, and cancel signal active runs. Completion reconciliation checks the durable Work state before finalizing task/execution records, preserving paused/cancelled/stopped status during control races.
+- Cancellation and timeout handling is bounded, and the underlying provider promise remains observed if it settles after the timeout race.
+
+Validation
+- Batch 103 focused regression tests: 9/9 PASS.
+- Full cumulative `npm test`: 575/575 PASS.
+- JavaScript/MJS syntax validation: 132/132 PASS.
+- Relative import resolution: 0 missing relative imports.
+- ZIP integrity validation with `zip -T` and `unzip -t`: PASS.
+- Extracted-archive focused tests, cumulative tests, syntax, and relative import checks: PASS.
+- No GitHub commit was made.
+
+Operational note
+- Provider timeout bounds the model-provider phase; it does not claim to enforce a total wall-clock deadline across planning activity, persistence, or realtime event delivery.
+- In-process run locking prevents duplicate concurrent Work runs inside one service instance. It is not a distributed lease across multiple server processes.
+
+Next unfinished stage: Batch 104 — Durable Execution Lease and Cross-Process Concurrency Hardening.

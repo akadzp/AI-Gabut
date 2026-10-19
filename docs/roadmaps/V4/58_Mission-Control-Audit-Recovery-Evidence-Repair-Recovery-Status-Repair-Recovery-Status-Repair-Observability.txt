@@ -1,0 +1,21 @@
+V4 Batch 64 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Repair Observability
+
+Scope completed:
+- adds an explicit observable repair boundary for the Batch 63 orphaned-error repair
+- persists a deterministic pending observability intent before emitting completion evidence
+- emits a stable event type with a mission-scoped deterministic dedupe key
+- persists an emission error alongside the pending intent so a later call can retry safely
+- retrying a pending intent does not rerun the canonical orphaned-error repair
+- preserves prior pending recovery intents, including malformed intents, without mutation
+- fails closed for malformed new intents and orphaned observability error markers
+- uses owner-scoped lookups, bounded retries, and optimistic-concurrency-safe writes
+- exposes the observable repair entry point at the application boundary
+
+Validation:
+- Batch 64 dedicated regression tests: 11/11 PASS
+- JavaScript/MJS syntax validation: PASS
+- cumulative npm test: 184/189 PASS; the same five baseline failures remain outside Batch 64: two test files cannot import missing core/storage/state/index.js, one cannot import missing core/security/index.js, one external-feedback test has an ID/provenance expectation mismatch, and another mock lacks github.workflowRuns
+- ZIP integrity validation: PASS
+- no GitHub commit was made
+
+Next unfinished stage: Batch 65.

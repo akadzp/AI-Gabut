@@ -1,0 +1,28 @@
+Agentic AI V4 — Batch 196 Roadmap Record
+
+Objective
+Separate marker-recovery journal lifecycle disposition evidence into its own external checkpoint trust domain, reconcile challenge expiry according to whether a disposition commit is durable, and enforce closure decision-gate conformance.
+
+Delivered
+1. Dedicated external snapshot checkpoint for signed lifecycle disposition and disposition-finalization events.
+2. Independent provider/domain registration and provider-reuse visibility in trust-domain independence audit.
+3. Enrollment, status, audit, reconciliation, and HTTP endpoints for the new checkpoint.
+4. Disposition challenge binding to checkpoint anchor digest, sequence, and freshness snapshot.
+5. Pre-commit fail-closed checks and idempotent external CAS recovery after a durable disposition event.
+6. Expiry reconciliation: expire an uncommitted challenge without creating an event; resume a durable commit even if the challenge window elapsed after commit.
+7. Independent continuity audit and closure gate block use of stale/unanchored disposition evidence.
+8. Deterministic operation IDs, signed append-only events, CAS finalization, and no duplicate disposition/finalization receipts on retry.
+
+Safety invariants
+- Do not silently enroll pre-existing disposition history.
+- Do not share the new anchor provider with any other trust domain.
+- Do not create a disposition event from an expired challenge that has no durable commit.
+- If a disposition event is durable, resume the same chain instead of generating a replacement challenge.
+- Fail closed on invalid signature, changed challenge/checkpoint binding, stale checkpoint, rollback, or unproven multi-event gap.
+- A completed disposition does not restore current-decision eligibility.
+
+Validation
+See docs/agentic-ai-v4-batch196.md and tests/apps/agentic-recovery-slo-v4-batch196.mjs.
+
+Next planned stage
+Batch 197: Disposition-Checkpoint Marker-Recovery Intent, External Anchor Rollback Recovery, and Lifecycle Closure Receipt Revalidation.

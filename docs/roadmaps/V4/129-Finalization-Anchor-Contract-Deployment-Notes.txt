@@ -1,0 +1,31 @@
+Batch 129 Deployment Notes — Finalization Anchor Contract and Signed Continuity Evidence
+
+Default contract version
+- The default expected provider contract is 1.0.0.
+- Existing providers exposing read() and compareAndSet() without contractInfo metadata remain supported as compatible_legacy and produce a warning in the recovery runbook.
+- To pin a different contract, set recoverySloFinalizationKeyPolicyAnchorContractVersion or AGENTIC_FINALIZATION_KEY_POLICY_ANCHOR_CONTRACT_VERSION to a supported version.
+- Version 1.1.0 requires explicit contractInfo metadata with contractId=agentic-v4-trust-anchor-provider, version=1.1.0, schemaVersion=1, ownerScope=ownerId, casSemantics=digest-compare-and-set, and capabilities read, compareAndSet, ownerIsolation, monotonicSequence, staleCasRejection, consistentReadAfterWrite.
+- A mismatch blocks trust-sensitive operations. Do not change the expected version until the provider has been upgraded and its behavior has been tested in a disposable namespace.
+
+Signed continuity evidence
+- Configure recoverySloAnchorContinuitySigner, recoverySloAnchorContinuityKeyId, and recoverySloAnchorContinuityPublicKeys together.
+- The signer callback receives the canonical evidence payload including evidenceDigest. It must sign the canonical JSON representation with Ed25519 and return a base64url signature. It may return {signature, keyId}; if keyId is returned it must match the configured key ID.
+- The application verifies its own signer response before returning evidence. The private key must remain outside the application and outside this ZIP.
+- Enable requireRecoverySloSignedContinuityEvidence to reject incomplete signing configuration and prohibit unsigned runbook exports.
+- Pin the public key registry out-of-band. A signature is only as trustworthy as the registry used to validate it.
+
+Runbook export
+- POST /api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor/slo/finalization-keys/anchor/recovery-runbook/export
+- Verification endpoint: POST /api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor/slo/finalization-keys/anchor/recovery-runbook/verify
+- Runbooks are capped at 1 MiB by default; maxBytes can lower the cap. They contain status summaries and safe instructions, never private keys or access tokens.
+- Verify the runbook digest and embedded continuity evidence before using it for incident response. A valid runbook digest does not mean the anchor is healthy or that the continuity claim is established.
+
+Provider contract and conformance
+- GET /api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor/slo/finalization-keys/anchor/contract
+- The contract descriptor is declarative and is not authenticated as a remote server statement. Run the Batch 128 disposable-namespace conformance probe before relying on CAS, sequence monotonicity, stale-write rejection, or owner isolation.
+- The probe writes test anchors to a generated disposable namespace; providers without namespace deletion may retain those test records.
+
+No deployment secrets or private keys belong in the ZIP or runbook. No GitHub commit is performed by this workflow.
+
+Security note
+- The runbook envelope is digest-bound but not digitally signed in this batch. The embedded continuity evidence may be signed; do not treat the runbook digest alone as proof of authorship.

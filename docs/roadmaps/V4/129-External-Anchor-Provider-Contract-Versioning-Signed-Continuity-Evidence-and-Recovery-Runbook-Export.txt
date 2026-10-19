@@ -1,0 +1,43 @@
+Batch 129 — External Anchor Provider Contract Versioning, Signed Continuity Evidence, and Recovery Runbook Export
+
+Objective
+- Version the finalization-key-policy external-anchor provider contract explicitly.
+- Add externally signed, digest-bound continuity evidence while preserving the distinction between a signed local observation and authenticated remote-provider history.
+- Export a bounded recovery runbook with current diagnostics, safe next steps, and no private keys or access tokens.
+
+Implementation
+- Added apps/agentic/backend/recovery-slo-finalization-anchor-evidence.js.
+- Supported provider contract versions are 1.0.0 and 1.1.0. Version 1.0.0 requires the read()/compareAndSet() interface. Legacy providers without metadata are classified compatible_legacy with a warning. Version 1.1.0 requires explicit contract metadata, owner scope, digest-CAS semantics, schema version 1, and declared owner-isolation, monotonic-sequence, stale-CAS-rejection, and read-after-write capabilities.
+- Provider metadata is a declaration, not an authenticated remote statement. The status response explicitly sets providerMetadataAuthenticated=false and behavioralConformanceRequired=true. Batch 128's disposable-namespace conformance probe remains the behavioral check.
+- Configured contract-version mismatch blocks trust-sensitive key-policy initialization/transitions, signing-context acquisition, receipt-key resolution, and anchor reconciliation. Read-only policy/contract diagnostics and runbook export remain available so operators can investigate.
+- Added Ed25519 signed continuity evidence. The signed envelope binds the local continuity proof digest, provider contract assessment, owner, issuance time, claims, and signing key ID. Signatures are checked against an independently configured trusted public-key registry. Canonical base64url encoding is enforced.
+- A configured signer failure or invalid signer response fails closed; the application does not silently downgrade to unsigned evidence. Strict mode requires signer, key ID, and a matching trusted Ed25519 public key at application initialization.
+- Added bounded recovery runbook export and verification. The runbook captures contract status, external-anchor status, key-policy audit summary, operator-evidence audit summary, continuity evidence, and prioritized operator instructions. It is digest-bound, limited to 1 MiB by default, and explicitly declares that it authorizes no mutation and includes no private keys or access tokens.
+- When the local policy is missing or too unhealthy to produce continuity proof, non-strict mode can still export a diagnostic runbook with continuityEvidence.mode=unavailable. Verification then reports runbook integrity separately from continuity-evidence validity.
+- Added authenticated HTTP routes for contract status, signed continuity evidence export/verification, and recovery runbook export/verification. Signed evidence and runbook operations append bounded operator evidence events.
+- Extended the HTTP anchor adapter with a declared v1.0.0 client-interface contract descriptor. This does not authenticate the remote server's version; deployment must still validate remote semantics through the conformance probe.
+
+Configuration
+- recoverySloFinalizationKeyPolicyAnchorContractVersion (application option) or AGENTIC_FINALIZATION_KEY_POLICY_ANCHOR_CONTRACT_VERSION; default 1.0.0.
+- recoverySloAnchorContinuitySigner: external signer callback accepting the canonical unsigned evidence payload and returning a base64url Ed25519 signature or { signature, keyId }.
+- recoverySloAnchorContinuityKeyId: signing key ID included in the signed payload.
+- recoverySloAnchorContinuityPublicKeys: trusted Ed25519 public-key registry used to verify the signer response and exported evidence.
+- requireRecoverySloSignedContinuityEvidence: when true, startup requires complete signer/key configuration and runbook export cannot omit signed continuity evidence.
+- Keep continuity signing private keys outside application storage and pin the trusted public-key registry independently.
+
+Validation
+- Batch 129 regression tests: 12/12 PASS.
+- Full cumulative npm test: 864/864 PASS.
+- Full JavaScript/MJS syntax check and relative-import resolution: PASS.
+- ZIP integrity and post-extraction cumulative validation: PASS.
+- No GitHub commit was made.
+
+Operational limits
+- The runbook envelope is digest-bound but is not itself digitally signed in this batch. Only the embedded continuity evidence is signed when a signer is configured; SHA-256 alone cannot prevent an adversary from rewriting the full runbook and recomputing its digest.
+- Provider contract metadata is not cryptographically authenticated and cannot replace behavioral conformance testing.
+- A signature authenticates the signed local evidence payload; it does not independently authenticate the remote provider observation or expose the provider's prior anchor history.
+- Recovery runbooks are operational guidance, not an authorization artifact. All corrective actions remain subject to operator review and existing approval boundaries.
+- Signed continuity evidence requires an externally managed signer and an independently trusted public-key registry. Private keys are not packaged.
+- The HTTP listener was syntax-checked and route-mapped but not boot-tested in this isolated environment.
+
+Next unfinished stage: Batch 130 — Contract Migration Approval, Signed Runbook Attestation, and Recovery Evidence Retention.

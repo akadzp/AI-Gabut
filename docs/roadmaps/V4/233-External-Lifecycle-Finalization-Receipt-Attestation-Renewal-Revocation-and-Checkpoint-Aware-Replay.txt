@@ -1,0 +1,14 @@
+Batch 233 — External Lifecycle Finalization-Receipt Attestation Renewal, Revocation, Cross-Generation Supersession, and Checkpoint-Aware Recovery Replay
+
+Delivered:
+1. Signed Batch 233 lifecycle intent, renewal, revocation, supersession, and finalization event types.
+2. Challenge-bound, owner-scoped prepare/apply operations with reason/TTL validation and ledger snapshot preconditions.
+3. Cross-generation active-target selection, predecessor/replacement binding, terminal revocation, orphan-phase, and concurrent-pending audit checks.
+4. Checkpoint-aware application reconciliation that resumes persisted challenges and advances configured external checkpoints between phases.
+5. Batch 233 lifecycle evidence added to the existing Batch 232 external-attestation checkpoint snapshot and overall recovery-gate audit.
+6. Four authenticated HTTP routes and focused regression tests.
+
+Validation notes:
+- Focused regression group (Batches 223–233 plus Batch 102): 37/37 PASS.
+- Batch 233 tests: 2/2 PASS.
+- Full cumulative npm test, live listener startup, and positive end-to-end renewal/revocation against a fully bootstrapped historical chain remain unverified.

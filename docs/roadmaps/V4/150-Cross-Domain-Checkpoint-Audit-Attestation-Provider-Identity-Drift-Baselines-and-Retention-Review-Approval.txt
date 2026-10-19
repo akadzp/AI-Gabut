@@ -1,0 +1,39 @@
+Agentic AI V4 — Batch 150
+Cross-Domain Checkpoint Audit Attestation, Provider-Identity Drift Baselines, and Retention Review Approval
+
+Purpose
+- Produce Ed25519-signed, retained attestations of cross-domain snapshot checkpoint governance audits.
+- Establish owner-scoped provider identity/contract baselines only after the latest retained conformance report is valid and matches the live provider.
+- Detect provider identity or contract drift without conflating a changed provider with a corrupted historical report.
+- Require an explicit, digest-bound approval for overdue checkpoint evidence review; never delete or rewrite source evidence as part of approval.
+
+Implementation
+- Added recovery-slo-cross-domain-snapshot-audit-governance.js.
+- Exposed a read-only provider snapshot from cross-domain snapshot governance, containing identity fingerprint and normalized contract digest only.
+- Added signed audit attestation creation, retained-record verification, historical/current distinction, and audit of retained attestations.
+- Added challenge-bound provider baseline enrollment/rotation with ten-minute expiry, fresh conformance binding, stale-state rejection, and drift audit. Conformance reports now reserve per-owner/domain monotonic sequence slots atomically so concurrent runs cannot silently reuse a sequence.
+- Added retention review challenges bound to the stable audit fingerprint and exact overdue record digests. Decisions are limited to retain/escalate and explicitly perform no destructive action.
+- Added application API exports and authenticated HTTP routes for attestations, provider baselines, and retention review.
+
+Configuration
+- Optional application arguments: recoverySloCrossDomainSnapshotAuditSigner, recoverySloCrossDomainSnapshotAuditKeyId, recoverySloCrossDomainSnapshotAuditPublicKeys, requireRecoverySloCrossDomainSnapshotAuditAttestation.
+- Environment: AGENTIC_CROSS_DOMAIN_SNAPSHOT_AUDIT_PUBLIC_KEYS (JSON keyId-to-PEM registry).
+- Environment: AGENTIC_REQUIRE_CROSS_DOMAIN_SNAPSHOT_AUDIT_ATTESTATION=true enables fail-closed startup requiring signer, key ID, and trusted Ed25519 public key.
+- Private keys remain external to application storage and source archives.
+
+Safety properties
+- Audit attestations are historical evidence; currentness is evaluated separately against a stable audit fingerprint.
+- Provider baselines are not accepted without a valid latest conformant report matching the live provider identity and contract.
+- A provider drift finding requires fresh conformance before a new baseline can be accepted.
+- Retention review approval is non-destructive. Challenge expiry, stale source audit, changed target digest, or non-overdue targets are rejected.
+- Existing evidence is not automatically deleted, rewritten, or silently promoted.
+
+Validation
+- Ten Batch 150 regression tests cover signature/retention verification, tampering, provider drift and baseline rotation, expired challenge rejection, non-destructive retention approval, stale review rejection, fail-closed required configuration, and API/route exposure.
+- Full cumulative npm test, syntax, relative import resolution, and archive integrity are validated for the final extracted archive before release.
+
+Operational limitations
+- Provider identity fingerprints and distinct endpoints do not prove independent administration or hidden infrastructure.
+- Local provider-baseline history is digest-linked but does not gain a dedicated external checkpoint in this batch.
+- Audit attestation issuance requires an external Ed25519 signer and a trusted public-key registry.
+- Retention review approval records operator intent only; it does not execute deletion, archive movement, or storage compaction.

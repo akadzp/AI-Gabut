@@ -1,0 +1,32 @@
+Agentic AI V4 — Batch 166 Roadmap
+=================================
+
+Objective
+---------
+Recover interrupted local checkpoint-marker writes only when an external anchor, source snapshot, policy digest, and approval-bound source evidence still agree. Add a read-only policy/retention audit for signed verification receipts.
+
+Scope delivered
+---------------
+1. Generic marker recovery inspection that distinguishes recoverable marker lag from source advance, policy drift, unavailable anchors, and unproven continuity.
+2. Durable recovery-intent ledger for recovery-intent attestation lifecycle checkpoint recovery, including immutable event digest, chain sequence, previous-event binding, state digest, and post-recovery checkpoint verification.
+3. Approval-bound recovery for manifest-ledger gap-finalization receipt checkpoints, bound to finalization ID/digest, approval ID/digest, challenge ID/digest, candidate digest, and source-current status.
+4. Read-only verification-receipt policy/retention audit with receipt integrity checks, source-checkpoint policy comparison, timestamp skew checks, retention-review-due reporting, and policy-binding approval-chain findings.
+5. Authenticated application and HTTP APIs plus regression tests.
+
+Security invariants
+-------------------
+- No automatic recovery if the source has advanced beyond the remote anchor.
+- No marker repair if policy digest or previous-anchor continuity cannot be proven.
+- No finalization checkpoint recovery without a healthy approval-bound finalization ledger.
+- No deletion or compaction as a side effect of retention audit.
+- Initial enrollment history remains explicitly unproven.
+
+Validation gate
+---------------
+- Batch tests: 4/4 PASS.
+- Cumulative test suite: 1132/1132 PASS.
+- Clean extraction, syntax, relative import resolution, and ZIP integrity: PASS.
+
+Next
+----
+Batch 167 — Recovery-Intent Ledger External Anchoring, Finalization-Recovery Replay/Conflict Resolution, and Receipt-Retention Review Approval Binding.

@@ -1,0 +1,31 @@
+Agentic AI V4 — Batch 233 Release Notes
+
+Scope
+- Adds signed lifecycle events for renewal, revocation, supersession, and finalization of Batch 232 external lifecycle finalization-receipt attestations.
+- Adds challenge-bound lifecycle prepare/apply, chain audit, and checkpoint-aware reconciliation APIs.
+- Extends the existing independent Batch 232 external-attestation snapshot with Batch 233 lifecycle event projections.
+- Integrates Batch 233 lifecycle status into the overall recovery-gate convergence audit.
+
+Safety and recovery
+- Empty history does not fabricate an attestation target.
+- Renewal and revocation require a current source attestation and current configured checkpoints.
+- Renewal binds a replacement event and predecessor/supersession pair.
+- Terminal revocation blocks future lifecycle operations.
+- Orphan phase events, concurrent pending intents, broken predecessor links, invalid signatures, and descendants after revocation fail closed.
+- Reconciliation resumes pending challenges phase-by-phase and advances configured checkpoints between phases.
+
+Validation
+- Focused regression suite: 37/37 PASS (Batches 223–233 and Batch 102 application/HTTP API surface).
+- Batch 233 tests: 2/2 PASS.
+- Full cumulative npm test: not claimed as passing.
+- Positive end-to-end renewal/revocation on a fully bootstrapped historical Batch 232 chain: not established by the focused tests.
+- Live HTTP listener startup: not tested.
+- No GitHub commit was made.
+
+Final source/archive validation
+- JavaScript/MJS/CJS syntax after extraction: 325/325 PASS.
+- Relative import references: 623 checked, 0 missing.
+- Source files: 618.
+- ZIP entries: 637.
+- ZIP integrity (`zip -T` and `unzip -t`): PASS.
+- Extracted tree: 618 files, 0 missing, 0 extra, 0 SHA-256 mismatches against the packaged source tree.

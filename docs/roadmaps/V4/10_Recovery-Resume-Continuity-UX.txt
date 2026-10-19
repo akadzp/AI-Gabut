@@ -14,6 +14,16 @@ Scope:
 - user intervention after interruption
 - final recovery outcome
 
+Batch 10 implementation:
+- stale in-flight Work execution detection
+- Work recovery state is persisted as paused + recovery metadata
+- execution checkpoint exposed through recovery metadata
+- recovery list derived from persisted Work state
+- explicit resume preparation with resume counter
+- duplicate recovery prevention after the execution leaves an in-flight state
+- backward-compatible recovery for non-Work chat executions
+- existing Work resume boundary remains the only execution resume path
+
 DoD: User dapat melihat work yang terinterupsi, memahami state terakhir,
 dan melanjutkan execution valid tanpa membuat duplicate work secara
 tidak sengaja.

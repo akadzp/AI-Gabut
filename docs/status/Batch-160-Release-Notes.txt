@@ -1,0 +1,31 @@
+Batch 160 — Key-Lifecycle Registry-Transition Receipts, Retention-Review Approval Revocation/Replacement, and Lease Recovery Audit-Event Export/Integrity
+
+- Added deterministic, digest-bound registry-transition receipts for new attestation signing-key lifecycle events. Receipts bind the event/challenge, sequence, previous receipt, target and previous-active key fingerprints, and a canonical trusted registry snapshot. Receipt recovery is idempotent and refuses reconstruction when the current registry no longer matches the event-time fingerprint. Registry drift is reported separately from corrupt receipt evidence.
+- Added owner-scoped receipt audit, recovery, export, and verification APIs. Export bundles retain the receipt chain and source references; verification detects envelope, receipt, sequence, chain, and retained-evidence mismatch. Export integrity uses SHA-256 and is explicitly not a digital signature or independent authenticity proof.
+- Added challenge-bound revocation for manifest-ledger retention-review approvals. Revocation binds approval/source digests, count, external checkpoint digest/sequence, and policy digest; stale challenges fail closed. Revocation is appended as a separate ledger event and reconciled one event at a time. The original approval remains immutable and is no longer current after valid revocation.
+- Added replacement approvals that explicitly reference a valid prior approval and its revocation. Replacement requires the previous approval to be revoked, validates the prior target references, and rejects duplicate replacements. Existing `retain`/`escalate` semantics remain non-destructive; no evidence deletion or compaction is performed.
+- Added revalidation lease audit-event export and verification. Bundles exclude raw lease tokens, preserve lease/event digest references, validate sequence/linkage/fencing/state transitions, and compare the export with retained source records. Integrity is checksum-based, not signature-based.
+- Added authenticated HTTP routes and four Batch 160 regression tests.
+
+Validation:
+- Batch 160 regression tests: 4/4 PASS.
+- Full cumulative `npm test`: 1106/1106 PASS.
+- Batch 157–159 focused regression suites: 14/14 PASS.
+- JavaScript/MJS/CJS syntax validation: 239/239 PASS.
+- Relative import references: 440 checked, 0 missing.
+- ZIP integrity (`zip -T`, `unzip -t`): PASS.
+- Clean-extraction cumulative `npm test`: 1106/1106 PASS.
+- Clean-extraction syntax: 239/239 PASS.
+- Clean-extraction relative imports: 440 checked, 0 missing.
+- Clean-extraction source equivalence: 403 files compared, 0 missing, 0 extra, 0 content differences.
+- Final archive contains 421 ZIP entries (403 files plus directory entries).
+- No GitHub commit was made.
+
+Operational boundaries:
+- A registry-transition receipt is created only for lifecycle events that explicitly bind the registry fingerprint. Legacy events without this binding remain `history_unproven`; the system does not invent historical registry facts.
+- Registry fingerprint drift blocks receipt reconstruction. Restore the event-time trusted registry or use a separately authorized transition; do not silently rebind old events to a new key registry.
+- Revocation/replacement records are append-only. Revocation never deletes the original approval or evidence, and replacement requires the old approval's revocation to be verifiable.
+- Lease export excludes raw lease tokens. SHA-256 checks detect ordinary tampering but do not provide signature-based authenticity against an attacker able to rewrite and recompute the entire export; use an independent trusted anchor or signature when that threat model applies.
+- Cross-process lease safety still requires shared storage with atomic `mutateEvidence`. HTTP listener startup was not directly exercised.
+
+Batch 161 completed this next stage; see `Batch-161-Release-Notes.txt`.

@@ -1,0 +1,35 @@
+Batch 153 — External Checkpoint Freshness Policy Binding, Baseline Receipt Recovery/Compaction Guardrails, and Retention Decision Evidence Revalidation
+
+Implemented
+-----------
+- Added a canonical, domain-scoped freshness/retention policy digest to external checkpoints for cross-domain audit attestations, provider-baseline lifecycle, and retention-review decisions. Local markers carry the same policy digest when written.
+- Checkpoint status now distinguishes current policy binding from policy drift. A policy digest mismatch, including legacy anchors without a policy digest, blocks current use and is surfaced as `policy_drift` or `external_checkpoint_pending`.
+- Added explicit ten-minute policy-binding challenges. Applying a binding rechecks the source snapshot, local marker, remote anchor digest/sequence, and target policy digest before appending a new CAS-linked anchor. Replays are idempotent; stale challenges and source changes are rejected. A prepared challenge can be finalized after an interrupted local finalization only when the external anchor proves the exact expected one-step append.
+- Added provider-baseline transition receipt recovery/compaction guardrails. The read-only audit reports recoverable interrupted transitions and permits future compaction consideration only when the receipt chain and baseline audit are healthy, no transition is pending, at least two receipts exist, and the external checkpoint is current and matches the exact source snapshot. No receipt is deleted or compacted by this batch.
+- Added retention-review decision revalidation. It rechecks the approval, challenge, replay guard, exact target evidence digests, current review status, and external checkpoint/policy binding before declaring a `retain` decision usable for a current decision.
+- Added authenticated APIs/HTTP routes for policy-binding challenges, receipt compaction guardrails, and retention decision revalidation.
+
+Configuration
+-------------
+- Reuses `AGENTIC_CROSS_DOMAIN_SNAPSHOT_CHECKPOINT_MAX_AGE_MS`, `AGENTIC_CROSS_DOMAIN_SNAPSHOT_CHECKPOINT_FUTURE_SKEW_MS`, and `AGENTIC_CROSS_DOMAIN_SNAPSHOT_CHECKPOINT_RETENTION_DAYS`.
+- The canonical policy digest is domain-scoped and included in each new external checkpoint anchor. A policy change requires an explicit policy-binding challenge and confirmation.
+- Existing provider configuration and required-provider fail-closed behavior remain unchanged. Private keys are not included in the archive.
+
+Validation
+----------
+- Batch 153 regression tests: 6/6 PASS.
+- Full cumulative `npm test`: 1068/1068 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax validation: 230 files, all PASS.
+- Relative import resolution: 410 references checked, 0 missing.
+- ZIP integrity (`zip -T`, `unzip -t`) and full extracted-source revalidation: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+----------------------
+- A policy change concurrent with source changes is rejected; restore the previous policy, reconcile the source through the existing continuity proof, then prepare a separate policy-binding challenge.
+- Provider-baseline compaction is not implemented. The new API is a read-only guardrail and explicitly reports that compaction was not performed and automatic compaction is disallowed.
+- Legacy anchors without a policy digest require explicit policy rebinding; enrollment history remains unproven where applicable.
+- External checkpoint durability/CAS and hidden infrastructure independence remain deployment responsibilities.
+- HTTP listener startup was not exercised; syntax, import resolution, route mapping, cumulative tests, and archive integrity were verified.
+
+Next unfinished stage: Batch 154 — Policy-Binding Approval Audit Chain, Baseline Receipt Compaction Manifest Design, and Retention-Revalidation Decision Cache Invalidation.

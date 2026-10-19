@@ -1,0 +1,20 @@
+V4 Batch 65 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Repair Recovery
+
+Scope completed:
+- adds an explicit bounded recovery entry point for Batch 64's durable observability intent
+- re-emits only the existing deterministic Batch 64 observability event, using the same event type and mission-scoped dedupe key
+- validates pending intent shape and bounded metadata before emission
+- preserves the pending intent and records a bounded durable error when emission fails
+- clears pending and error state only after event emission succeeds and the optimistic-concurrency write succeeds
+- fails closed for malformed pending state and orphaned error markers without mutation or emission
+- performs owner-scoped reads and version-checked writes with bounded conflict retries
+- exposes the recovery entry point through the application boundary
+
+Validation:
+- Batch 65 dedicated regression tests: 9/9 PASS
+- JavaScript/MJS syntax validation: PASS
+- cumulative npm test: 194/199 PASS; the same five baseline failures remain outside Batch 65: two test files cannot import missing core/storage/state/index.js, one cannot import missing core/security/index.js, one external-feedback test has an ID/provenance expectation mismatch, and another mock lacks github.workflowRuns
+- ZIP integrity validation: PASS
+- no GitHub commit was made
+
+Next unfinished stage: Batch 66.

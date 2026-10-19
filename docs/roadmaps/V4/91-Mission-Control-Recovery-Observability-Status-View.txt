@@ -1,0 +1,20 @@
+V4 Batch 91 — Mission Control Recovery Observability Status View
+
+Scope:
+- adds a read-only, owner-scoped status view for Batch 89/90's durable observability intent for orphaned recovery-observability error-marker repair
+- reports clear, pending, and error phases without mutation, retry, recovery, repair, or event emission
+- validates nullable reconciliation ID, creation timestamp, and retry marker with stable issue codes
+- marks pending intent recoverable only when its metadata is valid
+- bounds exposed reconciliation IDs to 200 characters, timestamps to 100 characters, and durable error text to 1,000 characters
+- detects malformed pending intent and orphaned error markers without attempting repair
+- exposes the view through the application boundary while preserving owner-scoped mission access
+
+Validation:
+- dedicated Batch 91 regression tests: 9/9 PASS
+- cumulative npm test: 434/439 PASS; the same five baseline failures remain: missing core/storage/state/index.js imports in artifacts and work recovery, missing core/security/index.js in work Git, external-feedback ID/provenance mismatch, and missing github.workflowRuns mock; no new failures
+- JavaScript/MJS syntax validation: 105/105 PASS
+- application-boundary mapping: PASS
+- ZIP integrity validation: PASS (zip -T and unzip -t); extracted-archive regression recheck: 9/9 PASS; extracted cumulative npm test: 434/439 PASS with the same five baseline failures; extracted syntax validation: 105/105 PASS
+- no GitHub commit
+
+Next unfinished stage: Batch 92.

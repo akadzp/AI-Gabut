@@ -1,0 +1,14 @@
+Batch 228 — External Attestation Lifecycle Finalization Receipts, Independent Renewal/Revocation Checkpoint Recovery, and Cross-Generation Recovery-Gate Convergence
+
+Scope:
+1. Issue signed finalization receipts for finalized Batch 227 external-attestation renewal and revocation lifecycle events.
+2. Bind each receipt to the intent, action, finalization, target attestation, replacement attestation (for renewal), bounded lifecycle chain digest, and signing-key lifecycle binding.
+3. Enforce generation-order predecessor receipt binding. Generation 1 has no predecessor; generation N>1 requires exactly one receipt from generation N-1.
+4. Make receipt creation idempotent by deterministic operation ID and provide generation-ordered reconciliation for crash recovery and migration of existing finalized lifecycle events.
+5. Surface missing receipts as recovery_required; invalid, duplicate, orphaned, or inconsistent receipts as unhealthy; terminal revocation remains decision_blocked.
+6. Include Batch 228 receipts in the existing independent external-attestation checkpoint snapshot and recovery-gate convergence.
+7. Provide an authenticated reconciliation endpoint that backfills receipts and advances configured checkpoints.
+
+Validation boundary:
+Focused Batch 228 and Batch 223–228 tests pass. The broader Batch 220–228 command exceeded the environment execution budget. Full cumulative npm test, positive end-to-end renewal/revocation checkpoint-failure injection, and live HTTP startup are not claimed as passing.
+No GitHub commit.

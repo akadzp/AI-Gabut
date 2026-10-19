@@ -1,0 +1,3 @@
+V4 Batch 55 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery
+
+Adds explicit recovery for pending observability intents created by Batch 54 status-repair observability. Recovery emits a deterministic recovered event, clears the temporary intent/error, is owner-scoped, bounded, idempotent, and fail-closed for malformed pending state.

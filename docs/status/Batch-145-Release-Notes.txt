@@ -1,0 +1,40 @@
+Agentic AI V4 — Batch 145 Release Notes
+
+Stage
+-----
+Decision-Gate Anchor Conformance and Recovery, Baseline Lifecycle External Checkpointing, and Freshness Policy Drift Audit
+
+Changes
+-------
+- Added a challenge-bound conformance probe for the retention decision-gate external anchor. It tests the 1.1.0 provider contract, disposable namespace use, genesis CAS, read-after-write, stale-CAS rejection without mutation, monotonic sequence/linkage, namespace isolation, concurrent single-winner behavior, and digest integrity. Reports are retained and audited; probes never write to the production namespace.
+- Added an independent external checkpoint anchor for root-trust baseline lifecycle events. Checkpoints bind owner scope, event digest, retained lifecycle record digest, baseline digest, sequence, previous anchor digest, and history limitations. Baseline rotation now attempts checkpointing before returning success; a failed anchor produces an explicit error and current-baseline reads report `external_anchor_untrusted` until safe reconciliation succeeds.
+- Added bounded recovery for a provably pending one-event genesis checkpoint and for a chain that is demonstrably behind local history. Remote-anchor loss after enrollment, missing markers, rollback, digest mismatch, and unproven continuity fail closed. Multi-event legacy history requires explicit digest-bound enrollment and remains marked `historyNotProven`.
+- Added a read-only retention-reconciliation freshness-policy drift audit. It validates retained attestation digests and reports when signed max-age/future-skew settings differ from the currently configured policy. It distinguishes configuration drift from malformed or tampered evidence.
+- Added authenticated application APIs and HTTP routes for decision-gate anchor conformance, baseline lifecycle checkpoint status/advance/enrollment/reconciliation, and freshness-policy drift audit.
+- Registered `retention_decision_gate_anchor_conformance` as a supported retained-evidence artifact type.
+
+Configuration
+-------------
+- Optional/required baseline lifecycle external anchor: `AGENTIC_ROOT_TRUST_BASELINE_LIFECYCLE_ANCHOR_URL`, `AGENTIC_ROOT_TRUST_BASELINE_LIFECYCLE_ANCHOR_TOKEN`, and `AGENTIC_REQUIRE_ROOT_TRUST_BASELINE_LIFECYCLE_ANCHOR=true`.
+- Equivalent application options: `recoverySloRootTrustBaselineLifecycleAnchor` and `requireRecoverySloRootTrustBaselineLifecycleAnchor`.
+- The lifecycle anchor must be a distinct provider/URL from all other trust domains. If configured, baseline rotation is blocked until the current lifecycle checkpoint is anchored.
+- Freshness-policy drift audit uses the current `AGENTIC_RETENTION_RECONCILIATION_ATTESTATION_MAX_AGE_MS` and `AGENTIC_RETENTION_RECONCILIATION_ATTESTATION_FUTURE_SKEW_MS` values and compares them with signed retained attestations.
+
+Validation
+----------
+- Batch 145 regression tests: 8/8 PASS.
+- Full cumulative `npm test`: 1004/1004 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax checks: 213/213 PASS.
+- Relative import resolution: 366 references checked, 0 missing.
+- ZIP integrity and extracted-source revalidation: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+----------------------
+- Conformance proves the observed CAS contract, not administrative or infrastructure independence. Probe records may remain in a provider without delete support.
+- A failed baseline checkpoint may occur after the local lifecycle event was committed. The API fails closed, the current baseline is not reported as usable while the configured external checkpoint is untrusted, and operators must reconcile before further rotation.
+- Legacy enrollment cannot prove pre-enrollment history; `historyNotProven` is retained.
+- Freshness-policy drift is a read-only audit. It does not automatically rewrite signed policies or invalidate historical signatures; current-decision gates still apply the configured stricter freshness limits.
+- HTTP listener startup remains unverified in this isolated environment; syntax, imports, route mapping, test suite, archive integrity, and extracted-source revalidation were checked.
+
+Next unfinished stage: Batch 146 — Decision-Gate Anchor Recovery Attestation, Baseline Checkpoint Continuity Proof, and Freshness-Policy Change Approval.

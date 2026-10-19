@@ -1,0 +1,9 @@
+Batch 275 — Renewal/Revocation Lifecycle for Batch 274 External Attestations
+
+Implement signed lifecycle intent, renewal, terminal revocation, supersession, finalization, and finalization receipt events for Batch 274 external attestations. Bind all phases to a verified current source attestation, source finalization receipt, reason digest, checkpoint fingerprint, signing-key lifecycle binding, and monotonic generation.
+
+Recovery must be idempotent and resume interrupted phases without duplicate events. Audit must detect orphan phases, duplicate challenge use, invalid signatures, broken predecessor/replacement links, missing finalization receipts, terminal-revocation descendants, stale key bindings, and checkpoint drift. Add owner-scoped prepare/apply/audit/snapshot/reconcile API and HTTP routes; integrate lifecycle status and generation-binding digest into overall recovery-gate convergence.
+
+Validation: focused Batch 102/application checks, artifact tests, Batch 270–275 regressions, syntax/import checks, and ZIP extraction integrity. Full cumulative npm test is not claimed as passing unless it completes with a final TAP summary.
+
+Next planned stage: Batch 276 — external attestation for Batch 275 lifecycle finalization receipts, cross-generation receipt continuity, and independent checkpoint recovery.

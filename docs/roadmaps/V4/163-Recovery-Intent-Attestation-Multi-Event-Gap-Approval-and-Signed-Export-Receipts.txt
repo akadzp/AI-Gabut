@@ -1,0 +1,42 @@
+Agentic AI V4 — Batch 163
+========================
+Recovery-Intent Attestation, Multi-Event Gap Approval, and Signed Export Verification Receipts
+
+Implemented
+-----------
+- Added an Ed25519-signed recovery-intent attestation bound to the finalized recovery-intent audit digest, the key lifecycle sequence, and the external key-transition receipt checkpoint snapshot.
+- Added verification and audit APIs for retained recovery-intent attestations. A signature can remain historically valid while the checkpoint history is marked unproven; such an attestation is explicitly not usable for a current decision.
+- Added an explicit 10-minute, challenge-bound approval workflow for uniquely proven multi-event manifest-ledger gaps. The challenge binds candidate event IDs/digests, source digest/count, external anchor digest/sequence, policy digest, and anchor freshness.
+- Added stale-source/policy/anchor revalidation before applying a gap approval, idempotent retries, and an audit that marks an approval stale when the candidate set or source snapshot changes.
+- Gap approval remains review-only: it does not advance the external checkpoint, enable automatic multi-event reconciliation, compact receipts, or delete evidence. The existing one-event reconciliation rule remains unchanged.
+- Added Ed25519-signed retained verification receipts for signed lease-export verification. Each receipt binds the export digest, verification result digest, key lifecycle sequence/cutoff result, checkpoint binding fingerprint, and verification time.
+- Added receipt verification/audit APIs that distinguish receipt integrity/current checkpoint binding from whether the original export is usable for a current decision. Raw lease tokens are not copied into receipts.
+- Added authenticated HTTP routes and regression coverage for signed recovery-intent attestation, multi-event gap approval/staleness, signed verification receipts, tampering, key rotation, and route exposure.
+
+Safety invariants
+-----------------
+- No evidence deletion or compaction.
+- Recovery-intent attestations preserve `historyNotProven`; a valid signature does not promote unproven history into trusted current evidence.
+- Multi-event gap approval is explicit and digest-bound but is not itself permission to advance the external checkpoint.
+- Challenge application re-evaluates the source and refuses stale candidate/source/anchor/policy bindings.
+- Signed export verification receipts are signed with the active trusted Ed25519 key and become historical-only when their key or checkpoint binding is no longer current.
+- Owner isolation, idempotent approval retries, fail-closed signature validation, and existing one-event checkpoint continuity remain mandatory.
+
+Validation
+----------
+- Batch 163 regression tests: 4/4 PASS.
+- Full cumulative `npm test`: 1,118/1,118 PASS.
+- JavaScript/MJS/CJS syntax checks: 242 files PASS.
+- Relative import references: 452 checked, 0 missing.
+- Clean extraction, cumulative tests, source comparison, and ZIP integrity are required before delivery.
+- No GitHub commit.
+
+Known limitations
+-----------------
+- Recovery-intent attestations and verification receipts are locally retained signed evidence bound to the external checkpoint; the attestations/receipts themselves do not yet have a dedicated independent external anchor.
+- Multi-event gap approvals are review-only in this batch; a separate controlled CAS finalization protocol would be required before any multi-event checkpoint advance.
+- HTTP listener startup was not separately exercised in this run; route exposure is covered by tests and the runtime dependency is declared in `package.json`.
+
+Next unfinished stage
+---------------------
+Batch 164 — Recovery-Attestation Revocation/Renewal, Explicitly Approved Multi-Event Gap CAS Finalization, and Verification-Receipt Ledger Continuity/External Anchoring.

@@ -1,0 +1,25 @@
+Agentic AI V4 — Batch 159 roadmap entry
+
+Scope
+- Bind key-lifecycle checkpoint continuity to explicit registry/policy drift classification.
+- Bind manifest-ledger retention decisions to source snapshots, target event digests, external anchor sequence/digest, and policy digest.
+- Make lease recovery replay-safe and expose durable recovery observability.
+
+Implementation
+- Same-count trusted-key registry drift is explicitly identified and rejected as an unproven rotation; checkpoint policy drift is separately surfaced and requires policy binding.
+- Manifest-ledger retention review uses ten-minute challenges, `retain`/`escalate` decisions, digest-linked approval records, exact target references, and one-event external checkpoint reconciliation.
+- Retention approval events are included in the ledger checkpoint source snapshot and audited against their challenge and target evidence.
+- Revalidation lease recovery accepts an optional stable recoveryRequestId. A repeated request resolves to the original recovery event without duplicate writes or fencing-token changes. Lease audits expose recovery/reclaim counts and last-event metadata.
+
+Security constraints
+- No automatic reconciliation of unproven registry drift.
+- No deletion, compaction, or destructive retention action.
+- Pre-enrollment history remains explicitly unproven.
+- Cross-process lease operations require atomic shared storage.
+
+Validation baseline
+- Batch 159 regression tests: 5/5 PASS.
+- Full cumulative npm test: 1102/1102 PASS.
+- JavaScript/MJS/CJS syntax: 238/238 PASS; relative imports: 436 checked, 0 missing; clean-extraction full test suite: 1102/1102 PASS; ZIP integrity: PASS.
+
+Next unfinished stage: Batch 160 — Key-Lifecycle Registry-Transition Receipts, Retention-Review Approval Revocation/Replacement, and Lease Recovery Audit-Event Export/Integrity.

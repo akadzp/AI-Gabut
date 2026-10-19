@@ -1,0 +1,24 @@
+Agentic AI V4 — Batch 203
+
+Recovery-Gate Proof External Checkpointing, Supersession Recovery Reconciliation, and Decision-Proof Freshness Enforcement
+
+Objectives
+- Add an independent external checkpoint for the signed recovery-gate proof ledger.
+- Ensure the proof snapshot is deterministic and supports unique one-event continuity reconstruction.
+- Bind each proof to the current freshness supersession audit digest.
+- Advance the external proof checkpoint after local proof commit; block decision use until anchoring is current.
+- Reconcile local commit/external write failure and repair a stale local marker after external commit response loss.
+- Reject provider/endpoint reuse, rollback, policy drift, invalid ledger history, and unprovable multi-event gaps.
+- Preflight strict mode so a missing/un-enrolled proof checkpoint blocks before a new proof event is persisted; do not retroactively trust unanchored history.
+
+Implementation
+- New trust domain: cross_domain_recovery_intent_closure_recovery_gate_proofs.
+- New source snapshot reader for the proof ledger.
+- New application configuration, checkpoint service, status/audit/enrollment/reconciliation methods, and HTTP routes.
+- Recovery-gate proof audit incorporates independent checkpoint currentness when configured.
+- No GitHub commit.
+
+Validation
+- Batch 203 focused tests: 7/7 PASS across isolated and grouped runs.
+- Batch 202 regression tests: 6/6 PASS.
+- Full cumulative test suite and direct HTTP listener startup remain unverified.

@@ -1,0 +1,44 @@
+Agentic AI V4 — Batch 165 Roadmap
+
+Objective
+
+Anchor attestation revocation/renewal history independently, externally checkpoint multi-event manifest-ledger finalization receipts, and make verification-receipt checkpoint operations recoverable and diagnosable after interrupted writes.
+
+Implemented in Batch 165
+
+1. Recovery-intent attestation lifecycle checkpoint
+   - Dedicated trust domain for append-only revocation and renewal lifecycle events.
+   - Explicit enrollment and single-event continuity reconciliation.
+   - Attestation verification incorporates lifecycle checkpoint currentness when the domain is configured or required.
+   - Lifecycle writes attempt checkpoint advancement after event/challenge finalization.
+
+2. Manifest-ledger gap-finalization receipt checkpoint
+   - Separate external snapshot checkpoint for finalization receipts.
+   - Source snapshot binds approval/challenge linkage, candidate digest, prior/result anchors, and finalization source binding.
+   - Single-receipt continuity proof, freshness audit, explicit enrollment, and fail-closed reconciliation.
+
+3. Verification-receipt recovery and gap diagnostics
+   - Durable recovery intents are persisted before the corresponding signed verification receipt.
+   - Immutable intent event digests preserve chain continuity as recovery state changes.
+   - Recovery distinguishes absent receipt, mismatched receipt, local-only operation, enrollment pending, checkpoint pending, and completed state.
+   - Bounded gap search (50,000 combinations) can prove a unique single/multi-receipt candidate set without authorizing multi-event automatic advancement.
+   - Recovery can reconcile one uniquely proven receipt after a CAS conflict and is idempotent for completed evidence.
+
+Validation
+
+- Batch 165 regression tests: 5/5 PASS.
+- Full cumulative npm test: 1128/1128 PASS before and after clean extraction.
+- Full-tree JavaScript/MJS/CJS syntax and relative imports checked.
+- ZIP integrity (`zip -T`, `unzip -t`) PASS; extracted files match source tree exactly.
+- No GitHub commit made.
+
+Known limitations
+
+- External checkpoint enrollment preserves historyNotProven for pre-enrollment records.
+- Provider durability and true infrastructure independence remain deployment responsibilities.
+- Multi-event receipt gaps remain diagnostic-only; no automatic multi-event advancement is permitted.
+- HTTP listener startup was not smoke-tested because `express` is not installed in the validation environment; package.json declares the runtime dependency.
+
+Next stage
+
+Batch 166 — Lifecycle-Checkpoint Crash Recovery/Gap Diagnostics, Approval-Bound Finalization Receipt Recovery, and Receipt-Ledger Policy-Binding/Retention Audit.

@@ -1,0 +1,24 @@
+Agentic AI V4 — Batch 204 Release Notes
+
+Title: Recovery-Gate Proof Checkpoint Lifecycle, External Anchor Drift Recovery, and Independent Proof-Continuity Attestation
+
+Implemented:
+- Added signed append-only proof-continuity ledger for drift observations and continuity attestations.
+- Added independent external checkpoint domain for the continuity ledger, including enrollment, status, audit, reconciliation, and provider-independence enforcement.
+- Added drift monitoring with fingerprint-based idempotency and generation increments for recurrence after resolution.
+- Added recovery-gate continuity attestations bound to proof checkpoint coordinates, latest proof, proof audit digest, signing-key lifecycle binding, and resolved drift event IDs.
+- Added strict preflight so an un-enrolled required continuity checkpoint blocks proof creation.
+- Added crash-recovery for local continuity event persistence followed by failed external checkpoint advancement.
+- Added API routes for continuity checkpoint operations, drift monitoring, and attestation.
+
+Validation:
+- Batch 204 focused regression tests: 8/8 PASS across individual test runs.
+- Batch 203 regression tests: 8/8 PASS across individual test runs and separate route/provider/rollback tests.
+- Syntax and import checks: validated on cumulative source.
+- ZIP integrity and post-extraction regression checks: PASS.
+
+Limitations:
+- An anchored continuity attestation does not override an underlying proof audit whose decision status is blocked.
+- External anchor rollback is recorded and blocks current-decision use; the monitor does not rewrite the anchor.
+- Full cumulative npm test and direct HTTP listener startup were not claimed as verified.
+- No GitHub commit was made.

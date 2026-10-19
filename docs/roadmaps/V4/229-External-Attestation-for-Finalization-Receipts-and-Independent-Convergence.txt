@@ -1,0 +1,10 @@
+Batch 229 — External-Attestation Finalization Receipts, Cross-Generation Receipt Renewal/Revocation, and Independent Checkpoint Convergence
+
+Implemented:
+1. Signed Batch 229 attestation events bind Batch 228 finalization receipt IDs/digests, generations, finalization events, source lifecycle-chain digests, checkpoint fingerprint, and signing-key lifecycle.
+2. Attestations are created in receipt order and preserve a signed predecessor chain. Idempotent retries reuse matching records.
+3. Audit checks signatures, receipt/finalization references, chain order, historical receipt coverage, key-cutoff state, and current checkpoint status.
+4. A separate external checkpoint domain anchors Batch 228 receipts plus Batch 229 attestations and participates in checkpoint advancement and convergence.
+5. Authenticated API routes support attestation, audit, checkpoint status/audit, enrollment, and reconciliation.
+
+Validation: focused Batch 229 tests 2/2 PASS; focused Batch 223–229 regression tests 15/15 PASS. The broader Batch 220–229 test command exceeded the environment execution budget. Full cumulative tests and positive end-to-end renewal/revocation checkpoint-failure recovery remain unverified.

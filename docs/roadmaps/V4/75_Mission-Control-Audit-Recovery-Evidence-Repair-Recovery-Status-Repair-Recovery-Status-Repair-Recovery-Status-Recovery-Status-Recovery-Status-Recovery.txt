@@ -1,0 +1,20 @@
+V4 Batch 75 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Repair Recovery Status Recovery Status Recovery Status Recovery
+
+Scope:
+- adds explicit bounded recovery for Batch 74's durable observability intent
+- emits the same mission-scoped event type and deterministic dedupe key stored in the pending intent
+- clears pending intent and error only after successful emission and a version-checked write
+- persists a bounded durable error and preserves the pending intent when event emission fails
+- retries valid pending intents without replaying the source orphaned-error repair
+- fails closed on malformed pending intents and orphaned destination error markers
+- uses owner-scoped storage and bounded optimistic-concurrency retries
+- exposes recoverAuditRecoveryEvidenceRepairRecoveryStatusRepairRecoveryStatusRepairRecoveryStatusRecoveryStatusRecoveryStatus through the application boundary
+
+Validation:
+- dedicated regression tests: 10/10 PASS
+- cumulative npm test: 279/284 PASS; the same five baseline failures reproduced before Batch 75 remain (two missing core/storage/state/index.js imports, one missing core/security/index.js import, one external-feedback ID/provenance mismatch, and one missing github.workflowRuns mock); no new failures
+- JavaScript/MJS syntax validation: 89/89 PASS
+- ZIP integrity validation: PASS (zip -T and unzip -t; extracted-archive regression recheck and syntax validation also PASS)
+- no GitHub commit
+
+Next unfinished stage: Batch 76.

@@ -1,0 +1,22 @@
+Batch 251 — Renewal/Revocation Lifecycle for Batch 250 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery.
+
+Added signed append-only lifecycle intent, renewal, revocation, supersession, finalization, and finalization-receipt events for Batch 250 external attestations. Lifecycle mutations require current source attestation and independent checkpoint evidence; renewal maintains predecessor/replacement continuity; terminal revocation blocks descendants; finalization receipts bind lifecycle audit, source receipt, checkpoint, signing-key lifecycle, and predecessor receipt. Added deterministic phase operation IDs, recovery replay, owner-scoped application methods and HTTP routes, independent checkpoint snapshot coverage, and overall recovery-gate convergence.
+
+Validation results are recorded in the Batch 251 delivery report. Full cumulative npm test and positive end-to-end lifecycle execution are not claimed unless the respective runs finish successfully. No GitHub commit was made.
+
+Next unfinished stage: Batch 252 — External Attestation for Batch 251 Lifecycle Finalization Receipts, Cross-Generation Receipt Continuity, and Independent Checkpoint Recovery.
+
+Validation against the final cleanly extracted ZIP:
+- Batch 102 plus Batch 223–251 targeted regression group: 73/73 PASS.
+- Batch 251 dedicated regression file: 2/2 PASS.
+- JavaScript/MJS/CJS syntax checks: 343/343 PASS.
+- `package.json` JSON parsing: PASS.
+- Relative-import and application API regression: 13/13 PASS.
+- ZIP integrity (`zip -T` and `unzip -t`): PASS.
+- Source inventory and SHA-256 equivalence checked before/after extraction.
+
+Limitations:
+- Full cumulative `npm test` was not run to completion; no full-suite pass is claimed.
+- Positive end-to-end renewal/revocation against a fully populated Batch 250 source chain was not verified.
+- HTTP listener startup was not verified in the isolated environment; route registration and application API wiring are covered by targeted tests.
+- No GitHub commit was made.

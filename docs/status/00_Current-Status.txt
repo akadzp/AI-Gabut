@@ -1,13 +1,850 @@
-V4 Batch 06 — Autonomous Repair & Replan Loop
+V4 Current Status — cumulative source through Batch 272
 
-Status: implementation delivered; local test execution dilakukan oleh user.
+Latest completed stage: Batch 272 — external attestation for Batch 271 lifecycle finalization receipts, cross-generation receipt continuity, and independent checkpoint recovery. Selected regression tests: 34/34 PASS, including Batch 102, artifact tests, and Batch 267–272 regressions. Final syntax, import, ZIP integrity, and clean-extraction checks are recorded in BATCH272_VALIDATION_REPORT.md. Full cumulative npm test, positive end-to-end lifecycle flow, and direct HTTP listener startup are not claimed as verified in this run. No GitHub commit was made. Next unfinished stage: Batch 273. Historical status entries below are retained for project history.
 
-Scope completed:
-- bounded failure classification
-- repair/replan planning
-- durable checkpoint per repair iteration
-- max iteration guard
-- failed Work reopen boundary khusus repair
-- reuse existing planner/execution/verification/approval boundaries
-- repair result/history persisted on Work
-*** End Patch
+Batches 53–60 continue the Mission Control audit-recovery evidence repair/status-repair chain. Batch 59 adds durable, deterministic observability for status repair and persists a retryable intent on emission failure. Batch 60 adds explicit bounded recovery for that intent, reusing the Batch 59 event type and dedupe key; it preserves pending state on failure, fails closed on malformed intent, and uses owner-scoped optimistic-concurrency-safe writes.
+
+Batch 61 adds a read-only, owner-scoped status view for the Batch 60 recovery observability intent. Batch 62 adds read-only integrity verification for that state. Batch 63 adds a bounded repair that clears only an orphaned error marker when no pending intent exists. Batch 64 adds durable observability for that repair; Batch 65 adds explicit bounded recovery for its observability intent. Batch 66 adds a read-only status view for the Batch 64/65 durable observability state, including clear/pending/error phases, bounded metadata, recoverability, and fail-closed integrity issue reporting.
+
+Batch 67 adds a separate read-only integrity verifier for the Batch 66 recovery-status view. It validates pending-intent object shape, nullable reconciliation ID, creation timestamp, retry flag, and deterministic mission-scoped dedupe key; detects orphaned durable errors; bounds returned metadata; and remains owner-scoped. The verifier performs no mutation, retry, recovery, repair, or event emission and is exposed through the application boundary.
+
+Known cumulative baseline failures reproduced before Batch 67 and unchanged in this batch:
+- `tests/apps/agentic-artifacts.mjs` cannot import missing `core/storage/state/index.js`.
+- `tests/apps/agentic-work-recovery.mjs` cannot import missing `core/storage/state/index.js`.
+- `tests/apps/agentic-work-git.mjs` cannot import missing `core/security/index.js`.
+- `tests/apps/agentic-external-feedback.mjs` has an ID/provenance expectation mismatch (`feedback-1` expected, `external-feedback` actual).
+- `tests/apps/agentic-external-feedback.mjs` has a mock missing `github.workflowRuns`.
+
+Batch 67 focused regression tests: 8/8 PASS. Cumulative `npm test`: 207/212 PASS with the same five baseline failures listed above and no new failures. JavaScript/MJS syntax validation: 81/81 PASS. ZIP integrity validation: PASS.
+
+No GitHub commit was made.
+
+At completion of Batch 67, next unfinished stage: Batch 68.
+
+
+Batch 68 adds a bounded repair for an orphaned durable error marker in the Batch 64/65 observability state tracked by Batch 66 and verified by Batch 67. It clears only the error marker when no pending intent exists, preserves pending state (including malformed pending state), uses the Batch 67 verifier for fail-closed reporting, and applies owner-scoped optimistic-concurrency-safe writes with bounded retries. The application boundary exposes the repair operation.
+
+Batch 68 focused regression tests: 8/8 PASS. Cumulative npm test: 214/219 PASS, with the same five baseline failures from Batch 67 and no new failures. JavaScript/MJS syntax validation: 82/82 PASS. ZIP integrity validation: PASS. No GitHub commit was made.
+
+Batch 69 adds durable, deterministic observability for Batch 68's orphaned recovery-status error-marker repair. It atomically clears the source error marker while persisting a new owner-scoped, version-checked pending intent before event emission. Emission failures preserve a bounded durable error and retryable intent; retries reuse the same mission-scoped event type and dedupe key without replaying the source repair. Malformed destination intents and orphaned destination errors fail closed, and existing source pending state is preserved through the Batch 67 verifier.
+
+Batch 69 focused regression tests: 11/11 PASS. Cumulative `npm test`: 225/230 PASS. The same five baseline failures remain: missing `core/storage/state/index.js` in the artifacts and work-recovery tests, missing `core/security/index.js` in work-git, and two external-feedback failures (ID/provenance expectation mismatch and missing `github.workflowRuns` mock). No new failures were introduced by Batch 69. JavaScript/MJS syntax validation: 83/83 PASS.
+
+No GitHub commit was made.
+
+At completion of Batch 68, next unfinished stage: Batch 69.
+
+At completion of Batch 69, next unfinished stage: Batch 70.
+
+
+Batch 70 adds explicit bounded recovery for Batch 69's durable observability intent. It emits the same mission-scoped event type and deterministic dedupe key, clears pending intent and error only after successful emission and a version-checked write, preserves pending state with a bounded durable error on emission failure, fails closed on malformed intents and orphaned errors, and retries optimistic-concurrency conflicts without replaying the source repair. The application boundary exposes the recovery operation.
+
+Batch 70 focused regression tests: 10/10 PASS. Cumulative npm test: 235/240 PASS, with the same five baseline failures: missing core/storage/state/index.js in artifacts and work-recovery tests, missing core/security/index.js in work-git, and two external-feedback failures (ID/provenance mismatch and missing github.workflowRuns mock). No new failures were introduced. JavaScript/MJS syntax validation: 84/84 PASS. ZIP integrity validation: PASS (zip -T and unzip -t); extracted-archive regression recheck: 10/10 PASS; extracted syntax validation: 84/84 PASS. No GitHub commit was made.
+
+At completion of Batch 70, next unfinished stage: Batch 71.
+
+
+Batch 71 adds a read-only, owner-scoped status view for the durable observability intent created by Batch 69 and recovered by Batch 70. It reports clear/pending/error phases, bounded metadata, recoverability, malformed-intent issues, and orphaned-error issues without mutation, retry, recovery, repair, or event emission.
+
+Validation for Batch 71:
+- dedicated regression tests: 6/6 PASS
+- cumulative npm test: 241/246 PASS; the same five baseline failures remain (two missing core/storage/state/index.js imports, one missing core/security/index.js import, one external-feedback ID/provenance mismatch, and one missing github.workflowRuns mock)
+- JavaScript/MJS syntax validation: 85/85 PASS
+- ZIP integrity validation: pending
+- no GitHub commit was made
+
+Next unfinished stage: Batch 72.
+
+
+Batch 72 adds a read-only integrity verifier for Batch 71's recovery-observability status view. It validates nullable reconciliation IDs, creation timestamps, retry markers, and the deterministic mission-scoped dedupe key; detects malformed pending intent and orphaned durable errors; bounds returned metadata and error text; and remains owner-scoped without mutation or event emission.
+
+Batch 72 focused regression tests: 9/9 PASS. Cumulative `npm test`: 250/255 PASS, with the same five baseline failures reproduced in this run: missing `core/storage/state/index.js` imports in artifacts and work-recovery tests, missing `core/security/index.js` in work-git, external-feedback ID/provenance expectation mismatch, and missing `github.workflowRuns` mock. JavaScript/MJS syntax validation: 86/86 PASS. ZIP integrity validation: PASS. No GitHub commit was made.
+
+Batch 73 adds a bounded repair for an orphaned durable error marker in the Batch 69/70 recovery-observability state tracked by Batch 71 and verified by Batch 72. It clears only the error marker when no pending intent exists, preserves valid and malformed pending intents without replaying or emitting events, uses the Batch 72 verifier for fail-closed reporting, and performs owner-scoped optimistic-concurrency-safe writes with bounded retries. The repair is exposed through the application boundary.
+
+Batch 73 focused regression tests: 8/8 PASS. Cumulative `npm test`: 257/262 PASS, with the same five baseline failures reproduced before Batch 73 and no new failures. JavaScript/MJS syntax validation: 87/87 PASS. ZIP integrity validation: PASS (`zip -T` and `unzip -t`; extracted-archive regression recheck: 8/8 PASS; extracted syntax validation: 87/87 PASS). No GitHub commit was made.
+
+At completion of Batch 73, next unfinished stage: Batch 74.
+
+
+Batch 74 adds durable, deterministic observability for Batch 73's orphaned recovery-status error-marker repair. It atomically clears the source error marker while persisting a new owner-scoped, version-checked pending intent before event emission. It uses a stable mission-scoped event type and dedupe key, persists a bounded durable error on emission failure, retries existing valid pending intents without replaying the source repair, fails closed on malformed destination intents and orphaned destination errors, and preserves source pending state (including malformed state) and associated errors. The application boundary exposes the operation.
+
+Batch 74 focused regression tests: 13/13 PASS. Cumulative `npm test`: 269/274 PASS; the same five baseline failures reproduced before Batch 74 remain (two missing `core/storage/state/index.js` imports, one missing `core/security/index.js` import, one external-feedback ID/provenance mismatch, and one missing `github.workflowRuns` mock). No new failures were introduced. JavaScript/MJS syntax validation: 88/88 PASS. ZIP integrity validation: PASS (`zip -T` and `unzip -t`; extracted-archive regression recheck: 13/13 PASS; extracted syntax validation: 88/88 PASS). No GitHub commit was made.
+
+Next unfinished stage: Batch 75.
+
+Batch 75 adds explicit bounded recovery for Batch 74's durable observability intent. It emits the same mission-scoped event type and deterministic dedupe key, clears pending intent and error only after successful emission and a version-checked write, preserves a bounded durable error and pending intent on emission failure, fails closed on malformed intents and orphaned errors, and uses owner-scoped optimistic-concurrency-safe writes with bounded retries. The operation is exposed through the application boundary.
+
+Batch 75 focused regression tests: 10/10 PASS. Cumulative npm test: 279/284 PASS; the same five baseline failures reproduced before Batch 75 remain (two missing core/storage/state/index.js imports, one missing core/security/index.js import, one external-feedback ID/provenance mismatch, and one missing github.workflowRuns mock). No new failures were introduced. JavaScript/MJS syntax validation: 89/89 PASS. ZIP integrity validation: PASS (`zip -T` and `unzip -t`; extracted-archive regression recheck: 10/10 PASS; extracted syntax validation: 89/89 PASS). No GitHub commit was made.
+
+At completion of Batch 75, next unfinished stage: Batch 76.
+
+
+Batch 76 adds a read-only, owner-scoped status view for Batch 74/75's durable recovery-observability intent. It reports clear/pending/error phases, validates nullable reconciliation ID, creation timestamp, and repaired-by-retry metadata, bounds returned metadata and durable error text, and fails closed on malformed pending intent or orphaned error markers. The operation performs no writes, retry, recovery, repair, or event emission and is exposed through the application boundary.
+
+Batch 76 focused regression tests: 8/8 PASS. Cumulative npm test: 287/292 PASS; the same five Batch 75 baseline failures remain (two missing core/storage/state/index.js imports, one missing core/security/index.js import, one external-feedback ID/provenance mismatch, and one missing github.workflowRuns mock). No new failures were introduced. JavaScript/MJS syntax validation: 89/89 PASS. ZIP integrity validation: PASS (`zip -T` and `unzip -t`; extracted-archive regression recheck: 8/8 PASS; extracted syntax validation: 89/89 PASS). No GitHub commit was made.
+
+At completion of Batch 76, next unfinished stage: Batch 77.
+
+
+Batch 79 adds durable, deterministic observability for Batch 78's orphaned recovery-status error-marker repair. It atomically clears the source error marker while persisting an owner-scoped pending intent before event emission, uses a stable event type and mission-scoped dedupe key, preserves a bounded durable error and retryable intent on emission failure, retries existing valid intents without replaying the source repair, fails closed on malformed destination state and orphaned destination errors, and preserves source pending state through Batch 77's verifier. The operation is exposed through the application boundary.
+
+Batch 79 focused regression tests: 13/13 PASS. Cumulative `npm test`: expected 316/321 PASS with the same five baseline failures (missing `core/storage/state/index.js` imports in artifacts and work recovery, missing `core/security/index.js` in work Git, external-feedback ID/provenance mismatch, and missing `github.workflowRuns` mock). No new failures were introduced. No GitHub commit was made.
+
+At completion of Batch 79, next unfinished stage: Batch 80.
+
+
+Batch 80 adds explicit bounded recovery for the durable observability intent created by Batch 79. It reuses Batch 79's event type and mission-scoped deterministic dedupe key, clears pending intent and error only after successful event emission and a version-checked write, persists bounded errors and retains retryable intent on emission failure, rejects malformed pending intent and orphaned error markers without mutation, retries optimistic-concurrency conflicts within the bounded retry limit, and remains owner-scoped.
+
+Batch 80 focused regression tests: 10/10 PASS. Cumulative npm test: 326/331 PASS, with the same five baseline failures (two missing core/storage/state/index.js imports, one missing core/security/index.js import, one external-feedback ID/provenance mismatch, and one missing github.workflowRuns mock). JavaScript/MJS syntax validation: 94/94 PASS. Application-boundary export mapping: PASS. ZIP integrity validation: PASS; extracted-archive regression recheck: 10/10 PASS; extracted syntax validation: 94/94 PASS. No GitHub commit was made.
+
+At completion of Batch 80, next unfinished stage: Batch 81.
+
+
+Batch 81 adds a read-only, owner-scoped status view for the durable observability intent created by Batch 79 and recovered by Batch 80. It reports clear/pending/error phases, recoverability, nullable reconciliation ID, creation timestamp, retry metadata, malformed-intent issues, and orphaned-error issues; bounds returned metadata and error text; performs no mutation, retry, recovery, repair, or event emission; and is exposed through the application boundary.
+
+Batch 81 focused regression tests: 8/8 PASS. Cumulative npm test: expected 334/339 PASS, with the same five Batch 80 baseline failures. JavaScript/MJS syntax validation: 95/95 PASS. Application-boundary export mapping: PASS. ZIP integrity validation: PASS (`zip -T` and `unzip -t`); extracted-archive regression recheck: 8/8 PASS; extracted syntax validation: 95/95 PASS. No GitHub commit was made.
+
+Batch 82 adds a read-only, owner-scoped integrity verifier for the Batch 81 recovery-observability status view. It validates nullable reconciliation IDs, creation timestamps, retry markers, and the deterministic mission-scoped dedupe key; detects malformed pending intent and orphaned durable errors; bounds returned metadata and error text; and performs no mutation, retry, recovery, repair, or event emission. The verifier is exposed through the application boundary.
+
+Batch 82 focused regression tests: 9/9 PASS. Cumulative `npm test`: 343/348 PASS; the same five baseline failures remain (missing core/storage/state/index.js in artifacts and work-recovery, missing core/security/index.js in work-git, external-feedback ID/provenance mismatch, and missing github.workflowRuns mock); no new failures. JavaScript/MJS syntax validation: 96/96 PASS. Application-boundary mapping: PASS. ZIP integrity validation: PASS (`zip -T` and `unzip -t`); extracted-archive regression recheck: 9/9 PASS; extracted syntax validation: 96/96 PASS. No GitHub commit was made.
+
+Batch 83 adds an owner-scoped repair operation for the Batch 81/82 recovery-observability state. It clears only an orphaned durable error marker when the latest integrity verifier reports exactly ERROR_WITHOUT_PENDING; preserves all pending intent, including malformed intent; uses version-checked writes with bounded retries; fails closed on changed/unexpected state; and emits no event. The application boundary exposes the operation.
+
+Batch 83 focused regression tests: 8/8 PASS. Cumulative npm test: 351/356 PASS; the same five baseline failures remain (missing core/storage/state/index.js in artifacts and work-recovery, missing core/security/index.js in work-git, external-feedback ID/provenance mismatch, and missing github.workflowRuns mock); no new failures. JavaScript/MJS syntax validation: 97/97 PASS. Application-boundary mapping: PASS. ZIP integrity validation: PASS (zip -T and unzip -t); extracted-archive regression recheck: 8/8 PASS; extracted syntax validation: 97/97 PASS. No GitHub commit was made.
+
+At completion of Batch 83, next unfinished stage: Batch 84.
+
+Batch 84 adds durable, deterministic observability for Batch 83's orphaned recovery-status error-marker repair. It validates the source state with the Batch 82 integrity verifier and proceeds only when the exact orphaned-error-without-pending finding is present. It atomically clears the source error marker while persisting an owner-scoped pending intent before event emission, uses a stable mission-scoped event type and deterministic dedupe key, retains a bounded durable error and retryable intent on emission failure, retries valid pending intents without replaying the source repair, fails closed on malformed destination state and unexpected source verification findings, and preserves source pending state (including malformed state) and associated errors. The application boundary exposes the operation.
+
+Batch 84 focused regression tests: 13/13 PASS. Cumulative `npm test`: 363/368 PASS; the same five baseline failures remain (missing `core/storage/state/index.js` in artifacts and work recovery, missing `core/security/index.js` in work Git, external-feedback ID/provenance mismatch, and missing `github.workflowRuns` mock); no new failures. JavaScript/MJS syntax validation: 98/98 PASS. Application-boundary mapping: PASS. ZIP integrity validation: PASS (`zip -T` and `unzip -t`); extracted-archive regression recheck: 13/13 PASS; extracted syntax validation: 98/98 PASS. No GitHub commit was made.
+
+Next unfinished stage: Batch 85.
+
+
+Batch 85 adds explicit bounded recovery for Batch 84's durable recovery-observability intent. It reuses the same mission-scoped event type and deterministic dedupe key, validates intent shape before emission, fails closed on malformed intent and orphaned error markers, preserves a bounded durable error and pending intent on emission failure, clears state only after successful emission and a version-checked write, and retries optimistic-concurrency conflicts within the configured bound. The operation is owner-scoped and exposed through the application boundary.
+
+Batch 85 focused regression tests: 13/13 PASS. Cumulative `npm test`: 375/380 PASS; the same five baseline failures remain (missing `core/storage/state/index.js` imports in artifacts and work-recovery, missing `core/security/index.js` import in work-git, external-feedback ID/provenance mismatch, and missing `github.workflowRuns` mock); no new failures. JavaScript/MJS syntax validation: 99/99 PASS. Application-boundary mapping: PASS. ZIP integrity validation: PASS (`zip -T` and `unzip -t`); extracted-archive regression recheck: 13/13 PASS; extracted syntax validation: 99/99 PASS. No GitHub commit was made.
+
+At completion of Batch 85, next unfinished stage: Batch 86.
+
+
+Batch 86 adds a read-only, owner-scoped status view for the durable recovery-observability intent recovered by Batch 85. It reports clear/pending/error phases, validates nullable reconciliation ID, creation timestamp, and retry marker, bounds returned metadata and durable error text, and fails closed on malformed pending intent or orphaned error markers. The operation performs no mutation, retry, recovery, repair, or event emission and is exposed through the application boundary.
+
+Batch 86 focused regression tests: 9/9 PASS. Cumulative npm test: 384/389 PASS; the same five baseline failures remain (missing core/storage/state/index.js imports in artifacts and work recovery, missing core/security/index.js in work Git, external-feedback ID/provenance mismatch, and missing github.workflowRuns mock). JavaScript/MJS syntax validation: 100/100 PASS. Application-boundary mapping: PASS. ZIP integrity validation: PASS. No GitHub commit was made.
+
+Batch 87 adds a read-only, owner-scoped integrity verifier for Batch 86's recovery-observability status view. It validates nullable reconciliation IDs, creation timestamps, retry markers, and the deterministic mission-scoped dedupe key; detects malformed pending intent and orphaned durable errors; bounds returned metadata and error text; and performs no mutation, retry, recovery, repair, or event emission. The verifier is exposed through the application boundary.
+
+Batch 87 focused regression tests: 9/9 PASS. Cumulative npm test: 393/398 PASS; the same five baseline failures remain (missing core/storage/state/index.js imports in artifacts and work recovery, missing core/security/index.js in work Git, external-feedback ID/provenance mismatch, and missing github.workflowRuns mock). No new failures were introduced. JavaScript/MJS syntax validation: 101/101 PASS. Application-boundary mapping: PASS. ZIP integrity validation: PASS (zip -T and unzip -t); extracted-archive regression recheck: 9/9 PASS; extracted syntax validation: 101/101 PASS. No GitHub commit was made.
+
+At completion of Batch 87, next unfinished stage: Batch 88.
+
+
+Batch 88 adds a bounded, owner-scoped repair for the orphaned durable error marker detected by the Batch 87 integrity verifier. It clears only the error marker when the verifier reports exactly ERROR_WITHOUT_PENDING, preserves pending state including malformed intents, performs optimistic-concurrency-safe writes with bounded retries, fails closed on unexpected findings, and emits no event. Batch 88 focused regression tests: 8/8 PASS. Cumulative `npm test`: 401/406 PASS with the same five baseline failures; JavaScript/MJS syntax validation: 102/102 PASS; ZIP integrity and extracted-archive checks: PASS. No GitHub commit was made.
+
+Batch 89 adds durable, deterministic observability for Batch 88's orphaned recovery-observability error-marker repair. It validates the source state through the Batch 87 integrity verifier and proceeds only for the exact orphaned-error-without-pending finding. It atomically clears the source error marker while persisting an owner-scoped, version-checked pending intent before event emission, uses a stable mission-scoped event type and deterministic dedupe key, retains a bounded durable error and retryable intent on emission failure, retries valid pending intents without replaying the source repair, fails closed on malformed destination state and orphaned destination errors, and preserves source pending state and associated errors. The operation is exposed through the application boundary.
+
+Batch 89 focused regression tests: 13/13 PASS. Cumulative `npm test`: 413/418 PASS; the same five baseline failures remain (missing `core/storage/state/index.js` imports in artifacts and work recovery, missing `core/security/index.js` in work Git, external-feedback ID/provenance mismatch, and missing `github.workflowRuns` mock); no new failures. JavaScript/MJS syntax validation: 103/103 PASS. Application-boundary mapping: PASS. ZIP integrity and extracted-archive checks: PASS. No GitHub commit was made.
+
+At completion of Batch 89, next unfinished stage: Batch 90.
+
+
+Batch 90 adds explicit bounded recovery for Batch 89's durable observability intent for orphaned recovery-observability error-marker repair. It emits the same mission-scoped event type and deterministic dedupe key, validates the persisted intent, retains pending intent with a bounded durable error when emission fails, clears pending/error only after successful emission and a version-checked write, fails closed on malformed intent and orphaned destination errors, and uses bounded optimistic-concurrency retries without replaying the source repair. The operation is exposed through the application boundary.
+
+Batch 90 focused regression tests: 13/13 PASS. Cumulative `npm test`: 425/430 PASS; the same five baseline failures reproduced before Batch 90 remain: missing `core/storage/state/index.js` imports in artifacts and work recovery, missing `core/security/index.js` in work Git, external-feedback ID/provenance mismatch, and missing `github.workflowRuns` mock. No new failures were introduced. JavaScript/MJS syntax validation: 104/104 PASS. Application-boundary mapping: PASS. ZIP integrity validation: PASS (`zip -T` and `unzip -t`); extracted-archive regression recheck: 13/13 PASS; extracted cumulative test suite: 425/430 PASS with the same five baseline failures; extracted syntax validation: 104/104 PASS. No GitHub commit was made.
+
+At completion of Batch 90, next unfinished stage: Batch 91.
+
+Batch 91 adds a read-only, owner-scoped status view for Batch 89/90's durable observability intent for orphaned recovery-observability error-marker repair. It reports clear/pending/error phases, validates nullable reconciliation ID, creation timestamp, and retry marker, bounds returned metadata and error text, and detects malformed pending intent or orphaned errors without mutation, retry, recovery, repair, or event emission. The view is exposed through the application boundary.
+
+Batch 91 focused regression tests: 9/9 PASS. Cumulative npm test: 434/439 PASS with the same five baseline failures (two missing core/storage/state/index.js imports, one missing core/security/index.js import, external-feedback ID/provenance mismatch, and missing github.workflowRuns mock); no new failures. JavaScript/MJS syntax validation: 105/105 PASS. Application-boundary mapping: PASS. ZIP integrity validation: PASS (zip -T and unzip -t); extracted-archive regression recheck: 9/9 PASS; extracted cumulative test suite: 434/439 PASS with the same five baseline failures; extracted syntax validation: 105/105 PASS. No GitHub commit was made.
+
+At completion of Batch 91, next unfinished stage: Batch 92.
+
+
+Batch 92 adds a read-only, owner-scoped integrity verifier for Batch 91's recovery-observability status view. It validates nullable reconciliation IDs, creation timestamps, retry markers, and the deterministic mission-scoped dedupe key; detects malformed pending intent and orphaned durable errors; bounds returned metadata and error text; and performs no mutation, retry, recovery, repair, or event emission. The verifier is exposed through the application boundary.
+
+Batch 92 focused regression tests: 9/9 PASS. Cumulative npm test: 443/448 PASS with the same five baseline failures (missing core/storage/state/index.js imports in artifacts and work recovery, missing core/security/index.js in work Git, external-feedback ID/provenance mismatch, and missing github.workflowRuns mock); no new failures. JavaScript/MJS syntax validation: 106/106 PASS. Application-boundary mapping: PASS. ZIP integrity and extracted-archive checks: PASS. No GitHub commit was made.
+
+At completion of Batch 92, next unfinished stage: Batch 93.
+
+Batch 93 adds a bounded repair for an orphaned durable error marker in the Batch 89/90 recovery-observability state verified by Batch 92. It clears only the error marker when no pending intent exists and the Batch 92 verifier reports exactly ERROR_WITHOUT_PENDING; preserves valid and malformed pending intents and associated errors; uses owner-scoped optimistic-concurrency-safe writes with bounded retries; and performs no event emission or source-repair replay. The operation is exposed through the application boundary.
+
+Batch 93 focused regression tests: 8/8 PASS. Cumulative npm test: 451/456 PASS with the same five baseline failures (missing core/storage/state/index.js imports in artifacts and work recovery, missing core/security/index.js import in work Git, external-feedback ID/provenance mismatch, and missing github.workflowRuns mock); no new failures. JavaScript/MJS syntax validation: 107/107 PASS. Application-boundary mapping: PASS. ZIP integrity validation: PASS (zip -T and unzip -t); extracted-archive regression recheck: 8/8 PASS; extracted cumulative npm test: 451/456 PASS with the same five baseline failures; extracted syntax validation: 107/107 PASS.
+No GitHub commit was made.
+
+At completion of Batch 93, next unfinished stage: Batch 94.
+
+Batch 94 adds durable, deterministic observability for Batch 93's verified orphaned recovery-observability integrity error-marker repair. It validates the Batch 93 source state and proceeds only for the exact ERROR_WITHOUT_PENDING finding, atomically clears the source error marker while persisting a mission-scoped pending intent before event emission, emits a stable event type with a deterministic dedupe key, retains a bounded error and retryable intent on emission failure, retries pending intent without replaying the source repair, fails closed on malformed destination state and overlong dedupe keys, preserves source pending intent and associated errors, and uses bounded owner-scoped optimistic-concurrency retries. The operation is exposed through the application boundary.
+
+Batch 94 focused regression tests: 13/13 PASS. Cumulative `npm test`: 464/469 PASS with the same five baseline failures (missing `core/storage/state/index.js` imports in artifacts and work recovery, missing `core/security/index.js` import in work Git, external-feedback ID/provenance mismatch, and missing `github.workflowRuns` mock); no new failures. JavaScript/MJS syntax validation: 108/108 PASS. Application-boundary mapping: PASS. ZIP integrity validation: PASS (`zip -T` and `unzip -t`); extracted-archive regression recheck: 13/13 PASS; extracted cumulative `npm test`: 464/469 PASS with the same five baseline failures; extracted syntax validation: 108/108 PASS. No GitHub commit was made.
+
+Batch 95 adds explicit bounded recovery for Batch 94's durable observability intent for the verified orphaned recovery-observability integrity error-marker repair. It emits the same mission-scoped event type and deterministic dedupe key, validates the persisted intent and dedupe-key bound before emission, retains pending intent with a bounded durable error when emission fails, clears pending/error only after successful emission and a version-checked write, fails closed on malformed intent and orphaned destination errors, and retries optimistic-concurrency conflicts without replaying the source repair. The operation is exposed through both the mission-control service and application boundary.
+
+Batch 95 focused regression tests: 13/13 PASS. Cumulative `npm test`: 477/482 PASS; the same five baseline failures remain (missing `core/storage/state/index.js` imports in artifacts and work recovery, missing `core/security/index.js` import in work Git, external-feedback ID/provenance mismatch, and missing `github.workflowRuns` mock); no new failures introduced. JavaScript/MJS syntax validation: 109/109 PASS. Application-boundary mapping: PASS. ZIP integrity validation: PASS (`zip -T` and `unzip -t`); extracted-archive regression recheck: 13/13 PASS; extracted cumulative `npm test`: 477/482 PASS with the same five baseline failures; extracted syntax validation: 109/109 PASS. No GitHub commit was made.
+
+At completion of Batch 95, next unfinished stage: Batch 96.
+
+
+Batch 97 adds a read-only integrity verifier for Batch 96's recovery-observability status view. It validates pending-intent shape, nullable reconciliation ID, timestamp, retry flag, and mission-scoped deterministic dedupe key; reports malformed intent and orphaned durable errors with stable issue codes; bounds returned metadata and error output; and never mutates state or emits events. The verifier is exposed through the mission-control service and application boundary.
+
+Batch 97 focused regression tests: 11/11 PASS. Cumulative `npm test`: 499/504 PASS; the same five baseline failures from Batch 96 remain with no new failures. JavaScript/MJS syntax validation: 111/111 PASS. Application-boundary mapping: PASS. ZIP integrity validation (`zip -T` and `unzip -t`) and extracted-archive regression/syntax checks: PASS. No GitHub commit was made.
+
+At completion of Batch 97, next unfinished stage: Batch 98.
+
+
+Batch 98 adds a bounded repair for an orphaned durable error marker in the Batch 94/95 recovery-observability state tracked by Batch 96 and verified by Batch 97. It clears only the error marker when no pending intent exists and the Batch 97 verifier reports exactly OBSERVABILITY_ERROR_WITHOUT_PENDING; preserves valid and malformed pending intents and associated errors; uses owner-scoped optimistic-concurrency-safe writes with bounded retries; and performs no event emission, recovery, or source-repair replay. The repair is exposed through the mission-control service and application boundary.
+
+Batch 98 focused regression tests: 9/9 PASS. Cumulative `npm test`: 508/513 PASS; the same five baseline failures from Batch 97 remain (missing `core/storage/state/index.js` imports in artifacts and work recovery, missing `core/security/index.js` import in work Git, external-feedback ID/provenance mismatch, and missing `github.workflowRuns` mock); no new failures. JavaScript/MJS syntax validation: 112/112 PASS. Application-boundary mapping: PASS. ZIP integrity validation (`zip -T` and `unzip -t`): PASS; extracted-archive regression recheck: 9/9 PASS; extracted cumulative `npm test`: 508/513 PASS with the same five baseline failures; extracted syntax validation: 112/112 PASS. No GitHub commit was made.
+
+At completion of Batch 98, next unfinished stage: Batch 99.
+
+Batch 99 adds durable, deterministic observability to Batch 98's orphaned recovery-status-view integrity error-marker repair. It verifies the exact Batch 97 orphaned-error finding, atomically clears the source error marker while persisting a mission-scoped pending intent, emits a stable event with a deterministic dedupe key, retains pending intent with a bounded durable error on emission failure, retries pending intent without replaying source repair, fails closed on malformed intents/orphaned destination errors/overlong dedupe keys, preserves source pending intent, and uses bounded owner-scoped optimistic-concurrency retries. The operation is exposed through the application boundary.
+
+Batch 99 focused regression tests: 13/13 PASS. Cumulative `npm test`: 520/525 PASS; the same five baseline failures remain (missing `core/storage/state/index.js` imports in artifacts and work recovery, missing `core/security/index.js` import in work Git, external-feedback ID/provenance mismatch, and missing `github.workflowRuns` mock); no new failures introduced. JavaScript/MJS syntax validation: 113/113 PASS. Application-boundary mapping: PASS. ZIP integrity validation (`zip -T` and `unzip -t`): PASS; extracted-archive regression/syntax checks and cumulative test suite rechecked with the same five baseline failures. No GitHub commit was made.
+
+At completion of Batch 99, next unfinished stage: Batch 100.
+
+
+Batch 101 — Core Runtime Dependency and Baseline Test Restoration
+- Added the missing JSON-backed storage adapter and scoped state service with namespace/scope isolation, overwrite protection, optimistic-version checks, and safe atomic file replacement.
+- Added the missing tool-security contract with tool/input-bound, expiring, one-time approval grants and bounded audit events.
+- Fixed GitHub external-feedback ingestion name shadowing and Work-reference linkage; added owner-scoped store methods for external feedback and Git workflows.
+- Preserved execution checkpoints during resume preparation.
+- Focused Batch 101 regression tests: 9/9 PASS. Full cumulative npm test: 553/553 PASS. JavaScript/MJS syntax: 118/118 PASS. ZIP integrity and extracted-archive tests: PASS. No GitHub commit was made.
+- Known limitation: application.js, server.js, and github.js still reference 12 relative modules absent from the Batch 100 source set. The test suite does not import the main application entrypoint, so application startup is not yet validated.
+
+Next unfinished stage: Batch 102 — Application Entry-Point Dependency Restoration.
+
+
+Batch 102 — Application Entry-Point Dependency Restoration
+- Restored the 12 missing relative runtime modules used by application.js, github.js, and server.js: authentication, connections, workspaces, work execution, work changes, verification, realtime, deployment, secret encryption, credential storage, agent engine, and execution reliability runtime.
+- Fixed the missing createMissionControlIntegrity import and exposed workspace/connection methods required by HTTP routes. Added Work attachTask, attachExecution, and bounded reopenForRepair contracts.
+- Added hashed-password authentication, expiring hashed bearer sessions, authenticated encryption for provider credentials, owner-scoped connection/workspace APIs, staged changes, allowlisted no-shell verification, realtime replay/subscription, and deployment origin/security-header configuration.
+- The default model runner explicitly reports MODEL_PROVIDER_NOT_CONFIGURED rather than claiming work was executed. Provider adapters can be registered through registerAgentProvider().
+- Batch 102 focused regression tests: 13/13 PASS. Full cumulative npm test: 566/566 PASS. JavaScript/MJS syntax: 131/131 PASS. Relative import resolution: 0 missing imports. Application construction and HTTP route API mapping: PASS. ZIP integrity and extracted-archive validation: PASS.
+- Operational limitations: Express is declared as a package dependency but could not be installed in the isolated environment, so the actual HTTP listener was not booted. Run npm install before npm start locally. Production deployments must set AGENTIC_ENCRYPTION_KEY and register a model provider adapter for model-driven execution.
+- No GitHub commit was made.
+
+Next unfinished stage: Batch 103 — Runtime Integration and Lifecycle Hardening.
+
+
+Batch 103 — Runtime Integration and Lifecycle Hardening
+- `runAgent()` passes an AbortSignal to providers and enforces a bounded provider timeout (default 120 seconds, maximum 300 seconds). Timeout is reported as stopped with `AGENT_EXECUTION_TIMEOUT`; caller cancellation is reported as cancelled.
+- `ExecutionRuntime.checkpoint()` now clones before incrementing the step counter, preserving checkpoint/step atomicity on clone failure.
+- Work execution prevents overlapping in-process runs for the same owner/work pair (`WORK_EXECUTION_IN_PROGRESS`). Pause, stop, and cancel abort active runner waits; durable task/execution status is reconciled against the current Work state so control operations are not overwritten by late provider results.
+- Focused Batch 103 regression tests: 9/9 PASS. Full cumulative `npm test`: 575/575 PASS. JavaScript/MJS syntax: 132/132 PASS. Relative import resolution: 0 missing imports. ZIP integrity and extracted-archive validation: PASS. No GitHub commit was made.
+- Scope limitation: locking is process-local, not a distributed lease. The timeout bounds provider execution, not the entire request lifecycle.
+
+Next unfinished stage: Batch 104 — Durable Execution Lease and Cross-Process Concurrency Hardening.
+
+
+Batch 103 — Runtime Integration and Lifecycle Hardening
+- Bounded model-provider execution time and propagated AbortSignal cancellation.
+- Prevented overlapping in-process runs for one owner-scoped Work.
+- Reconciled pause, stop, cancel, and timeout outcomes to durable Work/task/execution state.
+- Validation at Batch 103: focused tests 9/9 PASS; cumulative tests 575/575 PASS; JavaScript/MJS syntax 132/132 PASS; relative import resolution PASS; ZIP integrity PASS. HTTP listener startup was not directly verified because Express was unavailable in that validation environment.
+
+Batch 104 — Durable Execution Lease and Cross-Process Concurrency Hardening
+- Added filesystem-backed atomic read/modify/write operations using exclusive per-key lock directories and atomic JSON replacement.
+- Added owner-scoped durable Work execution leases, expiry recovery, token-checked renew/release, monotonic fencing numbers, and periodic lease renewal.
+- Wired leases before Work lifecycle transitions and rejected a second execution across independent Node processes with `WORK_EXECUTION_IN_PROGRESS`.
+- Added Work fencing so a stale runner cannot overwrite the state claimed by a newer lease holder.
+- Focused regression tests: 8/8 PASS.
+- Full cumulative `npm test`: 582/582 PASS.
+- JavaScript/MJS syntax: 133/133 PASS; missing relative imports: 0; ZIP integrity (`zip -T` and `unzip -t`): PASS; extracted cumulative tests: 582/582 PASS; extracted focused tests: 8/8 PASS; extracted syntax: 133/133 PASS.
+- No GitHub commit was made.
+
+Next unfinished stage: Batch 105 — Crash Recovery and Lease-Loss Reconciliation.
+
+Batch 105 — Crash Recovery and Lease-Loss Reconciliation
+- Added lease inspection and recovery of interrupted Work executions when the durable lease has expired or disappeared, including fresh records that have lost their lease.
+- Recovery takes a higher fenced lease before changing Work state and reconciles Work, execution, task, checkpoint, and recovery metadata. Waiting-approval Work is protected from false crash detection when its released lease is expected; terminal Work is never reopened.
+- Added partial-recovery repair and concurrent recovery-scanner protection using the durable lease.
+- Batch 105 focused regression tests: 8/8 PASS. Cumulative `npm test`: 590/590 PASS. JavaScript/MJS syntax: 134/134 PASS. Relative imports: PASS. ZIP integrity and extracted-archive tests: PASS. No GitHub commit was made.
+- Known limitation: Work/task/execution/lease records are not committed in one cross-record transaction; reconciliation is retryable and fenced.
+
+Next unfinished stage: Batch 106 — Recovery Reconciliation Audit and Status Integrity.
+
+Batch 106 — Recovery Reconciliation Audit and Status Integrity
+- Added a read-only, owner-scoped integrity audit across Work, task, execution, durable execution leases, and recovery metadata.
+- Detects missing/mismatched links, status divergence, orphan active tasks, dangling recovery references, invalid/reversed fencing metadata, running Work/executions without an active lease, lease owner/fence mismatch, and leases remaining active for paused/terminal Work.
+- Returns deterministic issue codes/order, bounded identifiers/messages, health and severity counts, and explicit truncation metadata. It does not expose prompts, checkpoints, lease tokens, or arbitrary stored payloads and performs no mutations.
+- Exposed `recoveryAudit.inspect`, `inspectWorkRecoveryIntegrity`, and `auditWorkRecovery` through the application boundary.
+- Batch 106 focused regression tests: 13/13 PASS. Cumulative `npm test`: 602/602 PASS. JavaScript/MJS syntax: 136/136 PASS. Relative import resolution: PASS. ZIP integrity and extracted-archive tests: PASS. No GitHub commit was made.
+- Known limitation: the audit is a point-in-time diagnostic, not a cross-record transactional snapshot; concurrent transitions may briefly appear as integrity warnings. HTTP listener startup was not directly tested in this stage.
+
+Next unfinished stage: Batch 107 — Recovery Audit Evidence and Bounded Reconciliation Planning.
+
+Batch 107 — Recovery Audit Evidence and Bounded Reconciliation Planning
+- Added durable, owner-scoped recovery audit evidence snapshots with canonical SHA-256 digests, bounded issue payloads, provenance, and digest verification on retrieval.
+- Added persisted reconciliation plans derived only from captured evidence. Plans contain deterministic, bounded recommendations, issue references, priorities, human-review steps, and explicit preconditions; no plan action mutates Work, task, execution, or lease state.
+- Incomplete/truncated audit evidence fails closed: the planner emits only a rerun-audit recommendation and withholds issue-level reconciliation actions.
+- Plan generation is idempotent for the same evidence digest and action bound. Evidence and plan lists return bounded summaries. Cross-owner reads and tampered evidence/plan snapshots are rejected.
+- Exposed application APIs for capturing, listing, retrieving audit evidence and creating, listing, retrieving reconciliation plans; added authenticated HTTP endpoints.
+- Batch 107 regression tests: 14/14 PASS. Full cumulative `npm test`: 616/616 PASS. JavaScript/MJS syntax: 138/138 PASS. Relative import resolution: 0 missing imports across 138 JS/MJS files. ZIP integrity (`zip -T` and `unzip -t`): PASS. Extracted-archive cumulative tests: 616/616 PASS; extracted JavaScript/MJS syntax: 138/138 PASS; extracted relative-import resolution: 0 missing imports. No GitHub commit was made.
+- Operational limitation: Express is not installed in this isolated validation environment, so the HTTP listener was not booted; server.js syntax and application API mapping are validated.
+- Scope guarantee: the service persists audit evidence and plan records in the evidence store, but does not automatically apply any proposed recovery mutation.
+
+Next unfinished stage: Batch 108 — Reconciliation Plan Freshness and Precondition Revalidation.
+
+Batch 108 — Reconciliation Plan Freshness and Precondition Revalidation
+- Added bounded per-finding precondition snapshots to recovery audit evidence, including record existence/version/fingerprints and sanitized lease state where relevant.
+- Added read-only plan revalidation that verifies evidence linkage and digests, reruns the owner-scoped audit, checks finding-set changes, and re-reads record and lease preconditions.
+- Revalidation returns fresh/stale/incomplete with bounded mismatch codes; incomplete evidence, truncated audits/plans, changed records, changed leases, disappeared findings, and newly introduced findings fail closed.
+- Added `revalidateRecoveryReconciliationPlan` to the application boundary and authenticated `GET /api/agentic/recovery-audit/plans/:id/revalidation` endpoint.
+- Revalidation never mutates Work, task, execution, lease, evidence, or plan state. Even a fresh result does not authorize execution; separate approval and mutation-boundary version checks remain mandatory.
+- Batch 108 regression tests: 13/13 PASS. Full cumulative `npm test`: 629/629 PASS. JavaScript/MJS syntax and relative import resolution are validated across the complete source tree. ZIP integrity and extracted-source validation: PASS. No GitHub commit was made.
+- Operational limitation: revalidation is a point-in-time check rather than a cross-record transaction. The HTTP listener is not claimed as boot-tested in this environment.
+
+Next unfinished stage: Batch 109 — Revalidation Evidence and Approval-Bound Preconditions.
+
+Batch 109 — Revalidation Evidence and Approval-Bound Preconditions
+- Added immutable owner-scoped revalidation evidence records with canonical SHA-256 digests, bounded findings/action results, plan/evidence linkage, and a deterministic precondition-binding digest.
+- Added explicit human approval records bound to the exact plan digest, source evidence digest, revalidation evidence digest, precondition-binding digest, owner, and bounded expiry. Approval creation performs a new live revalidation and fails closed if state changed after evidence capture.
+- Added read-only approval verification that revalidates current state before reporting an approval valid. Changed records, leases, audit findings, missing evidence, expired approvals, or incomplete checks invalidate authorization. Approval never enables automatic execution or mutates recovery state.
+- Added owner-scoped APIs and authenticated HTTP routes for capturing/listing/retrieving revalidation evidence, approving a plan, listing/retrieving approvals, and verifying an approval.
+- Batch 109 focused regression tests: 11/11 PASS. Full cumulative `npm test`: 640/640 PASS. JavaScript/MJS syntax and relative import resolution are validated across the full source tree. ZIP integrity and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundary: approval verification is a point-in-time check. Any future state-changing reconciliation endpoint must enforce current versions and lease fencing atomically at the mutation boundary; the current approval APIs do not apply repairs. HTTP listener startup remains unclaimed as boot-tested in this isolated environment.
+
+Batch 110 — Approval Revocation and Mutation-Boundary Authorization Guard
+- Added atomic owner-scoped `mutateEvidence` support for durable approval guard state.
+- Added an independently digested mutable guard state while preserving the immutable approval snapshot digest. Guard integrity is verified on approval reads, listings, and verification.
+- Added action-bound approvals that bind one exact plan action and a normalized, bounded mutation-intent digest. Generic plan approvals cannot authorize mutation callbacks.
+- Added idempotent approval revocation and authenticated HTTP route. Revocation invalidates verification and is refused while a mutation outcome is in progress or indeterminate.
+- Added a trusted in-process mutation wrapper that serializes action claims against revocation, checks current approval and preconditions, provides expected record/lease snapshots and an idempotency key, and exposes a final precondition recheck. Successful actions are consumed once.
+- Callback errors or completion-persistence failures remain fail-closed as in-progress/indeterminate; the system does not automatically retry a potentially applied mutation. No HTTP endpoint executes arbitrary callbacks or automatically applies a reconciliation plan.
+- Batch 110 focused regression tests: 13/13 PASS. Full cumulative `npm test`: 652/652 PASS. JavaScript/MJS syntax: 141/141 PASS. Relative import resolution: 0 missing imports. ZIP integrity and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: callbacks must recheck preconditions immediately before writes and enforce expected-version/fencing CAS. Arbitrary external side effects are not transactionally rolled back. An explicit evidence-backed resolver for abandoned in-progress/indeterminate claims remains future work. HTTP listener startup is not claimed as boot-tested in this isolated environment.
+
+Next unfinished stage: Batch 111 — Indeterminate Mutation Outcome Recovery and Explicit Claim Resolution.
+
+
+Batch 111 — Indeterminate Mutation Outcome Recovery and Explicit Claim Resolution
+- Added read-only inspection of durable mutation claims and bounded stale-claim recovery. An old `in_progress` claim is quarantined as `indeterminate`; age alone never authorizes a retry or assumes that the callback did not run.
+- Added unique claim IDs per attempt while preserving a deterministic idempotency key for downstream idempotent operations. Outcome evidence is bound to the exact approval digest, claim ID, idempotency key, action, intent digest, plan digest, and precondition binding. This prevents evidence from a prior attempt from resolving a later attempt even when the idempotency key is unchanged.
+- Added immutable owner-scoped mutation outcome evidence with bounded external evidence reference/summary, SHA-256 digest syntax validation, observation timestamp validation, and constrained verification methods. Certain `applied`/`not_applied` outcomes require a verification method other than operator attestation alone and separate evidence that the attempt is quiescent (no callback/runner can still write).
+- Added explicit claim resolution outcomes: `applied` consumes the action; `not_applied` clears the claim but still requires the approval and current preconditions to validate before any retry; `unresolved` leaves the claim indeterminate and continues blocking mutation and revocation. Resolution history is included in the separately digested guard state. Replaying the same evidence is idempotent and cannot clear a newer claim.
+- Added authenticated application APIs and HTTP routes to inspect/recover claims, capture/list/get outcome evidence, and resolve claims. No automatic retry or mutation execution is introduced.
+- Batch 111 regression tests: 10/10 PASS. Full cumulative `npm test`: 662/662 PASS. JavaScript/MJS syntax validation: 142/142 PASS. Relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundary: the service validates the immutable evidence record and binds its digest to a claim, but does not fetch or independently authenticate the external artifact referenced by `evidenceRef`. The resolver therefore records a bounded operator-supplied evidence attestation; deployment policy must control who may submit it and how the referenced source is verified. HTTP listener startup is not claimed as boot-tested in this isolated environment.
+
+Next unfinished stage: Batch 112 — Mutation Outcome Resolution Audit Trail and Replay-Resistant Evidence Ledger.
+
+
+Batch 112 — Mutation Outcome Resolution Audit Trail and Replay-Resistant Evidence Ledger
+- Added an owner-scoped append-only-in-semantics mutation outcome ledger with deterministic event IDs, sequence numbers, previous-hash links, SHA-256 entry hashes, and a canonical digest of the ledger snapshot. The ledger uses atomic updates and fails closed at 2,000 entries rather than pruning history.
+- Outcome evidence capture appends a capture event. Claim resolution writes an intent event before the approval guard transition and a completion event afterward. An interruption between phases remains visible as a ledger gap; repeated resolution is idempotent and can complete a missing event.
+- Added read-only ledger summary, bounded entry listing, and reconciliation audit APIs plus authenticated HTTP endpoints. Audit verifies the hash chain, event identity/order, owner/approval/evidence/claim bindings, approval guard resolution history, missing events, unfinalized intents, and conflicting outcomes for one attempt.
+- Audit findings are bounded; corrupt approval guard state is reported instead of crashing the audit. No automatic repair, retry, or mutation execution is enabled.
+- Batch 112 regression tests: 13/13 PASS. Full cumulative `npm test`: 675/675 PASS. JavaScript/MJS syntax: 143/143 PASS. Relative import resolution: PASS with 0 missing imports. ZIP integrity and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: SHA-256 chaining is tamper-evident but not a signed/authenticated log against an actor who can rewrite storage and recompute hashes. Atomicity applies to processes sharing the filesystem storage root, not separate hosts. HTTP listener startup remains unclaimed as boot-tested because Express is unavailable in this environment.
+
+At completion of Batch 112, next unfinished stage was Batch 113 — Ledger Gap Recovery and Tamper-Evidence Escalation Policy.
+
+Batch 113 — Ledger Gap Recovery and Tamper-Evidence Escalation Policy
+- Added an independently digested, owner-scoped escalation/quarantine policy with bounded incident history and high/critical severity levels. The policy lives outside the mutation outcome ledger so a suspect hash chain can be quarantined without rewriting it.
+- Added explicit append-only recovery for recoverable tail gaps: missing evidence-capture events and missing resolution events reconstructed from verified immutable evidence and approval resolution history. Reconstructed events carry constrained recovery provenance and deterministic IDs; repeated recovery does not duplicate entries.
+- Recovery refuses broken hash chains, non-appendable middle gaps, conflicting outcomes, invalid source evidence, and truncated audits. It never rebuilds or silently replaces a suspect chain.
+- Added mutation-boundary quarantine: integrity findings persist an escalation and prevent the approved mutation callback from running. A high/critical incident remains active after repair until an explicit owner-scoped acknowledgement follows a fresh, complete, clean audit.
+- Added read-only escalation inspection, explicit gap recovery, explicit acknowledgement, and authenticated HTTP routes. Corrupted policy state fails closed.
+- Batch 113 focused regression tests: 10/10 PASS. Full cumulative `npm test`: 685/685 PASS. JavaScript/MJS syntax validation: 144/144 PASS. ZIP integrity validation and extracted-source test/syntax/import checks: PASS. No GitHub commit was made.
+- Operational boundaries: SHA-256 policy/ledger digests are not digital signatures; an actor able to rewrite all storage can recompute them. Atomicity applies to processes sharing the filesystem-backed storage root, not separate hosts. HTTP listener startup is not claimed as boot-tested because Express is unavailable in this validation runtime.
+
+Next unfinished stage: Batch 114 — External Integrity Attestation and Quarantine State Hardening.
+
+Batch 114 — External Integrity Attestation and Quarantine State Hardening
+- Added administrator-configured Ed25519 public-key trust for external ledger-integrity attestations. Keys are supplied through `integrityAttestationPublicKeys` or `AGENTIC_INTEGRITY_ATTESTATION_PUBLIC_KEYS`; private keys remain outside the application.
+- Added one-use owner-scoped attestation challenges bound to the active incident, quarantine policy revision, ledger revision/head/snapshot digest, and digest of a clean, complete audit. Challenges expire within five minutes and signatures cover the canonical sorted-key JSON payload.
+- Critical quarantine cannot be acknowledged without a verified, unexpired signature from a configured trusted key. Verification and acknowledgement recheck the current context; stale, invalid, expired, cross-owner, or replayed attestations fail closed.
+- Hardened policy history validation and embedded the signed attestation receipt in critical acknowledgement history. A critical clear-state record without a valid receipt is rejected. High-severity recoverable incidents retain the prior explicit-reason acknowledgement path.
+- Added authenticated endpoints for challenge creation, signature verification, attestation listing/retrieval, and attestation-bound acknowledgement. No automatic repair or mutation execution is enabled.
+- Batch 114 regression tests: 11/11 PASS. Full cumulative `npm test`: 696/696 PASS. JavaScript/MJS syntax and relative import resolution validated across the complete source tree. ZIP integrity and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: external review independence depends on trusted private-key custody and review procedure. Whole-store rollback by an actor able to rewrite all storage still requires an external monotonic anchor/write-once service to prevent; atomicity remains limited to processes sharing the storage root. HTTP listener startup was not boot-tested because Express is unavailable in this isolated validation environment.
+
+Next unfinished stage: Batch 115 — Attestation Trust Rotation, Revocation, and Quarantine Recovery Audit.
+
+Batch 115 — Attestation Trust Rotation, Revocation, and Quarantine Recovery Audit
+- Added an owner-scoped persistent attestation trust registry bootstrapped from administrator-configured Ed25519 public keys. The registry preserves public key material and fingerprints, active/revoked status, revision numbers, and bounded transition history across application restarts.
+- Added signed trust-transition challenges for key rotation and revocation. A rotation requires a quorum signature from currently active trusted keys plus proof-of-possession by the new key. Revocation requires majority authorization, a reason, and leaves at least one active trusted key. Key IDs cannot be reused; challenges are expiring, one-use, and bound to the current trust revision/digest.
+- Bound ledger-integrity attestation challenges to the current trust revision and digest. Trust changes invalidate outstanding attestations; revoked keys cannot issue or clear a critical quarantine, and previously verified attestations signed by revoked keys are reported by the trust audit.
+- Added a bounded read-only trust audit for trust-history hash-chain integrity, transition quorum/proof validation, key-state consistency, revoked-key attestations, and bootstrap configuration drift. Added authenticated application APIs and HTTP routes for trust policy inspection, transition challenge/apply, and trust audit.
+- Batch 115 focused regression tests: 13/13 PASS. Full cumulative `npm test`: 709/709 PASS. JavaScript/MJS syntax and relative import resolution validated across the complete source tree. ZIP integrity and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: trust changes require signatures from trusted private keys; the initial bootstrap still depends on administrator-controlled configuration. The registry is owner-scoped and persisted in the application store, so a hostile actor able to rewrite the entire store can still attempt rollback/rewrite unless an external monotonic anchor or write-once audit store is deployed. Storage lock atomicity is limited to processes sharing the same supported storage root. HTTP listener startup was not boot-tested because Express is unavailable in this validation environment.
+
+Next unfinished stage: Batch 116 — Trust-Registry External Anchoring and Rollback Detection.
+
+
+Batch 117 — External Anchor Service Conformance and Cross-Store Recovery Protocol
+- Added a write-capable external-anchor provider conformance probe, guarded by explicit `allowWrites: true` and a reserved disposable namespace. It verifies genesis CAS, stale-write rejection, monotonic advancement, concurrent CAS single-winner behavior, stale replay rejection, sequence-jump rejection, and owner isolation. It is not a proof of remote durability or resistance to whole-service rollback.
+- Added a durable owner-scoped cross-store trust-transition journal created before local trust mutation. Hash-linked journal phases record preparation, local commit, challenge completion, external-anchor pending state, and final completion/blocking.
+- Added explicit recovery that matches exactly one local trust-history event to the journal payload and revision, repairs an interrupted challenge status, and advances only a verified ancestor anchor after a complete healthy trust audit. It never replays or rolls back the local trust transition and never lowers an external anchor.
+- Prepared journals without a matching local event remain `awaiting_local_commit`; age is advisory only and does not trigger automatic abort because it does not prove runner quiescence. Corrupt journals and binding mismatches fail closed. Concurrent recovery is idempotent and cannot downgrade a completed journal.
+- Added authenticated status/recovery HTTP routes under `/api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/cross-store-recovery`.
+- Batch 117 regression tests: 10/10 PASS. Full cumulative `npm test`: 734/734 PASS. JavaScript/MJS syntax, relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: the external anchor service must be independently operated and must enforce durable monotonic CAS. The conformance probe writes to a disposable namespace only. HTTP listener startup was not boot-tested in this environment.
+
+Next unfinished stage: Batch 118 — Cross-Store Recovery Audit and Anchor-Service Health Telemetry.
+
+Batch 118 — Cross-Store Recovery Audit and Anchor-Service Health Telemetry
+- Added a bounded read-only audit of the durable cross-store trust-transition journal. It validates journal hash chains and digests, matches each transition against exactly one local trust-history event, verifies challenge binding/status, summarizes blocked/pending phases, and checks current external-anchor status without authorizing mutation.
+- The audit detects missing/duplicate/mismatched local events, challenge inconsistencies, stale journal phases, blocked transitions, unhealthy trust policy, truncated inspection, and anchor states that are missing, unavailable, behind, rolled back, invalid, or mismatched. It never repairs records or rewrites journal history.
+- Added owner-scoped external-anchor health checks with latency, local/anchor revisions, trust-audit status, cross-store journal status, pending counts, and bounded error codes. Health samples are persisted in a bounded hash-linked telemetry history with sequence validation and integrity checks; concurrent sampling uses atomic evidence mutation.
+- Telemetry retention is bounded to 200 samples. Listing is read-only and owner-scoped. Corrupt telemetry is reported and is not silently overwritten. Missing providers are reported as `not_configured` and never claim external rollback protection.
+- Added authenticated application APIs and HTTP routes for cross-store journal audit, anchor health, and telemetry listing. Health/audit outputs explicitly deny mutation authority; no automatic recovery or mutating action is triggered by a health check.
+- Batch 118 regression tests: 11/11 PASS. Full cumulative `npm test`: 745/745 PASS. JavaScript/MJS syntax and relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: telemetry hashes detect inconsistency but are not signed and do not prevent an actor who can rewrite all storage from recomputing the chain. Health polling records a telemetry sample and is therefore not read-only; telemetry listing and cross-store audit are read-only. External anchor durability and rollback resistance remain responsibilities of the independently operated provider. HTTP listener startup was not boot-tested in this isolated environment.
+
+Next unfinished stage: Batch 119 — Cross-Store Recovery SLOs, Alert Deduplication, and Operator Escalation Evidence.
+
+Batch 119 — Cross-Store Recovery SLOs, Alert Deduplication, and Operator Escalation Evidence
+- Added bounded SLO evaluation for external anchor configuration/availability, cross-store recovery integrity/latency, telemetry integrity, and anchor response latency. Results distinguish met, breached, insufficient-data, and not-applicable objectives.
+- Added owner-scoped alert deduplication: repeated observations update one active incident instead of opening duplicate alerts. Escalation advances on repeated observations or elapsed breach duration; recovery resolves the incident and a later recurrence receives a new incident ID.
+- Added a persistent hash-linked alert event ledger with evidence for opening, observations, severity escalation, operator acknowledgement, and resolution. Acknowledgements require a meaningful reason, are idempotent, and do not clear a breach or authorize recovery/mutation.
+- Added bounded event listing, read-only ledger audit, fail-closed handling for corrupted alert history, and authenticated HTTP endpoints for evaluation, alert listing, event listing, audit, and acknowledgement.
+- Batch 119 regression tests: 11/11 PASS. Full cumulative `npm test`: 756/756 PASS. JavaScript/MJS syntax, relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: alert events are hash-linked but not signed; SLOs are evaluated only when called and rely on the retained 200-sample telemetry window; acknowledgement records review but does not prove remediation; capacity exhaustion fails closed rather than silently dropping history. HTTP listener startup was not boot-tested in this environment.
+
+Next unfinished stage: Batch 120 — Alert Ledger Archival, SLO Evaluation Evidence Retention, and Escalation Policy Versioning.
+
+
+Batch 120 — Alert Ledger Archival, SLO Evaluation Evidence Retention, and Escalation Policy Versioning
+- Added explicit alert-event archival in bounded, hash-linked segments. Archive preparation precedes advancing the live ledger checkpoint; prepared archives can be recovered idempotently after interruption. Event history remains queryable across archived and live segments, and resolved alerts whose final event is archived are moved into the archive so they no longer consume the live alert capacity.
+- Added archive-chain auditing, sequence/hash continuity checks, archive/ledger checkpoint binding, resolved-alert retention, bounded archive counts, and fail-closed behavior for tampered or incomplete archives. New SLO writes are blocked while an archive is awaiting recovery.
+- Added a versioned, owner-scoped escalation policy with a hash-linked revision history, optimistic expected-revision checks, strict field/range validation, and safe ordering requirements between high and critical thresholds. Every evaluation now binds to the active policy revision and digest; alert events and alert records retain the policy/evaluation-evidence references.
+- Added persistent full SLO evaluation evidence with policy binding, bounded evidence count, retention deadlines, audit/list/retrieval APIs, and explicit pruning. After the retention deadline, detailed evaluation payload is redacted while a digest-bound tombstone preserves the original content digest, policy revision, and expiry reason. Evidence capacity exhaustion fails closed instead of silently dropping records.
+- Added authenticated HTTP routes for alert archival/recovery, policy inspection/update/history/audit, evaluation evidence listing/retrieval/audit, and retention pruning. No automatic remediation or external notifications are triggered.
+- Batch 120 regression tests: 12/12 PASS. Full cumulative `npm test`: 768/768 PASS. JavaScript/MJS syntax validation: 154/154 PASS. Relative import resolution: PASS with 0 missing imports. ZIP integrity and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: the alert archive and policy history use SHA-256 hash chains, not digital signatures; an actor able to rewrite the complete storage and recompute all hashes remains outside that protection boundary. Archive and evaluation-evidence capacities are bounded and fail closed. Evaluation tombstones continue to consume evidence-record capacity, so operators must plan retention/capacity and export requirements. HTTP listener startup was not boot-tested in this isolated environment.
+
+Next unfinished stage: Batch 121 — SLO Evidence Export, Retention-Capacity Recovery, and Archive Integrity Attestation.
+
+Batch 121 — SLO Evidence Export, Retention-Capacity Recovery, and Archive Integrity Attestation
+- Added owner-scoped, hash-linked archives for expired evaluation-evidence tombstones and a sequence-bound archive index. The archive is persisted before source cleanup; recovery reconstructs a missing/lagging index only from a contiguous valid archive chain and removes source duplicates only when the original digest matches exactly. Conflicts and tampering fail closed.
+- Archived tombstones remain queryable and continue to bind existing alert events. Compaction frees individual evidence-record slots while preserving the original content digest, policy revision/digest, retention deadline, and expiry reason in the archive.
+- Added complete export bundles for the policy ledger, alert ledger/archive segments, evaluation evidence, evaluation-evidence archives, and archive index. Canonical SHA-256 section manifests, counts, bundle digest, bounded export size, and source-audit gating make the export independently verifiable.
+- Added standalone bundle verification and optional detached Ed25519 export signing via an externally managed signer callback. The configured public key is used to validate the signer response before the export is labeled signed. Unsigned exports explicitly state that authenticity is not established; signer errors fail closed and private keys are not stored by the application.
+- Added authenticated application APIs and HTTP routes for archive audit/list/status, expired-evidence compaction, archive recovery, export, and owner-scoped verification.
+- Batch 121 regression tests: 11/11 PASS. Full cumulative `npm test`: 779/779 PASS. JavaScript/MJS syntax and relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: SHA-256 detects content changes but does not establish origin; Ed25519 authenticity requires a separately trusted public key. Cross-record archive/index operations are recoverable but not one global atomic transaction. Export bundles may contain sensitive operational evidence. HTTP listener startup was not boot-tested in this isolated environment.
+
+Next unfinished stage: Batch 122 — Export Bundle Verification CLI and Controlled Evidence Import/Restore Planning.
+
+
+Batch 122 — Export Bundle Verification CLI and Controlled Evidence Import/Restore Planning
+- Added a storage-independent CLI to verify export-bundle integrity, owner binding, structure, declared byte length, read-only metadata, and Ed25519 signatures when a public key is supplied. The CLI never writes or restores records and emits machine-readable output with stable exit codes.
+- Added bounded structural inspection for the six export sections, record kinds/owners/digests, duplicate top-level IDs, embedded storage metadata, and evaluation-archive-index dependencies. Invalid, conflicting, oversized, over-nested, or malformed bundles are rejected.
+- Added an owner-scoped restore planner that produces an ordered, digest-bound dry-run plan. It checks target IDs for identical records versus conflicts, enforces owner scope, supports strict verification against the application's configured export key, and fails closed on conflicts or missing dependencies. It does not execute imports or mutate storage.
+- Added the application API and authenticated HTTP route for restore planning, plus `npm run verify:recovery-slo-export`.
+- Batch 122 regression tests: 10/10 PASS. Full cumulative `npm test`: 789/789 PASS. JavaScript/MJS syntax and relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: an integrity-only bundle does not establish origin; a valid signature still requires independently trusted key management. Restore planning is read-only and can become stale if the target store changes after planning. HTTP listener startup was not boot-tested in this isolated environment.
+
+Next unfinished stage: Batch 123 — Restore Plan Approval, Import Journal, and Quarantined Evidence Application.
+
+Batch 123 — Restore Plan Approval, Import Journal, and Quarantined Evidence Application
+- Added explicit restore approval bound to the exact plan digest, source bundle digest, ordered action digest, and source verification status. Approval requires a meaningful reason and a typed confirmation string derived from the plan digest; the target is re-planned immediately before approval and again before import.
+- Added a durable owner-scoped import journal with deterministic identity, hash-linked events, replay-based integrity validation, bounded item/event counts, and monotonic status transitions. Interrupted imports can resume from the same source bundle without duplicating quarantine records.
+- Imported records are staged as separate `recovery-slo-restore-quarantined-evidence` wrappers. This batch does not insert source records into the active evidence namespace and does not provide a promotion/activation operation. Conflicts block the journal; existing records are never overwritten.
+- Added source and target revalidation, deterministic quarantine IDs, crash recovery for the window after quarantine write but before journal update, idempotent/concurrent apply behavior, approval binding checks, and read-only audit for journal, approval, and quarantine integrity.
+- Added authenticated application APIs and HTTP routes for restore approval, apply, recovery, journal retrieval/listing, audit, and quarantine listing.
+- Batch 123 regression tests: 12/12 PASS. Full cumulative `npm test`: 801/801 PASS. JavaScript/MJS syntax, relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: imported evidence remains quarantined and inactive; release requires a later controlled stage. SHA-256 journal/quarantine integrity is not a digital signature and does not prevent an actor able to rewrite the full storage from recomputing all hashes. Writes are recoverable per record but are not one global transaction. Quarantine capacity is bounded and fails closed. HTTP listener startup was not boot-tested in this isolated environment.
+
+Next unfinished stage: Batch 124 — Quarantine Review, Evidence Promotion Approval, and Restore Finalization Audit.
+
+Batch 124 — Quarantine Review, Evidence Promotion Approval, and Restore Finalization Audit
+- Added a digest-bound quarantine review for completed, healthy import journals. Review binds the import journal and source bundle digests, quarantine record/payload digests, and target state. Conflicting target IDs produce a blocked review that cannot be approved.
+- Added a distinct promotion-approval artifact requiring a meaningful reason and typed confirmation derived from the review digest. Approval revalidates import audit, quarantine integrity, and target state before authorization.
+- Added a durable promotion journal with a hash-linked event history, monotonic state transitions, per-record active-copy writes, idempotency, and recovery after a crash between an active write and the journal update. Conflicting records are never overwritten.
+- Added a fail-closed SLO visibility gate while promotion is pending, blocked, or not finalized. SLO operations resume after a valid finalization receipt; legitimate later SLO ledger updates remain allowed and are checked by their native integrity validators.
+- Added restore finalization that revalidates approval/review/import/quarantine bindings and every active record before persisting a digest-bound receipt. Added read-only audit of reviews, approvals, promotion journals, finalization receipts, orphaned artifacts, and incomplete operations. Quarantine listings report activation only when the receipt and related bindings remain valid.
+- Added authenticated application APIs and HTTP routes for review, approval, promotion, recovery, journal access, finalization, and audit.
+- Batch 124 regression tests: 14/14 PASS. Full cumulative `npm test`: 815/815 PASS. JavaScript/MJS syntax, relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: promotion is recoverable per record but is not one global atomic transaction; the SLO visibility gate applies at the application API boundary and does not protect direct storage access. Hash-linked evidence is not a digital signature. Separate review/approval artifacts do not yet enforce a two-person identity policy. HTTP listener startup was not boot-tested in this isolated environment.
+
+Next unfinished stage: Batch 125 — Restore Finalization External Attestation and Post-Promotion Integrity Reconciliation.
+
+
+Batch 125 — Restore Finalization External Attestation and Post-Promotion Integrity Reconciliation
+- Added an external Ed25519 attestation to finalization receipts, bound to owner, promotion journal digest, receipt digest, active-set digest/count, timestamp, and key ID. Private signing keys remain outside application storage; strict mode requires a matching signer and trusted public key.
+- Added read-only verification of finalization signatures and reconciliation across finalization receipts, promotion journals, quarantine evidence, immutable active snapshots, and current SLO domain audits. Invalid receipts and post-promotion drift fail closed at the SLO visibility gate.
+- Batch 125 regression tests: 8/8 PASS. Full cumulative `npm test`: 823/823 PASS. JavaScript/MJS syntax, relative imports, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: authenticity depends on independently trusted public keys and externally managed private keys. Reconciliation is read-only. HTTP listener startup was not boot-tested.
+
+Next unfinished stage: Batch 126 — Finalization Attestation Key Rotation, Revocation, and Historical Receipt Verification Policy.
+
+Batch 126 — Finalization Attestation Key Rotation, Revocation, and Historical Receipt Verification Policy
+- Added a durable owner-scoped finalization key-policy ledger with a replay-validated event chain. Bootstrap trust is pinned to the configured root public-key registry and initial active key; subsequent transitions are authorized by the active key or a separately configured recovery authority.
+- Added digest-bound, short-lived transition challenges for key rotation and revocation. Rotation requires authorization by the current key plus proof of possession from the new Ed25519 key. Policy revision/digest binding, monotonic effective timestamps, replay prevention, and post-write verification prevent stale or duplicate transitions.
+- Added retirement and revocation states with historical receipt policy. Cryptographic signature validity is reported separately from authorization for current use. Retired/revoked keys may validate receipts signed before the applicable boundary; an explicit compromise cutoff invalidates receipts at/after that time even when their cryptographic signature remains valid.
+- Added a recovery-authority path to revoke a compromised active key and re-establish signing with a replacement key and proof of possession. The recovery authority must be configured independently and retained to validate its historical policy events.
+- Finalization verification, promotion integrity checks, and the SLO visibility gate now consult the persisted key policy and fail closed on policy tampering, untrusted roots, signatures after retirement/revocation, or receipts inside a compromise window. Added policy inspection/audit and authenticated HTTP routes.
+- Batch 126 regression tests: 10/10 PASS. Full cumulative `npm test`: 833/833 PASS. JavaScript/MJS syntax and relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: the configured bootstrap public-key registry must remain pinned across restarts, and the external signer callback must route signing by the active key ID returned in the payload. The recovery-authority private key must be kept separately from the routine signing key. The policy ledger is locally persisted and signature/hash-chain validated but is not yet externally rollback-anchored; a full storage snapshot rollback remains outside this stage's protection. HTTP listener startup was not boot-tested.
+
+Batch 127 — Finalization Key-Policy External Anchoring and Rollback-Resistant Trust-State Reconciliation
+- Added a dedicated external anchor for the finalization key-policy ledger, with revision/digest/event-head/bootstrap bindings, monotonic anchor sequence, previous-anchor digest, and compare-and-set updates.
+- Added rollback, mismatch, lag, invalid-anchor, and outage classification. Trust-sensitive key-policy operations fail closed when the external anchor is not current; reconciliation advances only a verified ancestor and never overwrites a rollback or mismatch.
+- Batch 127 regression tests: 9/9 PASS. Full cumulative `npm test`: 842/842 PASS. JavaScript/MJS syntax, relative imports, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: rollback protection depends on an independently operated anchor service that cannot itself be rolled back with local storage. HTTP listener startup was not boot-tested.
+
+Batch 128 — External Anchor Provider Conformance, Anchor Continuity Proofs, and Operator Recovery Evidence
+- Added a two-step, confirmation-gated conformance probe for the key-policy anchor provider. The probe runs only in a generated disposable namespace and tests genesis CAS, stale-write rejection, monotonic revision/sequence advance, concurrent CAS single-winner behavior, stale replay rejection, sequence-gap rejection, and owner isolation. It does not write to the authenticated owner's production anchor namespace.
+- Added digest-bound continuity proof snapshots that bind a locally verified key-policy event chain and revision checkpoints to the observed external anchor. Proof verification checks the local policy chain, anchor digest/schema, anchor-to-checkpoint binding, proof digest, and consistency of the declared claims.
+- Added a persistent owner-scoped operator evidence ledger with hash-linked events for conformance, proof capture/verification, reconciliation requests/outcomes, and operator notes. Ledger corruption fails closed and prevents additional appends; unresolved reconciliation requests remain visible as pending.
+- Added authenticated application APIs and HTTP routes for conformance challenge/run, continuity proof creation/verification, reconciliation with evidence, and operator evidence listing/audit/note capture.
+- Batch 128 regression tests: 10/10 PASS. Full cumulative `npm test`: 852/852 PASS. JavaScript/MJS syntax and relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: conformance writes three revisions into a disposable namespace in the external provider; providers without namespace deletion may retain those test records. Continuity proofs are self-contained integrity evidence, not signed attestations: the latest-only provider contract does not expose prior anchor records, and the proof explicitly does not authenticate the remote observation. Operator evidence is hash-linked, not signed, and capacity is bounded at 500 events with fail-closed behavior at capacity. HTTP listener startup was not boot-tested.
+
+Batch 129 — External Anchor Provider Contract Versioning, Signed Continuity Evidence, and Recovery Runbook Export
+- Added explicit provider contract versioning for the finalization key-policy anchor. Supported versions are 1.0.0 and 1.1.0; legacy providers without metadata are visibly classified compatible_legacy, while explicit declaration/capability mismatches fail closed.
+- Added a trust-sensitive contract compatibility guard around key-policy initialization/transitions, signing-context acquisition, receipt-key resolution, and anchor reconciliation. Read-only diagnostics and runbook export remain available during incompatibility so operators can investigate.
+- Added externally signed Ed25519 continuity evidence bound to the self-contained continuity proof, contract assessment, owner, issuance time, claims, and signing key ID. Signature verification uses a trusted public-key registry and rejects noncanonical base64url signatures. Signer failures are not silently downgraded to unsigned exports.
+- Added digest-bound recovery runbook export and verification with contract/anchor/key-policy/operator-evidence summaries, prioritized safe actions, no mutation authority, no private keys/tokens, and a 1 MiB default size bound. Missing/unhealthy policy state can still produce a diagnostic runbook that explicitly marks continuity evidence unavailable when strict signing is not required.
+- Added authenticated HTTP routes for provider contract status, signed continuity evidence export/verification, and recovery runbook export/verification. Signed-evidence and runbook operations add bounded operator-evidence records.
+- Batch 129 regression tests: 12/12 PASS. Full cumulative npm test: 864/864 PASS. JavaScript/MJS syntax, relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: provider contract metadata is declarative and not authenticated as a remote statement; behavioral conformance remains necessary. Signed local evidence does not authenticate remote anchor history. Runbooks are guidance, not authorization. HTTP listener startup was not boot-tested in this isolated environment.
+
+Next unfinished stage: Batch 130 — Contract Migration Approval, Signed Runbook Attestation, and Recovery Evidence Retention.
+
+Batch 130 — Contract Migration Approval, Signed Runbook Attestation, and Recovery Evidence Retention
+- Added a persistent owner-scoped contract migration ledger. Its active contract version survives application restart and is validated against a bounded hash-linked event history. Corrupt migration state fails closed rather than reverting to the configured baseline.
+- Added a separate plan/approve/apply migration flow. Plans bind source and target versions, target compatibility, and a successful behavioral conformance probe (required within 24 hours for 1.1.0). Plan and approval expire after 30 minutes, require digest-bound confirmation, and recheck source version and conformance before apply. Downgrades from 1.1.0 to 1.0.0 are blocked.
+- Added external Ed25519 attestation for the complete recovery runbook, binding owner, runbook ID/digest, issue time, and trusted key ID. Attestation verification is distinct from runbook content-digest verification. Strict mode requires signer/key configuration; signer failures never silently fall back to unsigned output. The final attested runbook remains bounded to 1 MiB.
+- Added persistent recovery evidence retention for runbook exports and signed continuity evidence. Default retention is 90 days (configurable from 1 to 3650 days); expired payloads are pruned into digest-preserving tombstones. Retention audit detects payload, tombstone, and record digest tampering. Active payloads are bounded to 500 per owner, total tombstones to 2000, and each prune operation to 100 records.
+- Added authenticated APIs and HTTP routes for contract migration planning/approval/apply/audit, signed runbook export/verification, and evidence retention listing/audit/pruning. Operator evidence records migration and retention outcomes, with preflight capacity checks to avoid unlogged trust changes.
+- Batch 130 regression tests: 11/11 PASS. Full cumulative npm test: 875/875 PASS. JavaScript/MJS syntax: 171/171 PASS; relative imports: 280 checked, 0 missing; ZIP integrity and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: proposer/approver remain within one owner identity (no two-person enforcement); signer private keys remain external; retention tombstones preserve digests/metadata rather than payload bytes; external anchor provider declarations still require behavioral conformance; HTTP listener startup was not boot-tested in this isolated environment.
+
+Next unfinished stage: Batch 131 — Migration Rollback Recovery, Runbook Trust-Key Rotation, and Retention Policy Change Audit.
+
+Batch 131 — Migration Rollback Recovery, Runbook Trust-Key Rotation, and Retention Policy Change Audit
+- Added migration recovery journals and local high-water checkpoints to detect stale contract-migration state and recover interrupted transitions with explicit retry confirmation.
+- Added Ed25519 runbook signing-key rotation with old-key authorization, new-key proof of possession, historical receipt verification, and runbook-key policy checkpoints.
+- Added digest-bound plan/approve/apply retention-policy changes. Changes apply prospectively to future artifacts; existing retained evidence keeps its original expiration.
+- Batch 131 regression tests: 11/11 PASS. Cumulative npm test: 886/886 PASS. JavaScript/MJS syntax, relative imports, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+
+Batch 132 — Recovery Journal External Anchoring, Runbook Key Revocation and Compromise Cutoff, and Retention Policy Rollback Detection
+- Added a dedicated external anchor trust domain for contract-migration recovery journals. Journal genesis is anchored before subsequent transitions; each durable transition advances the external anchor through CAS and post-write verification. Local rollback, missing anchors for historical journals, mismatches, invalid anchors, and provider outages fail closed.
+- Added recovery-authority-signed runbook key revocation. An optional `invalidateBefore` compromise cutoff rejects signatures issued at or after the cutoff while retaining eligible pre-cutoff historical signatures. If the active key is revoked, recovery can install a replacement only with a separate recovery-authority signature and new-key proof of possession.
+- Added a retention-policy high-water checkpoint to detect valid historical snapshot rollback and same-revision substitution. Retention mutations are blocked after checkpoint conflict. First observation of an existing policy is explicitly marked as legacy enrollment and cannot prove pre-enrollment history.
+- Added authenticated HTTP routes for recovery-journal anchor status, anchor, reconciliation, and audit, plus runbook key revocation. Retention rollback is reported by the existing retention-policy audit API.
+- Batch 132 regression tests: 13/13 PASS. Cumulative npm test: 899/899 PASS. JavaScript/MJS syntax, relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: the recovery-journal provider must be independent of other trust-anchor domains; latest-only provider semantics cannot verify the full external anchor history. The retention checkpoint is local, not an external anchor. HTTP listener startup remains unverified in this isolated environment.
+
+At completion of Batch 132, the next unfinished stage was Batch 133 — Recovery-Journal Anchor Provider Conformance and Retention Checkpoint Externalization.
+
+
+Batch 133 — Recovery-Journal Anchor Provider Conformance and Retention Checkpoint Externalization
+- Added a challenge-bound conformance probe for the recovery-journal anchor provider. It checks declared contract metadata, disposable-namespace isolation, genesis CAS, stale-CAS rejection without mutation, read-after-write consistency, monotonic anchor sequence enforcement, owner binding, and single-winner concurrent CAS. Probe records are written only to a disposable namespace and may remain if the provider has no delete API.
+- Added a dedicated external trust domain for retention-policy checkpoints. Checkpoints bind policy revision, event head, retention duration, checkpoint digest, and prior checkpoint digest. External anchors advance with CAS and read-after-write verification; local markers detect missing anchors after prior enrollment.
+- Added explicit digest-confirmed enrollment for legacy checkpoints. Legacy enrollment is flagged as unable to prove pre-enrollment history; missing anchors after enrollment, provider outages, rollback, mismatch, and unproven multi-revision continuity fail closed.
+- Integrated retention checkpoint anchor health into retention-policy audit and policy mutation checks. Added authenticated APIs/routes for journal-provider conformance and retention checkpoint status, explicit anchoring, and reconciliation. Provider identity and environment URL checks enforce separate trust domains.
+- Batch 133 regression tests: 13/13 PASS. Full cumulative npm test: 912/912 PASS. JavaScript/MJS syntax, relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: provider conformance writes disposable records that may remain; external anchoring uses latest-only CAS semantics and cannot reconstruct full remote history; legacy enrollment cannot prove history before enrollment; external provider independence and anti-rollback durability remain deployment responsibilities; HTTP listener startup remains unverified in this isolated environment.
+
+Next unfinished stage: Batch 134 — External Retention-Checkpoint Continuity Receipts, Provider Conformance Evidence Retention, and Cross-Domain Anchor Independence Audit.
+
+Batch 134 — External Retention-Checkpoint Continuity Receipts, Provider Conformance Evidence Retention, and Cross-Domain Anchor Independence Audit
+- Added Ed25519-signed continuity receipts for retention checkpoints. Receipts bind owner, checkpoint revision/digest, external anchor digest/sequence, retention duration, key ID, issuance time, and legacy-history limitations. Verification reports cryptographic validity separately from whether the receipt still matches the current checkpoint.
+- Added automatic retention of completed recovery-journal provider conformance reports. Records are owner-scoped, digest-checked, bounded by active/total capacity, and pruned only into digest-preserving tombstones after expiry. Tampering blocks pruning.
+- Added cross-domain anchor independence audit across attestation, finalization key-policy, recovery-journal, and retention-checkpoint domains. It detects shared provider objects, shared stable backend/endpoint identity fingerprints, missing providers, and unverifiable identities without exposing raw endpoints or credentials.
+- Added authenticated application APIs and HTTP routes for receipt creation/verification, retained evidence listing/audit/pruning, and trust-domain independence audit. The HTTP external-anchor adapter now exposes a non-secret stable `providerIdentity`.
+- Batch 134 regression tests: 12/12 PASS. Full cumulative npm test: 924/924 PASS on the final successful run. JavaScript/MJS syntax: 179/179 PASS. ZIP integrity, relative imports, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: signed receipt creation requires an injected external signer and trusted Ed25519 public key; provider identity audit cannot prove independent administration of opaque backends; conformance evidence retention uses a configurable 90-day default and bounded storage; HTTP listener startup remains unverified in this isolated environment.
+
+Batch 135 — Cross-Domain Independence Attestation, Retention Evidence Chain Anchoring, and Provider Identity Drift Monitoring
+- Added signed Ed25519 attestation for cross-domain anchor-independence reports. Attestations bind the full report and digest, use a separately configured trusted public-key registry, are retained as owner-scoped evidence, and explicitly do not constitute approval or prove independent administration of remote infrastructure.
+- Added a persistent per-owner append-only hash chain for retained evidence. Retain and prune/tombstone transitions are digest-bound, sequenced, and linked to the prior event. The chain can be externally anchored through a dedicated CAS provider with post-write verification and local markers for rollback/removal detection.
+- Added provider-identity drift monitoring using explicit baseline challenges. Initial enrollment and later baseline rotation require digest-bound confirmation, a ten-minute expiry, and a stable provider-identity snapshot; identity changes between challenge and application are rejected.
+- Added a separate retained-evidence-chain trust domain and startup checks preventing provider instance or configured endpoint reuse across anchor domains. Added authenticated APIs and HTTP routes for independence attestation, evidence-chain audit/status/reconciliation, and provider-identity baseline/drift operations.
+- Batch 135 regression tests: 9/9 PASS. Full cumulative npm test: 933/933 PASS. JavaScript/MJS syntax and relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: external retained-evidence anchoring is optional for compatibility; strict deployments must enable it. Provider identity fingerprints cannot prove administrative independence. Baseline drift is not auto-accepted. Local hash chains alone cannot detect restoration of all local state together without an independent external anchor. HTTP listener startup remains unverified in this isolated environment.
+
+At completion of Batch 135, the next unfinished stage is Batch 136 — Signed Provider-Identity Drift Events, External Baseline Anchoring, and Retained-Evidence Chain Recovery Attestation.
+
+
+Batch 136 — Signed Provider-Identity Drift Events, External Baseline Anchoring, and Retained-Evidence Chain Recovery Attestation
+- Added Ed25519-signed provider identity drift events and retained-evidence-chain recovery attestations. Both bind owner, source report/checkpoint, signing key ID, and issue time; verification distinguishes signature validity from current chain health.
+- Added a dedicated external anchor for provider-identity baselines, with CAS, digest continuity, local markers, rollback detection, and explicit legacy enrollment that preserves `historyNotProven`.
+- Added trust-domain separation for provider-identity baseline anchoring and authenticated application/HTTP APIs.
+- Batch 136 regression tests: 8/8 PASS. Cumulative npm test: 940/940 PASS. JavaScript/MJS syntax, relative imports, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: external provider semantics and administrative independence remain deployment responsibilities; legacy enrollment cannot prove pre-enrollment history; local markers cannot protect against simultaneous rollback of all local storage; HTTP listener startup remains unverified in the isolated validation environment.
+
+Batch 137 — Provider-Identity Baseline Anchor Conformance, Drift-Event Key Rotation and Revocation, and Recovery-Attestation Trust Policy
+- Added a challenge-bound conformance probe for the provider-identity baseline anchor. It checks contract metadata, genesis CAS, read-after-write consistency, stale-CAS rejection, monotonic revision/sequence, owner namespace isolation, and concurrent single-winner CAS using only a disposable namespace.
+- Added persistent per-owner Ed25519 trust policies for drift events and retained-evidence-chain recovery attestations. Policy changes use a digest-bound challenge, an independently trusted policy-authority signature, and target-key proof of possession for rotation. Revocation can apply a non-future compromise cutoff.
+- Verification now consults key lifecycle state: pre-retirement signatures may remain historically valid; signatures at or after a revocation cutoff are rejected. Revoking the active key blocks new signing until a replacement is approved. Policy hash-chain or digest tampering fails closed.
+- Added authenticated APIs/routes for conformance, trust-policy inspection/audit, rotation, and revocation. Read-only policy inspection/audit does not bootstrap policy state; bootstrap occurs on the first signing operation or an explicit transition preparation.
+- Batch 137 regression tests: 10/10 PASS. Full cumulative npm test: 950/950 PASS. JavaScript/MJS syntax: 187/187 PASS. Relative import resolution: 312 references checked, 0 missing. ZIP integrity and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: policy transitions require a separately configured Ed25519 policy-authority public key; external signer callbacks must select keys by the `signing.keyId` in the payload; retired/revoked public keys must remain configured for historical verification; the trust-policy hash chain is local and is not independently externally anchored; conformance probe records may remain in providers without delete support; HTTP listener startup remains unverified.
+
+Next unfinished stage: Batch 138 — External Trust-Policy Checkpoint Anchoring, Policy-Authority Rotation and Revocation, and Conformance Evidence Retention.
+
+
+Batch 138 — External Trust-Policy Checkpoint Anchoring, Policy-Authority Rotation and Revocation, and Conformance Evidence Retention
+- Added a dedicated external anchor domain for per-owner drift-event, recovery-attestation, and policy-authority lifecycle policies. Checkpoints bind policy revision/digest, previous policy digest, domain, owner hash, monotonic sequence, previous anchor digest, and history limitation flags.
+- Trust-policy operations fail closed when required external anchoring is unavailable, rolled back, behind, missing after prior enrollment, or inconsistent. Added explicit digest-confirmed enrollment for legacy policies and bounded reconciliation for provable one-revision advancement or safe local-marker repair.
+- Added a persistent policy-authority lifecycle ledger with hash-linked events, external anchoring, rotation/revocation challenges, active/standby/retired/revoked states, authorization signatures, and replacement-key proof of possession. Active authorities must be rotated before revocation; historical event verification replays the lifecycle and validates the signer that was active at each transition.
+- Added automatic retention for provider-identity baseline conformance reports using the bounded retained-evidence registry and hash chain. Evidence is idempotent, digest-bound, auditable, and can expire to digest-preserving tombstones.
+- Added provider-independence registration for the `provider_identity_trust_policy` domain and authenticated HTTP/application APIs for anchor status, enrollment, reconciliation, authority transitions, audit, and historical verification.
+- Batch 138 regression tests: 6/6 PASS. Cumulative npm test: 956/956 PASS. Syntax, import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: external provider durability/independence remain deployment responsibilities; replacement authority keys must be preconfigured; active-authority compromise recovery remains out-of-band; tombstones do not reconstruct expired payloads; HTTP listener startup remains unverified.
+
+Next unfinished stage: Batch 139 — Trust-Policy Anchor Provider Conformance, Policy-Authority Root Recovery, and Retention Audit Reconciliation.
+
+
+Batch 139 — Trust-Policy Anchor Provider Conformance, Policy-Authority Root Recovery, and Retention Audit Reconciliation
+- Added provider conformance probes for the provider-identity trust-policy anchor. Probes test 1.1.0 contract metadata, genesis CAS, read-after-write, stale-CAS rejection, monotonic revision/sequence, namespace isolation, concurrent single-winner behavior, and anchor digest/owner binding using a disposable namespace. Conformance reports are retained and idempotent.
+- Added a separately trusted Ed25519 root-recovery path for a compromised policy-authority key. Root authorization is bound to the current policy digest/revision and requires proof of possession for a preconfigured standby operational key. The appended root-recovery event is part of the verifiable lifecycle hash chain; the prior active key is revoked with a compromise cutoff.
+- Added cross-store retention audit reconciliation across retained evidence, chain ledger, conformance reports, and policy-authority audit. Integrity findings block reconciliation; no local evidence or trust policy is silently rewritten. Only a provably behind external retained-evidence chain anchor may be advanced after a clean audit.
+- Added authenticated HTTP routes for root recovery, trust-policy anchor conformance, and retention reconciliation.
+- Batch 139 regression tests: 8/8 PASS. Full cumulative npm test: 963/963 PASS, exit code 0. Final ZIP syntax/import/archive checks and extracted-source revalidation: PASS. No GitHub commit was made.
+- Operational boundaries: root recovery cannot reconstruct a corrupt policy ledger or bypass an untrusted external checkpoint; root key material must be separately managed; conformance probes may leave disposable provider records if no delete API exists; retention reconciliation does not repair tampered local evidence; HTTP listener startup remains unverified.
+
+Next unfinished stage: Batch 140 — Root-Recovery Trust Rotation and Revocation Audit, Retention Reconciliation Evidence Attestation, and Provider Conformance Drift Watch.
+
+
+Batch 141 — Root-Recovery Trust External Checkpoint Anchoring, Reconciliation Attestation Freshness Policy, and Conformance Drift Event Retention
+- Added a separate CAS-backed external anchor for root-recovery trust lifecycle policies, including owner binding, revision/digest continuity, monotonic sequence, marker checks, rollback detection, explicit legacy enrollment, and safe one-revision reconciliation. Root trust operations fail closed when a configured anchor cannot be trusted.
+- Added configurable freshness metadata and verification for signed retention-reconciliation attestations. Signature/history validity is distinguished from freshness and usability for a current decision; stale or too-far-future attestations are not accepted for current use.
+- Added idempotent retained provider-conformance drift events with owner-bound audit snapshots, integrity audit, bounded retention, type-filtered pruning, and digest-preserving tombstones. Added authenticated HTTP/application APIs and registered root-recovery trust anchoring as an independent trust domain.
+- Batch 141 regression tests: 8/8 PASS. Full cumulative npm test: 976/976 PASS. JavaScript/MJS/CJS syntax: 199/199 PASS. Relative import resolution, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: external provider CAS/durability are deployment responsibilities; legacy enrollment does not prove pre-enrollment history; failed anchoring after a local commit requires explicit safe reconciliation; freshness does not erase historical signature validity; HTTP listener startup remains unverified.
+
+Batch 142 — Root-Recovery Trust Anchor Provider Conformance, Freshness Enforcement at Decision Boundaries, and Drift-Retention Chain Reconciliation
+- Added a challenge-bound root-recovery trust anchor provider conformance probe for the 1.1.0 CAS contract. It checks disposable namespace isolation, genesis CAS, read-after-write, stale-CAS rejection without mutation, monotonic revision/sequence, sequence-skip rejection, owner binding, and concurrent single-winner CAS. Completed reports are digest-bound, retained, audited, and replay-idempotent.
+- Added retained-evidence validation for root-recovery trust conformance reports, binding owner, challenge digest, report digest, and conformance status.
+- Added an explicit current-decision gate for signed retention-reconciliation attestations. The gate requires valid signature, retained historical evidence, optional expected snapshot binding, and freshness; stale/future/mismatched evidence is rejected. Historical inspection remains distinct from current-decision usability.
+- Added drift-retention chain reconciliation with retained event/tombstone preflight, chain integrity checks, existing CAS-based external-anchor reconciliation, and post-reconciliation audits. Tampered records or corrupt chain state fail closed.
+- Added authenticated application APIs and HTTP routes for conformance, freshness decision checks, and drift-retention chain reconciliation.
+- Batch 142 regression tests: 6/6 PASS. Full cumulative npm test: 982/982 PASS, exit code 0. Syntax, relative imports, ZIP integrity, and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: disposable probe records may remain without provider delete support; conformance does not prove administrative independence; freshness is enforced when current-decision consumers use the explicit gate; drift reconciliation never repairs local evidence or bypasses rollback/mismatch findings; HTTP listener startup remains unverified.
+
+Next unfinished stage: Batch 143 — Root-Trust Conformance Baseline Attestation, Decision-Gate Audit Evidence, and Drift-Chain Checkpoint Continuity.
+
+Batch 143 — Root-Trust Conformance Baseline Attestation, Decision-Gate Audit Evidence, and Drift-Chain Checkpoint Continuity
+- Added Ed25519-signed root-trust conformance baseline attestations that bind owner, completed conformance challenge, report digest, live provider identity fingerprint, contract digest, and signing key. Issuance rejects provider identity/contract changes after conformance; verification separates historical validity from current-baseline usability.
+- Added retained audit evidence for both allowed and denied current-decision freshness-gate evaluations. The audit payload stores digests and bounded decision metadata, not the full attestation/signature. Allowed decisions fail closed if evidence retention fails.
+- Added signed drift-retention chain checkpoint receipts with sequence/head digest binding and a digest-linked receipt chain. Continuity audit reconstructs order from receipt links, verifies each checkpoint in chain history, and rejects tampered, pruned, branched, or discontinuous receipts.
+- Added authenticated APIs/HTTP routes and retained-evidence artifact support. Fixed a pre-existing root-trust conformance evidence binding mismatch by recording the completed challenge digest separately from the source report challenge digest; legacy evidence is checked against the persisted challenge where available.
+- Batch 143 regression tests: 8/8 PASS. Full cumulative npm test: 989/989 PASS. Syntax/import checks, ZIP integrity, and extracted-source revalidation: PASS. No GitHub commit was made.
+- Operational boundaries: baseline attestation does not prove provider administrative independence; current decisions must use the explicit freshness gate; pruning checkpoint receipts makes continuity unproven and blocks healthy status; HTTP listener startup remains unverified.
+
+Next unfinished stage: Batch 144 — Decision-Gate Evidence Chain Anchoring, Root-Trust Baseline Rotation/Revalidation, and Drift-Checkpoint Freshness Monitoring.
+
+
+Batch 144 — Decision-Gate Evidence Chain Anchoring, Root-Trust Baseline Rotation/Revalidation, and Drift-Checkpoint Freshness Monitoring
+- Added an independent external CAS anchor for decision-gate audit evidence, bound to immutable retained-evidence-chain source event digests and ordered by chain sequence. Legacy enrollment is explicit and marks pre-enrollment history unproven. A configured anchor failure prevents a final allow result; a supersession audit event records a gate-allowed result that was blocked by external anchoring.
+- Added explicit root-trust conformance baseline enrollment/rotation challenges, current-baseline pointer, lifecycle event digest chain, provider revalidation, and lifecycle audit. Stale concurrent challenges and provider drift after conformance are rejected.
+- Added freshness metadata and a current-decision gate for drift-chain checkpoint receipts. Historical signature validity is distinguished from freshness/current usability; stale receipts remain auditable history but cannot be used for current decisions.
+- Added retained-evidence-chain history API, retained artifact support, authenticated application APIs, and HTTP routes.
+- Batch 144 regression tests: 8/8 PASS. Full cumulative npm test: 996/996 PASS. Syntax/import checks, ZIP integrity, and extracted-source revalidation: PASS. No GitHub commit was made.
+- Operational boundaries: external CAS/durability remain deployment responsibilities; legacy decision-gate and baseline history before enrollment remains unproven; consumers must use explicit current-decision freshness APIs; HTTP listener startup remains unverified.
+
+Next unfinished stage: Batch 145 — Decision-Gate Anchor Conformance and Recovery, Baseline Lifecycle External Checkpointing, and Freshness Policy Drift Audit.
+
+
+Batch 145 — Decision-Gate Anchor Conformance and Recovery, Baseline Lifecycle External Checkpointing, and Freshness Policy Drift Audit
+- Added a disposable-namespace conformance probe for the decision-gate external anchor and retained/audited its digest-bound report. CAS failures, stale writes, non-monotonic sequence, isolation, and concurrent single-winner semantics are tested without touching the production namespace.
+- Added a dedicated external checkpoint chain for root-trust baseline lifecycle events. A configured checkpoint failure blocks successful rotation reporting and marks current baseline as externally untrusted until continuity-safe reconciliation succeeds. Multi-event legacy history requires explicit enrollment and remains marked history-unproven.
+- Added a read-only audit comparing current retention-reconciliation freshness settings with signed retained attestation policies, with payload digest validation and distinct drift versus corruption findings.
+- Added owner-scoped application APIs and authenticated HTTP routes. Batch 145 regression tests: 8/8 PASS. Cumulative npm test: 1004/1004 PASS. JavaScript/MJS/CJS syntax: 213/213 PASS. Relative imports: 366 checked, 0 missing. ZIP integrity and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: provider conformance cannot prove hidden administrative independence; legacy enrollment does not prove prior history; external CAS/durability are deployment responsibilities; freshness policy drift is audited but not auto-mutated; HTTP listener startup remains unverified.
+
+Next unfinished stage: Batch 146 — Decision-Gate Anchor Recovery Attestation, Baseline Checkpoint Continuity Proof, and Freshness-Policy Change Approval.
+
+
+Batch 148 — Freshness-Policy Approval Anchor Conformance, Recovery-Intent External Checkpointing, and Revocation-State Continuity Anchoring
+- Added a disposable-namespace CAS conformance probe for the freshness-policy approval anchor, including stale-write/no-mutation, monotonic linkage, owner isolation, concurrent CAS, retained report binding, and replay idempotency.
+- Added a reusable owner-scoped external snapshot checkpoint service with explicit legacy enrollment, digest/count-bound snapshots, monotonic CAS, local markers, recoverable write-before-marker interruption, and fail-closed rollback/mismatch handling.
+- Added external checkpoint domains for recovery-intent transition history and root-trust continuity-proof revocation state. Both source readers require healthy/recoverable local audits and bind snapshot digests to the actual owner-scoped source records.
+- Added authenticated application APIs and HTTP routes for conformance, status, enrollment, reconciliation, and audits. Added the new domains to cross-domain anchor independence checks and registered the conformance report as retained evidence.
+- Batch 148 regression tests: 8/8 PASS. Full cumulative npm test: 1029/1029 PASS, exit code 0. Syntax/import checks, ZIP integrity, and extracted-source revalidation: PASS. No GitHub commit was made.
+- Operational boundaries: conformance does not prove hidden infrastructure independence; legacy enrollment does not prove earlier history; provider CAS/durability remain deployment responsibilities; rollback or source audit failures block reconciliation; HTTP listener startup remains unverified.
+
+Next unfinished stage: Batch 149 — Cross-Domain Snapshot Anchor Conformance, Checkpoint Freshness/Retention Audit, and Recovery/Revocation Anchor Independence Reconciliation.
+
+
+Batch 149 — Cross-Domain Snapshot Anchor Conformance, Checkpoint Freshness/Retention Audit, and Recovery/Revocation Anchor Independence Reconciliation
+- Added challenge-bound disposable-namespace conformance probes for recovery-intent and proof-revocation snapshot checkpoint providers, including CAS/no-mutation, monotonic linkage, isolation, concurrent single-winner behavior, retained reports, and replay idempotency.
+- Added cross-domain identity/endpoint collision audit and an aggregate governance audit. It detects reused provider instances, observable identity collisions, missing required providers, and unobservable identities without claiming hidden infrastructure independence.
+- Added read-only checkpoint freshness/retention audits for stale/future anchors, tampered markers/challenges/reports, expired unused challenges, and records requiring retention review. Current markers are protected and evidence is not automatically deleted.
+- Added authenticated application APIs/HTTP routes and bounded freshness/retention configuration. Batch 149 regression tests: 8/8 PASS. Full cumulative npm test: 1036/1036 PASS. JavaScript/MJS/CJS syntax: 225/225 PASS. Relative import resolution: 396 references, 0 missing. No GitHub commit was made.
+- Operational boundaries: conformance only proves observed CAS behavior; hidden infrastructure independence remains unproven; external durability/CAS remain deployment responsibilities; retention audit does not auto-delete evidence; HTTP listener startup remains unverified.
+
+At completion of Batch 149, next unfinished stage: Batch 150 — Cross-Domain Checkpoint Audit Attestation, Provider-Identity Drift Baselines, and Retention Review Approval.
+
+
+Batch 150 — Cross-Domain Checkpoint Audit Attestation, Provider-Identity Drift Baselines, and Retention Review Approval
+- Added signed and retained governance audit attestations with digest-bound snapshots and separate historical/current verification.
+- Added owner-scoped provider identity/contract baselines that require fresh, valid conformance reports; drift is detected until an explicit, challenge-bound baseline acceptance/rotation succeeds.
+- Added atomically reserved per-owner/domain conformance sequence slots so concurrent conformance runs do not reuse sequence numbers; audits verify report-to-slot linkage.
+- Added non-destructive retention review approvals bound to the stable audit fingerprint and exact overdue evidence digests. Stale audit snapshots, expired challenges, duplicate targets, and non-overdue targets are rejected.
+- Batch 150 regression tests: 10/10 PASS. Full cumulative npm test: 1046/1046 PASS. JavaScript/MJS/CJS syntax: 227/227 PASS. Relative import references: 401 checked, 0 missing. ZIP integrity and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: signed audit attestation requires an external Ed25519 signer and trusted public key; provider fingerprints cannot prove hidden infrastructure independence; baseline lifecycle is not externally checkpointed in this batch; retention review does not delete evidence; HTTP listener startup remains unverified.
+
+Batch 151 — Audit-Attestation External Checkpointing, Provider-Baseline Lifecycle Continuity, and Retention-Review Decision Replay Protection
+- Added independent external snapshot checkpoints for signed cross-domain audit attestations, provider-baseline lifecycle transitions, and retention-review approvals. Each domain supports explicit legacy enrollment, status, reconciliation, and audit APIs; required mode fails closed when its provider is missing.
+- Audit-attestation verification now distinguishes retained historical validity from current-decision usability, which also requires an aligned external checkpoint. New attestations are explicitly reported as pending until initial enrollment; subsequent evidence additions can advance a proven one-step checkpoint.
+- Provider-baseline checkpoint snapshots reconstruct and validate per-domain revision/digest transition chains and retained source-conformance reports. Reconciliation requires exactly one appended transition and a prefix digest matching the previously anchored snapshot; same-count rewrites and multi-step jumps are rejected.
+- Retention-review approval now reserves a deterministic owner/challenge replay key before creating the decision, uses a deterministic approval ID, supports retry after interrupted finalization, detects duplicate approvals and replay-guard tampering, and blocks new decisions while the external checkpoint is pending. Decisions remain non-destructive.
+- Fixed external snapshot checkpoint audit status precedence so unhealthy and pending classifications cannot be overwritten by a spread of the underlying state.
+- Batch 151 regression tests: 8/8 PASS. Full cumulative npm test: 1054/1054 PASS, exit code 0. JavaScript/MJS/CJS syntax: 228/228 PASS. Relative import resolution: 404 references, 0 missing. ZIP integrity and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: each domain needs its own independently operated provider when enabled; legacy enrollment does not prove pre-enrollment history; external CAS/durability remain deployment responsibilities; retention review still performs no deletion; HTTP listener startup remains unverified.
+
+At completion of Batch 151, next unfinished stage: Batch 152 — Audit-Attestation Checkpoint Freshness/Retention Enforcement, Provider-Baseline Replay-Resistant Transition Receipts, and Retention-Review External Decision Reconciliation.
+
+
+Batch 152 adds freshness enforcement for cross-domain audit-attestation checkpoints, including safe refresh of a stale but intact anchor and fail-closed handling for excessive future skew. Audit attestations past retention require explicit review; a retain decision only restores current-use eligibility after the review checkpoint is externally current when configured. Provider-baseline transitions now carry deterministic digest-linked receipts with chain auditing and resumable finalization. Retention-review external checkpoint reconciliation requires exactly one provable new approval and rejects same-count rewrites or multi-decision jumps. Batch 152 regression tests: 8/8 PASS. Full cumulative npm test: 1062/1062 PASS. JavaScript/MJS/CJS syntax: 229/229 PASS. Relative import resolution: 407 references, 0 missing. ZIP integrity and post-extraction revalidation: PASS. No GitHub commit was made.
+
+At completion of Batch 152, next unfinished stage: Batch 153 — External Checkpoint Freshness Policy Binding, Baseline Receipt Recovery/Compaction Guardrails, and Retention Decision Evidence Revalidation.
+
+
+Batch 153 — External Checkpoint Freshness Policy Binding, Baseline Receipt Recovery/Compaction Guardrails, and Retention Decision Evidence Revalidation
+- Added a canonical domain-scoped policy digest to cross-domain external checkpoint anchors and local markers. Status now detects policy drift, blocks current use, and requires an explicit ten-minute policy-binding challenge before appending under changed policy. Source changes stale the challenge; exact one-step external-commit recovery is supported when local finalization was interrupted.
+- Added read-only provider-baseline receipt recovery/compaction guardrails. Future compaction consideration requires healthy receipt and baseline audits, no pending transitions, at least two verified receipts, and a current external checkpoint matching the exact source snapshot. No compaction or deletion is performed.
+- Added retention-review decision revalidation against approval/challenge digests, replay guard, target evidence digests, review status, and required external checkpoint/policy binding. Stale or unanchored decisions cannot authorize current use.
+- Added authenticated application APIs and HTTP routes. Batch 153 regression tests: 6/6 PASS. Full cumulative npm test: 1068/1068 PASS. JavaScript/MJS/CJS syntax: 230/230 PASS. Relative imports: 410 checked, 0 missing. ZIP integrity and extracted-source validation: PASS. No GitHub commit was made.
+- Operational boundaries: policy changes concurrent with source changes fail closed and require restoring the previous policy, reconciling source continuity, then rebinding policy; compaction remains read-only and automatic compaction is disallowed; external provider durability and hidden infrastructure independence remain deployment responsibilities; HTTP listener startup remains unverified.
+
+At completion of Batch 153, next unfinished stage: Batch 154 — Policy-Binding Approval Audit Chain, Baseline Receipt Compaction Manifest Design, and Retention-Revalidation Decision Cache Invalidation.
+
+
+Batch 154 — Policy-Binding Approval Audit Chain, Baseline Receipt Compaction Manifest Design, and Retention-Revalidation Decision Cache Invalidation
+
+- Added digest-linked per-domain policy-binding audit events with idempotent recovery after external checkpoint commit.
+- Added audit-chain verification for event sequence/linkage, challenge binding, tampering, and explicitly unproven legacy approvals.
+- Added persistent, non-destructive baseline receipt compaction manifest drafts and current-source verification; no compaction is performed.
+- Added retention decision revalidation caching keyed by evidence, checkpoint, policy, and retention-state fingerprints; changed fingerprints invalidate cached results before reuse.
+- Added authenticated API routes and regression tests. Final cumulative validation: 1076/1076 tests PASS. JavaScript/MJS/CJS syntax: 232/232 PASS. Relative imports: 415 checked, 0 missing. ZIP integrity and post-extraction validation: PASS.
+
+At completion of Batch 154, next unfinished stage: Batch 155 — Policy-Binding Audit-Chain External Checkpointing, Compaction Manifest Approval Workflow, and Cache Invalidation Race/Freshness Tests.
+
+
+Batch 155 — Policy-Binding Audit-Chain External Checkpointing, Compaction Manifest Approval Workflow, and Cache Invalidation Race/Freshness Tests.
+
+- Added an independent external checkpoint for the combined cross-domain policy-binding audit chain, with explicit enrollment, status, audit, and one-event continuity reconciliation. Tampered event chains and multi-event jumps fail closed.
+- Added explicit challenge/approval/audit workflow for provider-baseline receipt compaction manifests. Approval binds the manifest and current checkpoint, is replay-safe, and never executes compaction or deletion.
+- Added freshness-deadline-aware bounded cache entries and a second source fingerprint check around retention-decision revalidation. Concurrent source changes return `revalidation_race_detected` and are not cached.
+- Added authenticated HTTP routes and regression coverage. Batch 155 regression tests: 8/8 PASS. Full cumulative npm test: 1084/1084 PASS. No GitHub commit was made.
+
+At completion of Batch 155, next unfinished stage: Batch 156.
+
+
+Batch 156 — Policy-Binding Audit Checkpoint Freshness Attestation, Manifest Approval Revocation/Supersession, and Concurrent Revalidation Consistency
+
+- Added Ed25519 checkpoint freshness attestations binding checkpoint/audit snapshots and freshness policy parameters. Historical validity, currentness, and current-decision usability are distinct; unproven legacy history remains historical-only.
+- Added challenge-bound manifest approval revocation and supersession reporting. Revocation is allowed only after source qualification is lost and is rejected if the observed source state changes or eligibility returns. No compaction or deletion occurs.
+- Added process-local single-flight revalidation for the same owner/approval, cache observability for coalesced/in-flight work, and corrected freshness-deadline expiry classification so it is not misreported as a source race.
+- Added application APIs, HTTP routes, configuration enforcement, and regression tests. Batch 156 regression tests: 4/4 PASS. Full cumulative npm test: 1088/1088 PASS. No GitHub commit was made.
+
+At completion of Batch 156, next unfinished stage: Batch 157 — Attestation Key-Rotation/Revocation Handling, Manifest-Approval Supersession Ledger Anchoring, and Cross-Process Revalidation Lease/Recovery.
+
+
+Batch 157 — Attestation Key-Rotation/Revocation Handling, Manifest-Approval Supersession Ledger Anchoring, and Cross-Process Revalidation Lease/Recovery
+
+- Added digest-chained, confirmation-bound attestation signing-key rotation/revocation. Attestations bind the key lifecycle sequence, distinguish retired from revoked keys, preserve historical verification where cutoff proof is available, and fail closed on lifecycle tampering.
+- Added explicit manifest-approval supersession events and a dedicated external snapshot checkpoint for supersession/revocation ledger records. Enrollment is explicit and reconciliation advances one provable event at a time.
+- Added durable revalidation leases with atomic shared-store mutation, heartbeat, fencing tokens, stale-worker rejection, recovery of expired leases, and audit of lease event-chain integrity. Lease control records are excluded from the decision cache fingerprint so lease lifecycle does not invalidate a stable decision.
+- Added application APIs, authenticated HTTP routes, endpoint/provider independence enforcement, and regression coverage. Batch 157 regression tests: 4/4 PASS. Full cumulative npm test: 1092/1092 PASS. No GitHub commit was made.
+- Operational boundaries: signing-key lifecycle is owner-scoped and must be mirrored in the external KMS/HSM for global revocation; historical public keys must remain available; external ledger pre-enrollment history remains unproven; cross-process lease support requires atomic `mutateEvidence`; no compaction or deletion is performed; HTTP listener startup remains unverified.
+
+At completion of Batch 157, next unfinished stage: Batch 158 — Key-Lifecycle External Checkpointing, Manifest-Ledger Freshness/Retention Audit, and Revalidation Lease Contention/Crash-Recovery Hardening.
+
+
+Batch 159 — Key-Lifecycle Checkpoint Policy-Rotation Continuity, Manifest-Ledger Retention Review Approval Binding, and Lease Recovery Idempotency/Observability
+
+- Explicitly classified trusted key-registry drift and checkpoint policy drift. Same-count source drift cannot be auto-anchored; policy drift requires the explicit policy-binding workflow.
+- Added challenge-bound manifest-ledger retention review (`retain`/`escalate`) binding the source snapshot, exact target digests, external anchor sequence/digest, and policy digest. The resulting approval is included in the external ledger snapshot and must reconcile as one provable event. No deletion or compaction occurs.
+- Added idempotent lease recovery by stable recoveryRequestId and durable observability for recovered/reclaimed events, unique request IDs, and last recovery metadata.
+- Batch 159 regression tests: 5/5 PASS. Full cumulative npm test: 1102/1102 PASS. JavaScript/MJS/CJS syntax: 238/238 PASS. Relative imports: 436 checked, 0 missing. ZIP integrity and clean-extraction revalidation: PASS. No GitHub commit was made. No GitHub commit was made.
+
+At completion of Batch 159, next unfinished stage: Batch 160 — Key-Lifecycle Registry-Transition Receipts, Retention-Review Approval Revocation/Replacement, and Lease Recovery Audit-Event Export/Integrity.
+
+
+Batch 160 — Key-Lifecycle Registry-Transition Receipts, Retention-Review Approval Revocation/Replacement, and Lease Recovery Audit-Event Export/Integrity. Added registry-fingerprint-bound transition receipts and recovery/audit/export verification; append-only revocation and explicit replacement of manifest-ledger retention approvals; and lease audit-event export that excludes raw tokens and validates event-chain/fencing consistency. No deletion or compaction is performed. Batch 160 regression tests: 4/4 PASS. Full cumulative `npm test`: 1106/1106 PASS. JavaScript/MJS/CJS syntax: 239/239 PASS. Relative imports: 440 checked, 0 missing. ZIP integrity and clean-extraction validation: PASS; 403 files compared with 0 differences. No GitHub commit was made.
+
+At completion of Batch 160, next unfinished stage: Batch 161 — Registry-Receipt External Anchoring/Recovery, Retention Approval Revocation-Ledger Continuity, and Lease Audit Export Signing/Checkpoint Binding.
+
+
+Batch 161 — Registry-Receipt External Anchoring/Recovery, Retention Approval Revocation-Ledger Continuity, and Lease Audit Export Signing/Checkpoint Binding. Added a separate external checkpoint for key-transition receipts, stronger approval/revocation challenge linkage validation before manifest-ledger checkpoint advancement, and Ed25519-signed lease audit exports bound to checkpoint and lifecycle sequence. Batch 161 regression tests: 4/4 PASS. Cumulative `npm test`: 1110/1110 PASS. No GitHub commit was made.
+
+Batch 162 — Receipt-Checkpoint Recovery Intent/Crash Finalization, Retention-Ledger Multi-Event Gap Diagnostics, and Signed Lease Export Key-Cutoff Verification. Added durable owner-scoped recovery intents for receipt checkpoint operations; exact-match recovery of a missing local marker after external commit; finalization of interrupted enrollment challenges; bounded read-only gap diagnostics that never auto-advance multi-event gaps; and lifecycle-sequence/timestamp cutoff checks for signed lease exports. Batch 162 regression tests: 4/4 PASS. Cumulative `npm test`: 1114/1114 PASS. JavaScript syntax, relative imports, ZIP integrity, and clean-extraction equivalence: PASS. No GitHub commit was made.
+
+At completion of Batch 162, next unfinished stage: Batch 163 — Recovery-Intent External Attestation, Multi-Event Gap Approval Workflow, and Signed Export Verification Receipts.
+
+Batch 166 — Lifecycle-Checkpoint Crash Recovery/Gap Diagnostics, Approval-Bound Finalization Receipt Recovery, and Receipt-Ledger Policy-Binding/Retention Audit. Added generic source/marker/remote-anchor/policy inspection; durable, digest-chained recovery intents for lifecycle checkpoint marker recovery; approval/challenge/candidate-bound finalization receipt recovery; and a read-only verification-receipt policy/retention audit with timestamp-skew and retention-review detection. Batch 166 regression tests: 4/4 PASS. Full cumulative `npm test`: 1132/1132 PASS. JavaScript/MJS/CJS syntax, relative imports, ZIP integrity, and clean-extraction equivalence: PASS. No GitHub commit was made. HTTP listener startup remains unverified because `express` is unavailable in the validation environment.
+
+At completion of Batch 166, next unfinished stage: Batch 167 — Recovery-Intent Ledger External Anchoring, Finalization-Recovery Replay/Conflict Resolution, and Receipt-Retention Review Approval Binding.
+
+
+Batch 167 — Recovery-Intent Ledger External Anchoring, Finalization-Recovery Replay/Conflict Resolution, and Receipt-Retention Review Approval Binding. Added a dedicated external checkpoint for immutable recovery-intent bindings across the latest recovery flows; strict one-event continuity reconciliation; replay-safe finalization recovery with rollback detection; and challenge-bound `retain`/`escalate` approvals for signed verification-receipt retention review. Retention approvals bind exact target receipt digests, source snapshot, checkpoint sequence/digest, and policy digest. No deletion or compaction is performed. Batch 167 regression tests: 4/4 PASS. Full cumulative `npm test`: 1136/1136 PASS. JavaScript/MJS/CJS syntax, relative imports, ZIP integrity, and clean-extraction equivalence: PASS. No GitHub commit was made. HTTP listener startup remains unverified because `express` is unavailable in the validation environment.
+
+At completion of Batch 167, next unfinished stage: Batch 168 — Recovery-Intent Ledger Policy-Drift/Rollback Recovery, Retention Approval Revocation/Replacement, and Cross-Ledger Consistency Audit.
+
+
+Batch 168 — Recovery-Intent Ledger Policy-Drift/Rollback Recovery, Retention Approval Revocation/Replacement, and Cross-Ledger Consistency Audit. Added intent-bound inspection and safe recovery for the recovery-intent ledger checkpoint; policy drift now requires explicit checkpoint policy-binding approval and rollback/continuity uncertainty fails closed. Added append-only revocation and replacement for verification-receipt retention approvals, with source/checkpoint/policy binding, challenge expiry, idempotent revocation, and replacement links to the original approval and valid revocation. Added a read-only cross-ledger audit spanning recovery-intent ledger, attestation lifecycle, manifest gap finalization, verification-receipt checkpoint/retention, and manifest approval ledger; orphaned receipt references and invalid recovery intents are reported as unhealthy. No evidence deletion or compaction is performed. Batch 168 regression tests: 5/5 PASS. Full cumulative `npm test`: 1141/1141 PASS. JavaScript/MJS/CJS syntax, relative import resolution, ZIP integrity, and clean-extraction equivalence: PASS. No GitHub commit was made. HTTP listener startup remains unverified because `express` is unavailable in the validation environment.
+
+At completion of Batch 168, next unfinished stage: Batch 169 — Recovery-Intent Ledger Policy-Binding Receipt Verification, Retention Approval Lifecycle External Anchoring, and Cross-Ledger Drift Remediation Plan/Execution Guard.
+
+
+Batch 169 — Recovery-Intent Ledger Policy-Binding Receipt Verification, Retention Approval Lifecycle External Anchoring, and Cross-Ledger Drift Remediation Plan/Execution Guard. Added policy-binding verification receipts bound to checkpoint/source/policy/approval-chain state; separate external checkpointing for retention review challenges, approvals, revocation challenges, and revocations; and one-event continuity validation for lifecycle reconciliation. Added cross-ledger remediation plans with a 10-minute expiry, stable state fingerprint, whitelisted single-event reconciliation actions, pre-execution revalidation, stale-plan rejection, and idempotent execution records. The cross-ledger audit now includes lifecycle checkpoint and policy-binding receipt state. Batch 169 regression tests: 5/5 PASS. Full cumulative `npm test`: 1146/1146 PASS. JavaScript/MJS/CJS syntax, relative imports, ZIP integrity, and clean-extraction equivalence: PASS. No GitHub commit was made. HTTP listener startup remains unverified because `express` is unavailable in the validation environment.
+
+At completion of Batch 169, next unfinished stage: Batch 170 — Remediation-Execution Receipt External Anchoring, Policy-Binding Receipt Lifecycle/Revocation, and Cross-Ledger Remediation Crash-Recovery.
+
+
+Batch 170 — Remediation-Execution Receipt External Anchoring, Policy-Binding Receipt Lifecycle/Revocation, and Cross-Ledger Remediation Crash-Recovery. Added independent external checkpointing for immutable remediation recovery intents and execution receipts, with durable finalization records and recovery after execution checkpoint CAS conflicts. Added 10-minute challenge-bound revocation and replacement for policy-binding verification receipts, deterministic replacement receipt IDs, append-only lifecycle evidence, and a separate external lifecycle checkpoint. Replacement receipts remain pending until their lifecycle link is recorded; revoked/replaced evidence is retained. The cross-ledger consistency audit now includes policy-binding receipt lifecycle checkpoint state. Batch 170 regression tests: 6/6 PASS. Full cumulative `npm test`: 1152/1152 PASS. JavaScript/MJS/CJS syntax, relative imports, ZIP integrity, and clean-extraction equivalence: PASS. No GitHub commit was made. HTTP listener startup remains unverified because `express` is unavailable in the validation environment.
+
+At completion of Batch 170, next unfinished stage: Batch 171 — Remediation Execution Attestation/Finalization External Binding, Policy-Binding Receipt Lifecycle Crash-Recovery, and Cross-Domain Checkpoint Freshness/Replay Audit.
+
+Current cumulative source status (Batch 186):
+Batch 186 adds an independent external checkpoint for immutable lifecycle recovery-intent bindings; checkpoint preflight before lifecycle event creation; retryable recovery for pending intents using the original challenge; orphan and signing-key-cutoff detection; exact-anchor marker recovery; and continuity decision-gate enforcement. Batch 186 regression tests: 16/16 PASS. Batch 185–186 focused regressions: 22/22 PASS. Batch 177–186 focused regressions: 85/85 PASS. All 173 cumulative test files completed in eight bounded groups: 1,273/1,273 PASS; a single-process `npm test` exceeded the 300-second environment limit. Syntax, relative imports, ZIP integrity, and clean-extraction equivalence are validated. HTTP listener startup remains unverified because express is unavailable in the validation environment. No GitHub commit was made.
+
+At completion of Batch 186, next unfinished stage: Batch 187 — Recovery-Intent Status-Transition Attestation, Explicit Orphan Disposition, and Cross-Domain Recovery Closure Enforcement.
+
+Batch 187 adds an append-only Ed25519-attested recovery-intent status-transition ledger, owner-scoped orphan-disposition challenges (`quarantine` / `mark_unrecoverable`), CAS-protected disposition receipts, and cross-domain closure enforcement. Transition history binds prior/result status and intent digest; current-key freshness is enforced for the latest intent while older transitions remain historically verifiable. Explicitly dispositioned orphans are operationally closed but remain unusable for current decisions. Batch 187 focused regressions: 5/5 PASS; combined Batch 186–187 regressions: 21/21 PASS. Cumulative syntax/import, bounded test groups, archive integrity, and extracted-source checks are recorded in the Batch 187 delivery report. No GitHub commit was made.
+
+At completion of Batch 187, next unfinished stage: Batch 188.
+
+Final Batch 187 validation: all 174 cumulative test files completed in bounded groups, 1,280/1,280 passing; Batch 174–187 rerun after final hardening, 113/113 passing. JavaScript/MJS/CJS syntax and relative import validation passed. No GitHub commit was made.
+
+Batch 188 — Recovery-Intent Closure Ledger External Anchoring, Disposition-Receipt Checkpointing, and Transition-Attestation Continuity Enforcement. Added independent external snapshot checkpoints for status-transition and orphan-disposition ledgers; strict one-event continuity reconciliation; idempotent recovery after external CAS failure; and closure decision-gate enforcement across both checkpoint states. Batch 188 focused tests: 6/6 PASS. No GitHub commit was made.
+
+Batch 189 — Closure Checkpoint Recovery-Intent Receipts, Cross-Domain Anchor Freshness Attestation, and Key-Cutoff-Aware Recovery Closure Finalization. Added signed append-only recovery-intent/finalization events for transition and disposition marker recovery, exact external-anchor binding, idempotent crash recovery after marker commit, signing-key cutoff recording, and a freshness attestation bound to both checkpoint snapshots and the current signing-key lifecycle. Closure audit now fails closed on pending recovery intents, invalid receipts, stale checkpoint evidence, or a missing required freshness attestation. Batch 189 tests: 5/5 PASS; Batch 185–189 regressions: 40/40 PASS. Full-suite bounded-group results and archive verification are recorded in the Batch 189 delivery report. No GitHub commit was made.
+
+At completion of Batch 189, next unfinished stage: Batch 190 — Recovery-Receipt Ledger External Anchoring, Freshness-Attestation Renewal/Revocation, and Closure-Checkpoint Recovery CAS Continuity Audit.
+
+
+Current cumulative source status (Batch 197):
+Batch 197 — Disposition-Checkpoint Marker-Recovery Intent, External Anchor Rollback Recovery, and Lifecycle Closure Receipt Revalidation. Added exact-anchor marker recovery for the dedicated lifecycle-disposition checkpoint; externally anchored recovery intents and finalization receipts; challenge-bound rollback incident disposition with signed events and recovery-receipt checkpoint mirroring; and closure receipt revalidation. Rollback cases remain fail-closed and never mutate the external anchor automatically. Batch 197 focused regressions: 6/6 PASS; Batch 196 regressions after Batch 197 changes: 5/5 PASS. Full validation results are recorded in the Batch 197 delivery report. No GitHub commit was made.
+
+At completion of Batch 197, next unfinished stage: Batch 198 — Lifecycle-Disposition Rollback-Recovery Continuity Ledger, Multi-Receipt Crash Recovery, and Independent External Revalidation Attestation.
+
+
+Batch 200 adds an independent external checkpoint for rollback-revalidation lifecycle events, crash recovery for interrupted lifecycle phase anchoring and finalization, conservative drift-triggered reconciliation, and closure-gate enforcement. Batch 200 focused tests: 6/6 PASS. Batch 190–200 focused tests: 80/80 PASS across separate batch-file runs. No GitHub commit was made. Next unfinished stage: Batch 201.
+
+Batch 209 — Lifecycle Drift-Evidence Checkpoint Lifecycle Management, Receipt-Supersession External Attestation, and Cross-Domain Recovery-Gate Convergence. Added an independent external checkpoint dedicated to receipt lifecycle intent/renewal/supersession/revocation/finalization events, provider/endpoint independence enforcement, one-event checkpoint advancement, crash recovery, and cross-domain convergence audit binding checkpoint and closure generations. Receipt lifecycle operations now require enabled receipt-lifecycle checkpoint currentness; terminal revocation remains decision_blocked and stale anchoring fails closed. Batch 209 focused tests: 5/5 PASS in separate executions. Targeted Batch 208 regressions: 3/3 PASS. Full cumulative npm test is not claimed as passed. JavaScript syntax/imports, ZIP integrity, and clean-extraction equivalence are validated. HTTP listener startup remains unverified because express is unavailable. No GitHub commit was made.
+
+At completion of Batch 209, next unfinished stage: Batch 210 — Receipt-Lifecycle Checkpoint Lifecycle Attestation, Drift-Resolution Supersession Receipt, and Multi-Checkpoint Recovery-Intent Finalization.
+
+Batch 230 — External-Attestation Receipt Renewal and Revocation Lifecycle, Cross-Generation Supersession, and Independent Checkpoint Recovery. Added signed challenge-bound renewal/revocation lifecycle events for Batch 229 external attestations, predecessor/replacement attestation linking, terminal revocation enforcement, signing-key cutoff revalidation, independent checkpoint snapshot coverage, authenticated lifecycle routes, and checkpoint reconciliation. Batch 230 focused tests: 2/2 PASS. Focused Batch 226–230 regression group: 11/11 PASS; Batch 225 regression rerun: 2/2 PASS. A combined Batch 220–230 command exceeded the execution budget; full cumulative tests and positive end-to-end lifecycle integration are not claimed as passing. No GitHub commit was made.
+
+At completion of Batch 230, next unfinished stage: Batch 231 — Lifecycle Finalization Receipt for External-Attestation Renewal/Revocation, Checkpoint-Aware Recovery Replay, and Revocation-Descendant Audit Enforcement.
+
+Current cumulative source status (Batch 244): Batch 244 adds signed external attestations for Batch 243 lifecycle finalization receipts, including source receipt-chain prefix and finalization-event binding, cross-generation predecessor continuity, signing-key cutoff tracking, independent checkpoint snapshot coverage, owner-scoped API routes, and overall recovery-gate convergence. Batch 244 focused regression tests and Batch 102 plus Batches 238–244 regression coverage pass 27/27 against the extracted source. JavaScript/MJS/CJS syntax, relative import resolution, ZIP integrity, and clean-extraction equivalence are validated. The full cumulative npm test suite is not claimed as passed. No GitHub commit was made. HTTP listener startup remains unverified because express is unavailable in the validation environment.
+
+At completion of Batch 244, next unfinished stage: Batch 245 — Renewal/Revocation Lifecycle for Batch 244 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery.
+
+
+Current cumulative source status (Batch 248): Batch 248 adds signed external attestations for Batch 247 lifecycle finalization receipts, cross-generation predecessor continuity, source receipt-chain prefix and finalization-event binding, signing-key cutoff tracking, independent checkpoint snapshot coverage, owner-scoped API routes, and overall recovery-gate convergence. Batch 102 plus Batch 223–248 targeted regressions: 67/67 PASS on the final extracted ZIP; syntax: 340/340 PASS; relative imports: 638 checked, 0 missing; ZIP integrity and clean-extraction equivalence PASS. Full cumulative npm test was not run to completion. HTTP listener startup remains unverified because express is unavailable in the isolated validation environment. No GitHub commit was made.
+
+At completion of Batch 248, next unfinished stage: Batch 249 — Renewal/Revocation Lifecycle for Batch 248 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery.
+
+Current cumulative source status (Batch 249): Batch 249 adds a signed, challenge-bound renewal/revocation lifecycle for Batch 248 external attestations, with cross-generation supersession, lifecycle finalization receipts, terminal revocation enforcement, signing-key cutoff tracking, independent checkpoint snapshot coverage, owner-scoped APIs/routes, and overall recovery-gate convergence. Batch 102 plus Batch 223–249 targeted regressions: 69/69 PASS; JavaScript/MJS/CJS syntax: 341/341 PASS; package JSON parsing and relative-import/application API checks: PASS. ZIP integrity and clean-extraction equivalence are validated. Full cumulative npm test and positive end-to-end lifecycle execution are not claimed as passed. HTTP listener startup remains unverified because express is unavailable in the isolated validation environment. No GitHub commit was made.
+
+At completion of Batch 249, next unfinished stage: Batch 250 — External Attestation for Batch 249 Lifecycle Finalization Receipts, Cross-Generation Receipt Continuity, and Independent Checkpoint Recovery.
+
+Current cumulative source status (Batch 251): Batch 251 adds signed challenge-bound renewal/revocation lifecycle management for Batch 250 external attestations, including monotonic generations, predecessor/replacement supersession, terminal revocation, finalization receipts, deterministic recovery replay, signing-key cutoff handling, independent checkpoint snapshot coverage, owner-scoped routes, and overall recovery-gate convergence. Batch 251 focused tests and source-currentness/API/checkpoint wiring checks pass. Full cumulative npm test and positive end-to-end lifecycle execution are not claimed as passed until their complete runs produce final summaries. HTTP listener startup remains unverified when express is unavailable in the isolated validation environment. No GitHub commit was made.
+
+At completion of Batch 251, next unfinished stage: Batch 252 — External Attestation for Batch 251 Lifecycle Finalization Receipts, Cross-Generation Receipt Continuity, and Independent Checkpoint Recovery.

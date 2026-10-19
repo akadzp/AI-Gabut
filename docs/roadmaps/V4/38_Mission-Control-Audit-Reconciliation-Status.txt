@@ -1,0 +1,8 @@
+V4 Batch 41 — Mission Control Audit Reconciliation Status & Recovery Inspection
+
+Scope:
+- expose a read-only owner-scoped reconciliation status query
+- classify durable reconciliation state as clear, pending, or error
+- surface bounded recovery metadata without mutating mission state
+- expose reconciliation identifier, issue summary, creation time, error, and storage version
+- preserve existing reconciliation, integrity, observability, and execution authority boundaries

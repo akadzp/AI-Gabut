@@ -1,0 +1,15 @@
+V4 Batch 31 — Mission Control Idempotency & Evidence Recovery
+
+Tujuan: membuat operator control aman terhadap retry, duplicate requests, dan kegagalan evidence setelah state control sudah durable.
+
+Scope:
+- optional requestId/idempotencyKey untuk pause/resume/cancel
+- durable bounded control history
+- same requestId + same action menjadi idempotent
+- same requestId + different action ditolak
+- control state dipersist sebelum evidence
+- evidence failure meninggalkan pending marker yang dapat diretry
+- retry menggunakan controlId yang sama sehingga observability dedupe tetap efektif
+- mempertahankan owner-scoping, terminal-state protection, dan scheduler/lease authority
+
+DoD: operator control dapat diretry tanpa duplicate transition/evidence; kegagalan observability setelah state persistence dapat dipulihkan; tidak ada bypass terhadap execution authority.

@@ -1,0 +1,13 @@
+V4 Batch 30 — Mission Control Observability Integration
+
+Tujuan: menjadikan operator pause/resume/cancel sebagai lifecycle control yang durable dan semantically correct, sekaligus mengintegrasikan mission control ke application boundary.
+
+Scope:
+- wire mission control service into the main Agentic application
+- expose owner-scoped pause/resume/cancel mission operations
+- expose mission control status through the application API
+- preserve pause/resume evidence as stage_paused/stage_resumed
+- emit mission_cancelled for terminal operator cancellation instead of misclassifying it as stage_failed
+- keep scheduler/lease/execution authority unchanged
+
+DoD: operator control actions are reachable through the application boundary, persisted before evidence emission, semantically represented in the mission timeline, owner-scoped, and do not directly execute Work.

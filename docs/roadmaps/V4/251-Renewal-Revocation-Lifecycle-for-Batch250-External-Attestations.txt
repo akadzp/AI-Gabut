@@ -1,0 +1,19 @@
+Batch 251 — Renewal/Revocation Lifecycle for Batch 250 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery
+
+Scope:
+- Signed challenge-bound lifecycle intent, renewal, revocation, supersession, finalization, and finalization receipt events.
+- Current-source and independent-checkpoint preconditions.
+- Monotonic lifecycle generation and predecessor/replacement continuity.
+- Terminal revocation and descendant rejection.
+- Deterministic idempotent operation IDs and interrupted-phase recovery.
+- Signing-key cutoff tracking and revalidation.
+- Independent checkpoint snapshot coverage and overall recovery-gate convergence.
+- Owner-scoped authenticated application APIs and HTTP routes.
+
+Validation requirements:
+- Empty-history audit/snapshot/reconcile remain read-only and cannot fabricate lifecycle evidence.
+- Batch 250 source attestation must be current before mutation.
+- Missing receipts or checkpoint drift require recovery; invalid signatures/bindings fail closed.
+- Focused tests, syntax/import validation, archive integrity, and clean-extraction equivalence pass against the final ZIP.
+- Do not claim full cumulative test success or populated-source positive end-to-end success unless those runs complete.
+- No GitHub commit.

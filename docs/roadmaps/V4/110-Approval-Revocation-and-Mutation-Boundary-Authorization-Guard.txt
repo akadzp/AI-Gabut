@@ -1,0 +1,42 @@
+Batch 110 — Approval Revocation and Mutation-Boundary Authorization Guard
+
+Objective
+- Make reconciliation approvals revocable without rewriting the immutable approval snapshot.
+- Bind mutation authorization to one explicit action and one normalized, exact mutation intent.
+- Serialize revocation and mutation claims using the same durable owner-scoped approval record.
+- Fail closed when a mutation outcome is uncertain, and never automatically retry a possibly applied mutation.
+
+Implementation
+- Added atomic `mutateEvidence` support to the Agentic store. It uses the state service's atomic read/modify/write contract for filesystem-backed storage and preserves owner scoping.
+- Added a separate canonical SHA-256 guard-state digest for mutable approval lifecycle metadata. The immutable approval snapshot digest remains unchanged; guard-state tampering is independently detected.
+- Added `approveRecoveryReconciliationAction` and `POST /api/agentic/recovery-audit/plans/:id/actions/:actionId/approval`. Action-bound approval requires an explicit bounded JSON mutation intent whose action ID, operation, issue code, and target match the plan. The intent is normalized, size/depth bounded, and bound by digest. Existing plan-level approvals remain review approvals and cannot cross the mutation boundary.
+- Added idempotent owner-scoped revocation via `revokeRecoveryReconciliationApproval` and `POST /api/agentic/recovery-audit/approvals/:id/revoke`. Revocation is recorded in guard state, invalidates verification immediately, and prevents later mutation authorization. Revocation is refused while a mutation is in progress or its outcome is unknown.
+- Added `runApprovedRecoveryReconciliationMutation`, a trusted in-process mutation wrapper. It atomically claims one action, checks approval/revocation/expiry and current preconditions, requires the exact approved intent digest, supplies an idempotency key and expected record/lease preconditions, and exposes `assertPreconditionsCurrent()` for a last check immediately before a write.
+- A successful callback consumes that action once. A callback error or a completion-recording failure leaves a durable in-progress/indeterminate guard and blocks retries, revocation, and further mutation until a later explicit recovery procedure resolves the unknown outcome. No automatic retry is attempted.
+- Approval listing and verification now report revoked, in-progress, and indeterminate outcomes. Guard-state changes are serialized across independent application instances sharing the same filesystem-backed storage root.
+- No HTTP endpoint accepts arbitrary mutation callbacks or automatically applies a reconciliation plan. All approval and mutation flags continue to deny automatic execution.
+
+Regression coverage
+- Action-specific intent and target binding; plan-level approval rejection at mutation boundary.
+- Idempotent revocation and immediate verification/mutation denial.
+- Cross-owner revocation and authorization denial.
+- Intent mismatch and changed-precondition rejection before callback execution.
+- Expected version/fingerprint/lease preconditions and pre-write revalidation callback.
+- One-time action consumption and duplicate mutation rejection.
+- Concurrency across separate application instances sharing one storage root.
+- Indeterminate callback outcome fail-closed behavior and refusal to revoke an unresolved mutation.
+- Independent guard-state digest tamper detection.
+- Approval listing and HTTP route mapping.
+
+Operational boundaries
+- The mutation wrapper is an authorization boundary for trusted in-process code, not a general transaction manager. Mutation callbacks must call `assertPreconditionsCurrent()` immediately before changing state and must enforce expected record versions and lease fencing at the actual write boundary.
+- External side effects cannot be rolled back by this guard. A callback error is treated as an unknown outcome and is deliberately not retried. A later stage must provide an explicit, evidence-backed resolution workflow for abandoned in-progress/indeterminate claims.
+- Revocation and mutation claims are durable across processes sharing one filesystem-backed storage root; this is not a distributed transaction for separate hosts or unrelated storage backends.
+- The current owner identity is also the approver/revoker identity; separate role-based approval policy is not introduced in this stage.
+- HTTP listener startup is not claimed as boot-tested in this isolated environment. Server syntax, route mapping, application API mapping, and regression tests are validated.
+
+Validation
+- See `docs/status/00_Current-Status.txt` for the measured cumulative test, syntax, import, and archive results for this batch.
+- No GitHub commit is made.
+
+Next unfinished stage: Batch 111 — Indeterminate Mutation Outcome Recovery and Explicit Claim Resolution.

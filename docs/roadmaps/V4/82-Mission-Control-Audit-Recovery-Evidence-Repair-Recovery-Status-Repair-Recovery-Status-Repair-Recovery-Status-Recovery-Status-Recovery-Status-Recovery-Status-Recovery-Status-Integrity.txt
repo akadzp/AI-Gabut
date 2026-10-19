@@ -1,0 +1,20 @@
+V4 Batch 82 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Repair Recovery Status Recovery Status Recovery Status Recovery Status Recovery Status Integrity
+
+Scope completed:
+- adds a read-only, owner-scoped integrity verifier for the Batch 81 recovery-observability status view
+- validates pending-intent object shape, nullable reconciliation ID, creation timestamp, retry marker, and deterministic mission-scoped dedupe key
+- detects malformed pending intent and orphaned durable error markers with stable issue codes
+- bounds returned reconciliation metadata, creation time, dedupe key, and durable error text
+- reports recoverability only when pending intent metadata and its deterministic dedupe key are valid
+- performs no mutation, retry, recovery, repair, or event emission
+- exposes verifyMissionControlAuditRecoveryEvidenceRepairRecoveryStatusRepairRecoveryStatusRepairRecoveryStatusRecoveryStatusRecoveryStatusRecoveryStatusRecoveryStatus through the application boundary
+
+Validation:
+- dedicated regression tests: 9/9 PASS
+- cumulative npm test: 343/348 PASS; the same five pre-existing baseline failures remain (missing core/storage/state/index.js in artifacts and work-recovery, missing core/security/index.js in work-git, external-feedback ID/provenance expectation mismatch, and missing github.workflowRuns mock); no new failures
+- JavaScript/MJS syntax validation: 96/96 PASS
+- application-boundary mapping: PASS
+- ZIP integrity: PASS (zip -T and unzip -t); extracted-archive regression recheck: 9/9 PASS; extracted syntax validation: 96/96 PASS
+- no GitHub commit
+
+Next unfinished stage: Batch 83.

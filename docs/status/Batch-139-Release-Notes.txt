@@ -1,0 +1,38 @@
+Agentic AI V4 — Batch 139 Release Notes
+
+Stage
+-----
+Trust-Policy Anchor Provider Conformance, Policy-Authority Root Recovery, and Retention Audit Reconciliation
+
+Changes
+-------
+- Added challenge-bound conformance testing for the provider used by provider-identity trust-policy external anchors. Probes validate declared 1.1.0 contract metadata, empty disposable namespace, genesis CAS, read-after-write consistency, stale-CAS rejection, monotonic sequence/revision and digest continuity, namespace isolation, concurrent single-winner CAS, and anchor shape/owner binding.
+- Conformance probes use a disposable namespace derived from an ephemeral probe-owner identity; they do not write to the production trust-policy namespace. The provider may retain disposable records if it does not expose deletion. Reports are digest-bound and retained in the existing bounded evidence registry/hash chain. Completed runs are idempotent and retention can be retried after an interrupted save.
+- Added independent policy-authority root recovery for an operational authority key that is considered compromised. Recovery requires a separately configured Ed25519 root public key, a root signature over a challenge bound to the current policy digest/revision, and proof of possession from a preconfigured standby operational key. Root keys are rejected if they reuse public-key material from operational signing or policy-authority keys.
+- Root recovery appends a `root_recover` event to the policy-authority hash chain, revokes the prior active key, activates the preconfigured standby key, and sets a compromise cutoff. Historical validation verifies the independent root signature and replacement-key proof; signatures issued before the cutoff may remain historically trusted, while signatures at/after the cutoff are rejected.
+- Added cross-store retention audit reconciliation across retained evidence records, retained-evidence chain, trust-policy conformance reports, and policy-authority lifecycle audit. Reconciliation never rewrites local evidence or trust policies. It blocks on integrity findings and only advances an external retained-evidence chain anchor when existing records and chain history audit cleanly and the chain is provably behind. Added regression coverage for both blocked tampering and safe anchor advancement after a temporary provider-write outage.
+- Added authenticated HTTP routes for trust-policy provider conformance, policy-authority root-recovery challenge/apply, and retention reconciliation audit/reconcile.
+
+Configuration
+-------------
+- `recoverySloProviderIdentityPolicyAuthorityRootRecoveryPublicKeys` accepts a trusted key registry keyed by root key ID.
+- Alternatively, `AGENTIC_PROVIDER_IDENTITY_POLICY_AUTHORITY_ROOT_RECOVERY_PUBLIC_KEYS` accepts a JSON object mapping root key IDs to Ed25519 public-key PEM strings. Keep root private keys outside application storage.
+- The root recovery registry must be operationally independent from the policy-authority and drift/recovery signing-key registries.
+
+Validation
+----------
+- Batch 139 regression tests: 7/7 PASS.
+- Full cumulative `npm test`: 963/963 PASS, exit code 0.
+- JavaScript/MJS syntax and relative import resolution: verified in the final archive build.
+- ZIP integrity (`zip -T`, `unzip -t`) and extracted-source revalidation: verified in the final archive build.
+- GitHub commit: none.
+
+Operational boundaries
+----------------------
+- Root recovery is for a still-integrity-valid and externally trusted policy ledger whose active operational key is compromised/unavailable; it does not reconstruct a corrupt policy ledger or bypass an untrusted/mismatched external checkpoint.
+- Root recovery requires a preconfigured standby operational public key and separate root authority. If the active key is compromised, root authority private material must remain out-of-band and be protected independently.
+- The trust-policy anchor provider conformance probe writes to a disposable namespace that may remain if the provider has no delete API.
+- Retention reconciliation does not repair tampered local records, policy ledgers, or missing chain events. It may only advance a verifiably behind external chain anchor after integrity checks pass.
+- External anchor durability and administrative independence remain deployment responsibilities. HTTP listener startup remains unverified in this isolated validation environment.
+
+Next stage Batch 140 completed: Root-Recovery Trust Rotation and Revocation Audit, Retention Reconciliation Evidence Attestation, and Provider Conformance Drift Watch.

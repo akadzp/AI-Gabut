@@ -1,0 +1,24 @@
+Agentic AI V4 — Batch 215
+
+Objective
+Add signed external attestation for finalized finalization-attestation lifecycle receipts and enforce independent checkpoint currentness across lifecycle receipt renewal/revocation and recovery-gate convergence.
+
+Required invariants
+1. Each attestation binds the latest finalized lifecycle event, receipt ID/digest, receipt lifecycle generation, checkpoint fingerprint/anchor metadata, and current signing-key lifecycle binding.
+2. Attestation generations are monotonic; repeated attestation of an unchanged current lifecycle receipt is idempotent.
+3. The attestation checkpoint uses a distinct trust domain and rejects provider/endpoint reuse.
+4. The attestation event is excluded from the receipt checkpoint's own projection to avoid a circular checkpoint dependency.
+5. A failed external write leaves the signed event recoverable and does not duplicate it on retry.
+6. New lifecycle receipt operations are blocked while a configured attestation checkpoint is stale.
+7. Attesting a revocation does not remove the terminal decision blocker.
+
+Implementation
+- Added signed event `proof_continuity_finalization_attestation_lifecycle_receipt_lifecycle_attested`.
+- Added independent trust domain `cross_domain_finalization_attestation_receipt_lifecycle_attestations`.
+- Added enrollment, status, audit, reconcile, attestation, and lifecycle-receipt attestation-audit routes.
+- Added attestation lifecycle checks to cross-domain convergence and recovery decision gating.
+
+Validation
+- Batch 215 focused tests: 4/4 pass individually.
+- Batch 214 compatibility tests: 3/3 pass individually.
+- Full cumulative `npm test` is not claimed as passing.

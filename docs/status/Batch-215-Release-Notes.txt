@@ -1,0 +1,5 @@
+Agentic AI V4 — Batch 215 Release Notes
+
+Added signed, replay-safe external attestation for finalization-attestation lifecycle receipts; an independent external checkpoint; checkpoint enrollment, audit, status, and reconciliation routes; automatic attestation after lifecycle receipt renewal/revocation; stale-checkpoint blocking; and cross-domain convergence integration.
+
+Validation: Batch 215 focused tests 4/4 passed individually; Batch 214 compatibility tests 3/3 passed individually. Combined Batch 215 test invocation timed out after its first test in this environment, so the complete suite is not claimed as passing. Full cumulative npm test is not claimed as passing. No GitHub commit was made.

@@ -1,7 +1,6 @@
 V4 — HUMAN / AGENT COLLABORATION
 
-Tujuan: memungkinkan manusia mengarahkan Agent tanpa mengambil alih
-seluruh execution secara manual.
+Tujuan: memungkinkan manusia mengarahkan Agent tanpa mengambil alih seluruh execution secara manual.
 
 Scope:
 - instruction refinement
@@ -15,5 +14,13 @@ Scope:
 - collaboration boundaries
 - explicit future multi-user collaboration
 
-DoD: User dapat mengoreksi arah Agent di tengah work dengan state dan
-ownership tetap konsisten.
+Implementation:
+- collaboration record durable dan owner-scoped
+- human instruction refinement/correction melalui Work Execution revise boundary
+- pause/resume melalui Work Execution authority yang sama
+- feedback disimpan sebagai collaboration evidence
+- provenance actor/source pada setiap collaboration event
+- realtime collaboration activity
+- API collaboration surface
+
+DoD: User dapat mengoreksi arah Agent di tengah work dengan state dan ownership tetap konsisten.

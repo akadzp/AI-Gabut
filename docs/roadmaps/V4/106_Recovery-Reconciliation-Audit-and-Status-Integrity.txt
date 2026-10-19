@@ -1,0 +1,29 @@
+Agentic AI V4 — Batch 106
+Recovery Reconciliation Audit and Status Integrity
+
+Scope
+- Adds an owner-scoped, read-only audit service for Work, task, execution, durable execution lease, and recovery metadata.
+- Detects missing Work/task links, mismatched task-to-Work references, divergent active Work/execution/task statuses, dangling Work recovery references, invalid recovery fencing metadata, and recovery fence regressions.
+- Detects running Work or execution records without an active durable lease, active lease owner/fence mismatches, and leases that remain active for paused or terminal Work.
+- Checks Work-owned task/execution references and identifies active tasks without an associated execution.
+- Returns stable issue codes, deterministic ordering, bounded identifiers/messages, summary counts, health status, and truncation metadata; never returns lease tokens, prompts, checkpoints, or arbitrary record payloads.
+- Uses complete in-memory lookup maps while limiting audited records so records outside the audit page are not falsely reported as missing.
+- Exposes `recoveryAudit.inspect`, `inspectWorkRecoveryIntegrity`, and `auditWorkRecovery` through the application boundary.
+- Does not mutate Work, task, execution, recovery metadata, or lease records; does not perform repair or recovery.
+
+Validation
+- Batch 106 regression tests: 12/12 PASS.
+- Cumulative `npm test`: 602/602 PASS.
+- JavaScript/MJS syntax checks: 136/136 PASS.
+- Relative import resolution: PASS; no missing relative imports.
+- Read-only version preservation, owner isolation, deterministic issue ordering, bounded output/truncation, cross-record linkage, lease ownership/fencing, and recovery metadata integrity: PASS.
+- ZIP integrity (`zip -T` and `unzip -t`): PASS.
+- Extracted-archive cumulative test suite: 602/602 PASS; Batch 106 regression tests: 12/12 PASS; syntax: 136/136 PASS; relative import resolution: PASS.
+- No GitHub commit was made.
+
+Limitations
+- Audit is a read-only point-in-time diagnostic; it does not atomically snapshot all records and may report short-lived intermediate states during concurrent lifecycle transitions.
+- It uses the existing owner-scoped store list methods; large datasets are reported as truncated according to the configured per-entity limit.
+- The HTTP listener was not directly booted in this stage; the audit is exposed through the application boundary.
+
+Next unfinished stage: Batch 107 — Recovery Audit Evidence and Bounded Reconciliation Planning.

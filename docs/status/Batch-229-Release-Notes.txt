@@ -1,0 +1,11 @@
+Agentic AI V4 — Batch 229 Release Notes
+
+Added signed external attestations for Batch 228 lifecycle finalization receipts, receipt-to-finalization and source-chain binding checks, predecessor-attestation continuity, historical receipt coverage checks, key-cutoff status, and an independent external checkpoint domain for Batch 229 snapshots. The new checkpoint participates in finalization checkpoint advancement and recovery-gate convergence and rejects provider/endpoint reuse.
+
+Validation:
+- Batch 229 focused tests: 3/3 PASS.
+- Focused Batch 223–229 regression tests: 15/15 PASS.
+- Broader Batch 220–229 combined test command exceeded the execution budget.
+- Full cumulative npm test, positive end-to-end renewal/revocation with external checkpoint failure injection, and live HTTP startup are not claimed as passing.
+
+No GitHub commit was made.

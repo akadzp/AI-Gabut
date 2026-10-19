@@ -1,0 +1,13 @@
+V4 Batch 34 — Mission Control Concurrency-Safe Transitions
+
+Tujuan: mencegah mission control transition menimpa perubahan durable yang terjadi bersamaan ketika operator melakukan pause/resume/cancel.
+
+Scope:
+- deteksi optimistic concurrency/version conflict pada control transition
+- retry bounded terhadap mission state terbaru
+- hormati control request idempotency setelah refresh state
+- fail closed jika conflict tetap terjadi setelah retry
+- jangan menerbitkan evidence untuk transition yang gagal dipersist
+- pertahankan integrity gate, owner-scoping, execution authority, dan approval boundary
+
+DoD: concurrent control update tidak dapat ditimpa oleh stale writer; transition hanya dianggap berhasil jika durable write berhasil; persistent version conflict menghasilkan error deterministik tanpa transition/evidence palsu.

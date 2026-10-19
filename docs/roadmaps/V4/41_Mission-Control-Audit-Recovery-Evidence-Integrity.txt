@@ -1,0 +1,9 @@
+V4 Batch 44 — Mission Control Audit Recovery Evidence Integrity Verification
+
+Scope:
+- add a read-only owner-scoped verification boundary for pending audit-recovery evidence
+- validate durable recovery-evidence metadata before any recovery retry
+- detect malformed reconciliation IDs, phases, retry flags, timestamps, and bounded dedupe keys
+- preserve recovery execution authority, reconciliation authority, idempotency, and concurrency behavior
+
+DoD: malformed pending recovery-evidence state is detectable without mutation; valid pending state exposes a deterministic dedupe key; clear state remains a read-only valid no-op.

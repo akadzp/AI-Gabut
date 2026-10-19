@@ -1,0 +1,11 @@
+Agentic AI V4 — Batch 235 Release Notes
+
+- Added signed external attestations for Batch 234 lifecycle finalization receipts.
+- Bound each attestation to the source receipt, lifecycle finalization, source/target attestation, intent/action events, receipt-prefix digest, source checkpoint fingerprint, lifecycle audit digest, and signing-key binding.
+- Added idempotent append-only replay and monotonic predecessor continuity.
+- Added owner-scoped attest/audit/snapshot/reconcile endpoints.
+- Added Batch 235 status to the overall attestation-receipt recovery-gate convergence audit.
+- Added regression coverage for empty-history fail-closed behavior and route/API registration.
+- No GitHub commit performed.
+
+Validation limitation: focused tests do not establish full positive end-to-end renewal/revocation and checkpoint failure recovery. The cumulative test suite must be run in the deployment environment.

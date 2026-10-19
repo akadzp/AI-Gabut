@@ -1,0 +1,39 @@
+Agentic AI V4 — Batch 144 Release Notes
+
+Stage
+-----
+Decision-Gate Evidence Chain Anchoring, Root-Trust Baseline Rotation/Revalidation, and Drift-Checkpoint Freshness Monitoring
+
+Changes
+-------
+- Added an independent external CAS anchor for retention-reconciliation decision-gate audit evidence. Each anchor entry binds a retained-evidence-chain event digest, source event sequence/type, record digest, payload digest, status, owner scope, and previous anchor digest. The source order follows the retained-evidence chain event sequence, not timestamps or random record IDs.
+- Added explicit legacy enrollment for pre-existing decision-gate evidence. Enrollment is challenge-bound, expires after ten minutes, validates the evidence audit and source chain, and permanently marks pre-enrollment history as unproven. Missing anchors after enrollment, mismatches, stale markers, invalid source events, and CAS failures fail closed.
+- Wrapped audited current-decision evaluation so an allow result is returned only after the decision-gate evidence has been externally anchored when a provider is configured. If anchoring fails after the underlying gate allows, a retained denied/supersession audit event records that the final decision was blocked; audit counts exclude the superseded allow outcome. If denial evidence cannot be anchored, the denial remains and the anchor failure is surfaced.
+- Added explicit root-trust conformance baseline lifecycle management: challenge-bound initial enrollment/rotation, ten-minute expiry, optimistic revision/digest checks, provider identity/contract revalidation at signing, retained lifecycle events linked by digest, current-baseline lookup, revalidation, and lifecycle continuity audit. Old attestations remain historical evidence but only the pointer-selected current baseline can be returned as current by the new lifecycle API.
+- Added signed drift-checkpoint freshness metadata and current-decision enforcement. Historical signature validity is separated from freshness and current usability. The continuity audit reports freshness metrics without incorrectly treating a stale but intact historical receipt as chain corruption.
+- Added owner-scoped application APIs and authenticated HTTP routes for decision-gate external anchoring/enrollment/reconciliation, root-trust baseline rotation/current/revalidation/audit, and drift-checkpoint freshness checks.
+- Added retained-evidence artifact support for root-trust baseline lifecycle events and a read-only retained-evidence-chain history API used to bind external decision-gate anchors to immutable source event digests.
+
+Configuration
+-------------
+- Decision-gate external anchor: `AGENTIC_RETENTION_DECISION_GATE_ANCHOR_URL`, `AGENTIC_RETENTION_DECISION_GATE_ANCHOR_TOKEN`, and optional strict mode `AGENTIC_REQUIRE_RETENTION_DECISION_GATE_ANCHOR=true`.
+- Equivalent application options: `recoverySloRetentionDecisionGateAnchor` and `requireRecoverySloRetentionDecisionGateAnchor`.
+- Drift-checkpoint freshness: `AGENTIC_DRIFT_CHAIN_CHECKPOINT_MAX_AGE_MS` (default 86400000; 60000–2592000000) and `AGENTIC_DRIFT_CHAIN_CHECKPOINT_FUTURE_SKEW_MS` (default 60000; 0–600000).
+- Root-trust baseline lifecycle uses the existing baseline signer and trusted public-key registry. Lifecycle transitions are retained for up to 3650 days; pruning lifecycle records makes continuity unproven and blocks healthy lifecycle status.
+
+Validation
+----------
+- Batch 144 regression tests: 7/7 PASS.
+- Full cumulative `npm test`: 996/996 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax, relative import resolution, ZIP integrity, and extracted-source revalidation: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+----------------------
+- A configured decision-gate anchor failure prevents the final allow result. Existing local audit evidence remains for later explicit enrollment/reconciliation; pre-enrollment history is marked unproven.
+- External anchoring relies on the deployed provider's CAS semantics, durability, and administrative independence.
+- Root-trust baseline lifecycle preserves `historyNotProven`; revalidation proves current provider match and retained lifecycle continuity, not pre-enrollment history.
+- Drift checkpoint freshness is enforced by the new explicit current-decision API. Historical verification remains distinct; consumers requiring current evidence must call the freshness gate.
+- HTTP listener startup remains unverified in this isolated environment; source syntax, imports, route mapping, tests, archive integrity, and extracted-source revalidation were checked.
+
+Next unfinished stage: Batch 145 — Decision-Gate Anchor Conformance and Recovery, Baseline Lifecycle External Checkpointing, and Freshness Policy Drift Audit.

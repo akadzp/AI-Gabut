@@ -1,0 +1,15 @@
+Agentic AI V4 — Batch 262
+
+Objective: externally attest Batch 261 lifecycle finalization receipts and preserve cross-generation receipt continuity with independent checkpoint recovery.
+
+Controls:
+- Signed append-only external attestation event.
+- Binding to source receipt, lifecycle finalization, intent/action, target/replacement attestation, receipt-prefix digest, checkpoint fingerprint, lifecycle audit digest, and key lifecycle.
+- Monotonic attestation generation with predecessor ID/digest continuity.
+- Signature verification, missing-attestation detection, key-cutoff evaluation, and checkpoint-aware recovery.
+- Owner-scoped application APIs and HTTP endpoints.
+- Integration with overall recovery-gate convergence.
+
+Validation boundary: focused regression tests and static/archive checks are reported in BATCH262_VALIDATION_REPORT.md. Full cumulative tests, positive end-to-end lifecycle execution, and direct HTTP listener startup are not claimed as passed.
+
+Next: Batch 263 renewal/revocation lifecycle for Batch 262 external attestations.

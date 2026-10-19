@@ -1,0 +1,17 @@
+Agentic AI V4 — Batch 199 Release Notes
+
+Features:
+- Added signed lifecycle intent/applied/finalization events for rollback-revalidation attestation renewal and revocation.
+- Renewal produces a new generation-bound attestation and supersedes the previous target.
+- Revocation is terminal for the target attestation and blocks current-decision use.
+- Added idempotent crash recovery after durable intent and external checkpoint write failure.
+- Added lifecycle audit for duplicate phases, target replay, replacement binding, missing receipts, and key cutoff.
+- Added explicit external-anchor drift monitoring and generation-aware revalidation API support.
+- Added HTTP endpoints for lifecycle audit, drift monitoring, prepare, and apply.
+
+Validation performed:
+- Batch 199 tests: 13/13 PASS.
+- Batch 190–199 focused regression range: 74/74 PASS across per-batch runs.
+- Syntax: 279/279 PASS; relative imports: 567 checked, 0 missing; ZIP integrity and post-extraction source comparison: PASS.
+
+No GitHub commit was made. Private keys are not included.

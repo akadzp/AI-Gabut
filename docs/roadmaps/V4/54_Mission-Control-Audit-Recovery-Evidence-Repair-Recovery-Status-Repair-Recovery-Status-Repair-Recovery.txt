@@ -1,0 +1,19 @@
+V4 Batch 60 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Repair Recovery
+
+Scope completed:
+- explicit bounded recovery for the durable observability intent introduced by Batch 59
+- reuses the exact deterministic Batch 59 event type and dedupe key so retries remain idempotent
+- clears pending intent and error only after evidence emission succeeds and the version-checked write succeeds
+- preserves pending intent plus a durable error when emission fails
+- owner-scoped read/write operations and optimistic-concurrency retries
+- read-only no-op when no pending intent exists; malformed intent fails closed
+- application boundary exposes recoverMissionControlAuditRecoveryEvidenceRepairRecoveryStatusRepairRecoveryStatusRepair
+
+Validation:
+- Batch 60 dedicated regression tests: 4/4 PASS
+- Batch 59 dedicated regression tests: 3/3 PASS
+- cumulative npm test: 155/160 PASS; 5 baseline failures remain outside Batch 60: missing core/storage/state/index.js affects two test files, missing core/security/index.js affects one test file, and two existing external-feedback tests fail
+- JavaScript/MJS syntax validation: PASS
+- ZIP integrity validation: PASS
+
+Next unfinished stage: Batch 61.

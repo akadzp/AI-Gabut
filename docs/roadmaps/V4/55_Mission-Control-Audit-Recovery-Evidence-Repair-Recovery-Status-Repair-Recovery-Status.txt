@@ -1,0 +1,16 @@
+V4 Batch 61 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status
+
+Scope completed:
+- read-only status view for the durable observability intent recovered by Batch 60
+- reports clear, pending, or error phase without mutation, emission, or retry
+- exposes bounded reconciliation metadata, repair retry marker, creation time, durable error, and storage version
+- owner-scoped through the canonical mission lookup
+- application boundary exposes getMissionControlAuditRecoveryEvidenceRepairRecoveryStatusRepairRecoveryStatusRepairRecoveryStatus
+
+Validation:
+- Batch 61 dedicated regression tests: 5/5 PASS
+- cumulative npm test: 160/165 PASS; five known baseline failures remain outside Batch 61
+- JavaScript/MJS syntax validation: PASS
+- ZIP integrity validation: PASS
+
+Next unfinished stage: Batch 62.

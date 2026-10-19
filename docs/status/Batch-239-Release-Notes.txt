@@ -1,0 +1,21 @@
+Agentic AI V4 — Batch 239 Release Notes
+
+Batch 239 adds a signed renewal/revocation lifecycle for Batch 238 external attestations, cross-generation supersession, lifecycle finalization receipts, checkpoint-aware replay, and recovery-gate convergence.
+
+Implemented
+- Owner-bound prepare/apply challenge flow with TTL, explicit confirmation, and ledger-head snapshot binding.
+- Signed intent, renewed, revoked, superseded, finalized, and finalization-receipt events.
+- Deterministic operation IDs for replay-safe recovery.
+- Renewal replacement binding and terminal revocation enforcement.
+- Finalization receipt chain with predecessor ID/digest, lifecycle event binding, action binding, audit digest, key-cutoff evidence, and checkpoint fingerprint.
+- Receipt-chain and lifecycle audit with signature verification, orphan detection, duplicate detection, generation validation, and missing-receipt recovery state.
+- Independent checkpoint snapshot coverage for Batch 239 events.
+- Application wrappers and authenticated HTTP routes for prepare, apply, audit, snapshot, and reconcile.
+- Overall recovery-gate convergence includes Batch 239 lifecycle status.
+
+Validation note
+- Regression tests executed for Batch 102 and selected lifecycle batches 227–239: 32/32 passed.
+- Batch 239 focused tests: 2/2 passed.
+- Syntax and archive validation are reported separately with the delivered ZIP.
+- Full cumulative `npm test` and positive end-to-end lifecycle execution were not established as passing in this release.
+- No GitHub commit was made.

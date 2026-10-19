@@ -1,0 +1,50 @@
+Agentic AI V4 — Batch 116
+Trust-Registry External Anchoring and Rollback Detection
+
+Scope
+- Anchor the owner-scoped Ed25519 trust registry to a separately operated monotonic service so a locally restored or rolled-back registry can be detected.
+- Fail closed when an enabled external anchor is unavailable, missing for an already-mutated registry, ahead of the local revision, or inconsistent with the local history.
+- Provide explicit quorum-based enrollment for a non-genesis registry whose anchor is absent, and a bounded reconciliation path for an anchor that lagged after a valid local trust transition.
+
+Implementation
+- Added the optional `attestationTrustAnchor` provider to `createAgenticApplication` and `createRecoveryAuditPlanningService`. The provider contract is `read(ownerId)` and `compareAndSet(ownerId, expectedDigest, candidate)`. The provider must be independent of the Agentic application's local storage and must enforce atomic compare-and-set, monotonic anchor sequence/revision, append-only history, and no deletion/rollback.
+- Added `apps/agentic/backend/external-trust-anchor-client.js`, an HTTPS-first HTTP adapter. It uses owner-scoped GETs and conditional PUTs (`If-None-Match: *` for genesis, `If-Match` for updates), rejects redirects, disables caching, bounds request time, and requires a bearer token. HTTP is accepted only for loopback development URLs.
+- The external anchor binds owner, trust revision/digest, bootstrap digest, trust-history head hash, monotonic anchor sequence, previous anchor digest, timestamp, and transition reason. Every accepted write is read back and validated before the application reports the anchor as current.
+- A clean revision-zero/genesis registry can be anchored automatically on a trust-sensitive operation or through explicit reconciliation. A missing anchor for a non-genesis registry is not silently recreated; quorum enrollment requires a fresh challenge bound to the current trust digest, revision, head hash, and bootstrap digest.
+- The enrollment challenge expires within five minutes and requires a majority of currently active Ed25519 trust keys. The external provider must atomically create the first anchor with sequence 1 and the enrollment challenge ID. A challenge cannot authorize a different registry snapshot.
+- Trust audit reports external anchor missing, unavailable, malformed, mismatched, behind, or ahead. A higher external revision than the local revision is reported as rollback detection. Same-revision digest/head conflicts are not repaired automatically.
+- Trust rotation/revocation and external attestation issuance/verification check the current anchor. The approved-mutation boundary checks the anchor both before acquiring a mutation claim and again immediately before invoking the mutation callback.
+- If a valid local trust transition was committed but the external write failed, new trust operations are blocked. `reconcileRecoveryReconciliationMutationOutcomeLedgerAttestationTrustAnchor` advances the anchor only after the local trust-history audit is complete and healthy and the external anchor is a verified ancestor of the current local history.
+- Added application APIs: `getRecoveryReconciliationMutationOutcomeLedgerAttestationTrustAnchorStatus`, `reconcileRecoveryReconciliationMutationOutcomeLedgerAttestationTrustAnchor`, `createRecoveryReconciliationMutationOutcomeLedgerAttestationTrustAnchorEnrollmentChallenge`, and `initializeRecoveryReconciliationMutationOutcomeLedgerAttestationTrustAnchor`.
+- Added authenticated HTTP endpoints under `/api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor` for status, reconciliation, enrollment challenge creation, and quorum enrollment.
+
+Configuration
+- Set `AGENTIC_TRUST_ANCHOR_URL` to the base URL of an independently operated anchor service. The client calls `<base>/v1/anchors/<URL-encoded-ownerId>`.
+- Set `AGENTIC_TRUST_ANCHOR_TOKEN` to a bearer token accepted by that service. Do not place the token in source files or logs.
+- Alternatively, inject an `attestationTrustAnchor` object when creating the application. It must implement `read(ownerId)` and `compareAndSet(ownerId, expectedDigest, candidate)`.
+- Remote GET returns `{ "anchor": null }` with HTTP 200 or 404 when no anchor exists; otherwise it returns `{ "anchor": <record> }`. Conditional PUT accepts `{ "anchor": <candidate> }`, returns `{ "applied": true, "anchor": <record> }` on success, and HTTP 409/412 with the current anchor on compare-and-set conflict.
+- The remote service, not merely this client, must enforce monotonic sequence and revision, previous-digest continuity, no same-revision divergent digest, atomic CAS, durable retention, and no deletion. A generic key/value endpoint without these invariants is not a secure anchor.
+- If no provider is configured, the API explicitly reports `rollbackProtectionEnabled: false` and preserves legacy behavior. The application does not claim rollback resistance without an independent anchor.
+
+Operational procedure
+1. Deploy the external anchor service in a separate trust/storage boundary and verify its append-only CAS guarantees before enabling the application client.
+2. Configure the URL and bearer token, then run `POST .../anchor/reconcile` or perform a trust-sensitive operation. A genesis registry is anchored at revision 0.
+3. Verify `GET .../anchor` reports `anchored` and the trust audit is healthy before relying on rollback protection.
+4. For an existing non-genesis registry with no external anchor, inspect the local trust-history audit out of band, create an enrollment challenge, obtain majority signatures from currently active trusted keys over the exact canonical challenge payload, and apply the enrollment. This establishes a new baseline; it cannot prove the registry was never rolled back before the first external anchor.
+5. If the local registry is behind the anchor or its same-revision digest differs, do not reset or overwrite the external anchor. Restore the trusted local state from a verified backup or follow a separately approved trust-root recovery process.
+6. If the local registry is valid and ahead only because an anchor write failed, run anchor reconciliation after restoring provider availability. No trust transition or mutation is allowed while the anchor is behind.
+
+Validation
+- Batch 116 regression tests: 15/15 PASS.
+- Full cumulative `npm test`: 724/724 PASS.
+- JavaScript/MJS syntax, relative import resolution, archive integrity, and extracted-source tests validated.
+- No GitHub commit was made.
+
+Operational boundaries
+- The HTTP adapter is a client for a separately operated service; this source tree does not implement or host the remote anchor server. The remote server's monotonicity and durability guarantees must be independently reviewed.
+- The anchor is optional for backward compatibility. If it is not configured, `rollbackProtectionEnabled` is false and rollback detection against an external monotonic source is unavailable.
+- Initial enrollment of a pre-existing non-genesis registry is a new trust baseline. Quorum signatures authorize that baseline but cannot prove facts before enrollment.
+- If the remote service itself can be rolled back, deleted, or rewritten by an attacker, the guarantee is weakened. Use independently controlled append-only or write-once storage with its own access controls and backups.
+- HTTP listener startup was not tested in this validation environment because Express is unavailable. Server syntax, route mapping, application API mapping, and regression tests passed.
+
+Batch 117 completed the external anchor conformance and cross-store recovery protocol. Next unfinished stage: Batch 118 — Cross-Store Recovery Audit and Anchor-Service Health Telemetry.

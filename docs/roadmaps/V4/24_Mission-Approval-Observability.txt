@@ -1,0 +1,20 @@
+V4 — MISSION APPROVAL OBSERVABILITY INTEGRATION
+
+Tujuan: menjadikan approval lifecycle mission sebagai evidence timeline durable tanpa mengambil alih execution authority.
+
+Scope:
+- durable approval-requested event
+- durable approval-resolved event untuk approved/rejected/expired
+- owner-scoped mission event persistence
+- scheduler/approval/expiry integration
+- application exposure untuk mission timeline dan snapshot
+
+Implementation:
+- mission-events ditambahkan ke persistent store scopes
+- scheduler mencatat approval_requested setelah state waiting_approval dipersist
+- approval service mencatat approval_resolved setelah decision dipersist
+- expiry service mencatat approval_resolved dengan status expired
+- application menyediakan mission observability service, timeline, dan snapshot
+- observability tetap evidence/notification surface; tidak dapat menjalankan Work atau melewati approval gate
+
+DoD: seluruh lifecycle approval mission dapat ditelusuri melalui timeline durable dan snapshot owner-scoped, sementara execution authority tetap berada pada scheduler/Work execution boundary.

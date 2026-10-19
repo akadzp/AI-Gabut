@@ -1,0 +1,25 @@
+V4 Batch 40 — Mission Control Audit Reconciliation Concurrency Safety
+
+Tujuan: memastikan audit reconciliation tetap idempotent dan fail-closed ketika beberapa operator/recovery worker merekonsiliasi durable mission control state secara bersamaan.
+
+Scope:
+- retry bounded setelah optimistic storage version conflict
+- gunakan durable winner state sebagai sumber kebenaran setelah conflict
+- jika winner meninggalkan pending reconciliation evidence, selesaikan evidence menggunakan reconciliationId winner
+- jika winner sudah menghasilkan durable valid state, retry menjadi no-op
+- tidak membuat duplicate reconciliation evidence karena observability dedupe key tetap scoped oleh reconciliationId
+- tidak mengubah control transition atau execution authority
+
+Implementation:
+- reconciliation memakai retry budget terpisah dari control transition
+- version conflict pada persistence melakukan fresh read sebelum retry
+- pending reconciliation dari concurrent winner diprioritaskan sebelum membuat repair baru
+- hasil retry menandai `reconciledByRetry` untuk auditability tanpa mengubah mission control semantics
+- persistent conflict setelah retry budget habis tetap menghasilkan `MISSION_CONTROL_AUDIT_VERSION_CONFLICT`
+
+DoD:
+- concurrent reconciliation tidak menimpa durable winner
+- pending evidence dari winner dapat diselesaikan tanpa membuat reconciliation record kedua
+- already-reconciled winner menjadi no-op
+- version conflict tetap fail-closed setelah bounded retry
+- seluruh existing Mission Control behavior tetap regression-safe

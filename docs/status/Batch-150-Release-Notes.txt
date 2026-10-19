@@ -1,0 +1,34 @@
+Batch 150 — Cross-Domain Checkpoint Audit Attestation, Provider-Identity Drift Baselines, and Retention Review Approval
+
+Implemented
+-----------
+- Added Ed25519-signed cross-domain checkpoint governance audit attestations. Attestations bind the exact audit digest and a stable currentness fingerprint, are retained, and distinguish historical validity from currentness.
+- Added explicit owner-scoped provider identity/contract baselines. Acceptance and rotation require a valid latest conformance report matching the live provider. Identity or contract drift is surfaced until fresh conformance and an explicit baseline approval complete.
+- Added atomically reserved per-owner/domain conformance report sequence slots to prevent concurrent runs from reusing the same sequence. Audit verifies report-to-slot linkage and detects invalid/duplicate sequences.
+- Added challenge-bound retention review approval for overdue checkpoint records. Review decisions are limited to retain/escalate, bind the stable audit fingerprint and exact target record digests, expire after ten minutes, and never delete or rewrite source evidence.
+- Added authenticated application APIs and HTTP routes for audit attestation creation/verification, provider baseline preparation/application/audit, and retention review preparation/application/audit.
+
+Configuration
+-------------
+- Optional application arguments: `recoverySloCrossDomainSnapshotAuditSigner`, `recoverySloCrossDomainSnapshotAuditKeyId`, `recoverySloCrossDomainSnapshotAuditPublicKeys`, and `requireRecoverySloCrossDomainSnapshotAuditAttestation`.
+- `AGENTIC_CROSS_DOMAIN_SNAPSHOT_AUDIT_PUBLIC_KEYS` accepts a JSON keyId-to-PEM Ed25519 public-key registry.
+- `AGENTIC_REQUIRE_CROSS_DOMAIN_SNAPSHOT_AUDIT_ATTESTATION=true` requires signer, key ID, and matching trusted public key; initialization fails closed if they are missing.
+- Private signing keys remain external and are not included in the source archive.
+
+Validation
+----------
+- Batch 150 regression tests: 10/10 PASS.
+- Full cumulative `npm test`: 1046/1046 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax and relative imports are validated on the full source tree and again after archive extraction.
+- ZIP integrity checked with `zip -T` and `unzip -t`; extracted-source regression recheck: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+----------------------
+- Signed audit attestation issuance requires an external Ed25519 signer and trusted public-key registry.
+- Provider fingerprints and endpoint checks do not prove hidden infrastructure or administrative independence.
+- Local provider baseline history does not gain a dedicated external checkpoint in this batch.
+- Retention review is approval evidence only. It performs no deletion, archival move, or storage compaction.
+- HTTP listener startup was not exercised; route mapping, syntax, imports, cumulative tests, and archive integrity were validated.
+
+Next unfinished stage: Batch 151 — Audit-Attestation External Checkpointing, Provider-Baseline Lifecycle Continuity, and Retention-Review Decision Replay Protection.

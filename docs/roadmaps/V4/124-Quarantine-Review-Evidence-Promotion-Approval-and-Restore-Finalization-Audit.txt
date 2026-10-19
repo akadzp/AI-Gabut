@@ -1,0 +1,28 @@
+Batch 124 — Quarantine Review, Evidence Promotion Approval, and Restore Finalization Audit
+
+Implemented
+- Added a bounded owner-scoped review of completed import journals and quarantined payloads. Reviews bind the import-journal digest, source bundle digest, quarantine record digest, payload digest, target state, reviewer reason, and ordered action set. A target conflict creates a blocked review and cannot be approved.
+- Added a separate digest-bound evidence-promotion approval with a required 12–240 character reason and typed confirmation `APPROVE PROMOTION <first 12 characters of reviewDigest>`. Approval revalidates import audit health, journal state, quarantine bindings, and the target snapshot immediately before recording authorization.
+- Added a durable owner-scoped promotion journal with a deterministic identity, hash-linked event history, replay-based state validation, bounded counts, and idempotent status/item transitions. Promotion copies the reviewed payload into the active evidence namespace only after approval; it never overwrites a conflicting target record.
+- Added recovery for interruption after an active record write but before the promotion-journal item update. Recovery revalidates the approval, review, import journal, quarantine payload, and current target. Identical records converge without duplication; mismatches fail closed and block the journal.
+- Added an SLO visibility gate while a promotion is pending, blocked, or lacks a valid finalization receipt. This prevents SLO operations from treating a partially promoted evidence set as finalized. Once finalized, ordinary SLO operations can evolve mutable ledgers; their native integrity validators remain responsible for detecting later corruption.
+- Added explicit restore finalization. It rechecks the complete promotion journal, approval/review/import bindings, every quarantine record, and every active record against the reviewed payload before persisting a digest-bound finalization receipt. Repeated finalization is idempotent, including after later legitimate SLO updates.
+- Added a read-only promotion/finalization audit covering review and approval artifacts, promotion-journal integrity, quarantine binding, pending/blocked operations, finalization receipts, orphaned evidence, and audit truncation. Quarantine listings report `activated: true` only when a valid finalization receipt and the associated review/import/quarantine bindings remain intact.
+- Added authenticated application APIs and HTTP routes for quarantine review, review retrieval/listing, promotion approval, promotion application/recovery, promotion journal retrieval/listing, finalization, and finalization audit.
+
+Validation
+- Batch 124 regression tests: 14/14 PASS.
+- Full cumulative `npm test`: 815/815 PASS.
+- JavaScript/MJS syntax, relative import resolution, ZIP integrity, and extracted-source validation: PASS.
+- Review/approval binding, target conflict rejection, stale-review rejection, quarantine tamper detection, promotion idempotency, concurrent promotion, interruption recovery, owner isolation, SLO gating, finalization idempotency, post-finalization SLO evolution, and read-only audit: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+- Promotion writes active copies per record and is not a global multi-record atomic transaction. The durable journal and SLO visibility gate make partial progress recoverable and prevent normal SLO APIs from using the set until finalization, but direct storage access remains outside that application-level gate.
+- Finalization receipts and journals use SHA-256 hash-linked evidence, not an external digital signature. An actor able to rewrite all storage and recompute every digest remains outside this protection boundary.
+- The review and promotion approval are separate artifacts, but this stage does not enforce a two-person identity policy; both are scoped to the authenticated owner. A role/identity model would be required for enforced separation of duties.
+- After finalization, mutable SLO ledgers may legitimately evolve. Promotion audit preserves the original activation snapshot; current active records must be validated by their owning SLO ledger/evidence audits rather than compared permanently to the original snapshot.
+- Quarantine, review, approval, promotion journal, and finalization records are bounded and fail closed at capacity. Quarantined payloads may contain sensitive operational evidence.
+- HTTP route mapping and source syntax were validated, but the HTTP listener was not boot-tested in this isolated environment.
+
+Next unfinished stage: Batch 125 — Restore Finalization External Attestation and Post-Promotion Integrity Reconciliation.

@@ -1,0 +1,34 @@
+Agentic AI V4 — Batch 154
+Policy-Binding Approval Audit Chain, Baseline Receipt Compaction Manifest Design, and Retention-Revalidation Decision Cache Invalidation
+
+Purpose
+- Record policy-binding applications as digest-linked per-domain audit events.
+- Keep legacy policy-binding approvals without events explicitly history-unproven.
+- Produce a non-destructive, digest-bound manifest draft for any future baseline receipt compaction review.
+- Preserve per-domain receipt heads, revision ranges, previous-receipt links, source challenge/report references, and historyNotProven flags.
+- Cache retention-decision revalidation only while the full evidence, external checkpoint, policy, and relevant retention-state fingerprint remains unchanged.
+
+Implementation
+- External snapshot checkpoint policy-binding applies now persist a deterministic audit event after the checkpoint commit and challenge finalization.
+- Interrupted finalization can idempotently recover the event from the applied challenge and committed external anchor.
+- Policy-binding audit detects malformed events, broken sequence/digest links, challenge mismatches, and legacy applied challenges that lack an event.
+- Provider-baseline receipt manifest drafts are persisted as evidence and can be verified against current receipts, guardrails, and checkpoint state.
+- Manifest generation is a design/approval artifact only: no receipts are deleted, compacted, rewritten, or truncated.
+- Retention-decision revalidation cache fingerprints include owner evidence records, target retention classification, policy values, checkpoint identity/status, and policy-binding audit heads. Fingerprint changes invalidate cached results before use.
+- Authenticated APIs expose the policy-binding audit chain, manifest creation/verification, and cache audit.
+
+Safety properties
+- Legacy history gaps are not silently backfilled or represented as proven.
+- A manifest never authorizes automatic compaction.
+- Cache entries never override changed evidence, policy, checkpoint, or relevant retention state.
+- Existing owner isolation and fail-closed behavior are retained.
+
+Validation
+- Batch 154 regression tests: 8/8 PASS.
+- Full cumulative test suite: 1076/1076 PASS.
+- JavaScript/MJS/CJS syntax: 232/232 PASS.
+- Relative imports: 415 checked, 0 missing.
+- ZIP integrity and post-extraction validation: PASS.
+
+Next stage
+Batch 155 — Policy-Binding Audit-Chain External Checkpointing, Compaction Manifest Approval Workflow, and Cache Invalidation Race/Freshness Tests.

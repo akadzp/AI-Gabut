@@ -1,0 +1,44 @@
+Agentic AI V4 — Batch 164
+========================
+Recovery-Attestation Revocation/Renewal, Explicitly Approved Multi-Event Gap CAS Finalization, and Verification-Receipt Ledger Continuity/External Anchoring
+
+Implemented
+-----------
+- Added challenge-bound, 10-minute revocation and renewal workflows for recovery-intent attestations. Lifecycle transitions are append-only, sequence-bound, digest-linked, and audited. Revoked or superseded attestations remain historically verifiable but cannot be used for current decisions.
+- Added renewal challenge binding to the original attestation digest, finalized recovery-intent audit digest, current checkpoint binding, and policy digest. Internal renewal capability prevents the generic attestation-creation API from bypassing the renewal workflow. An interrupted renewal can reuse a verified orphaned attestation and finalize its lifecycle event idempotently.
+- Added an explicit multi-event gap finalization operation after review approval. The finalizer revalidates the approval, candidate IDs/digests, source snapshot, external anchor digest/sequence, policy digest, and checkpoint freshness. The checkpoint service reconstructs the prior snapshot by removing exactly the approved candidates, then performs an external compare-and-set against the expected previous anchor.
+- Added pre-CAS source/anchor/policy re-reads, stale approval rejection, CAS conflict handling, idempotent recovery when an external commit succeeded before the local finalization record was written, and an append-only finalization audit chain. A post-commit source change is reported as `anchored_but_source_advanced` and is not usable for a current decision.
+- Added digest-linked sequence and previous-receipt bindings to signed lease-export verification receipts. The ledger audit verifies each receipt's digest/signature, sequence continuity, previous receipt digest, key lifecycle cutoff, and checkpoint binding. Legacy receipts remain retained and are marked `history_unproven` rather than silently promoted.
+- Added a dedicated external checkpoint trust domain for signed lease-export verification receipts. Enrollment is explicit; normal reconciliation advances at most one new receipt per operation. Provider/endpoint independence checks include the new trust domain.
+- Added authenticated HTTP routes and regression tests for attestation revocation/renewal, renewal bypass prevention, stale multi-event approval, CAS conflict/retry, idempotent finalization, receipt-chain integrity, external receipt checkpointing, and route exposure.
+
+Safety invariants
+-----------------
+- No evidence deletion or receipt compaction.
+- Revocation and renewal do not rewrite the original attestation; lifecycle state is appended as separate evidence.
+- Historical signature validity does not override revocation, supersession, key cutoff, or stale checkpoint bindings.
+- Multi-event checkpoint advancement requires an existing explicit approval and a unique continuity proof. A CAS conflict fails closed.
+- If the source changes after external commit, the result is reported as not current; the system does not claim an atomic transaction across the local evidence store and external anchor.
+- Receipt-ledger enrollment preserves unproven legacy history. New receipt sequence continuity is checked before external anchoring.
+- Raw lease tokens are not included in verification receipts or receipt-ledger snapshots.
+
+Validation
+----------
+- Batch 164 regression tests: 5/5 PASS.
+- Batch 163 regression tests: 4/4 PASS.
+- Full cumulative `npm test`: 1,123/1,123 PASS, 0 failures.
+- JavaScript/MJS/CJS syntax: 243/243 PASS.
+- Relative import references: 452 checked, 0 missing.
+- The complete source tree was tested again from a clean extraction; per-file SHA-256 comparison and ZIP integrity checks are required before delivery.
+- No GitHub commit.
+
+Known limitations
+-----------------
+- The receipt ledger's initial external enrollment marks prior history `historyNotProven`; independent proof of the pre-enrollment history is not manufactured.
+- The finalization receipt is retained locally and linked to the resulting external anchor, but is not itself part of the manifest-ledger snapshot being anchored; adding it to that snapshot would require a separate follow-up anchor transition.
+- The local store and external CAS provider do not share a distributed transaction. The implementation detects and reports a source advance after commit but cannot roll back a valid external anchor commit.
+- HTTP listener startup should be exercised in an environment where the declared Express dependency is installed; route mapping is covered by regression tests.
+
+Next unfinished stage
+---------------------
+Batch 165 — Attestation-Lifecycle External Checkpointing, Multi-Event Finalization Receipt Anchoring, and Receipt-Ledger Crash-Recovery/Gap Diagnostics.

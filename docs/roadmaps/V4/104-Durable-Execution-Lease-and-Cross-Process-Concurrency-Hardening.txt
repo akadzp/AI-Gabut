@@ -1,0 +1,45 @@
+Batch 104 — Durable Execution Lease and Cross-Process Concurrency Hardening
+
+Objective
+- Prevent two independent Node processes from executing the same owner-scoped Work at the same time.
+- Persist execution leases and reclaim expired leases safely.
+- Renew active leases while a Work runner is still executing.
+- Prevent a stale run from committing Work lifecycle changes after a newer run has acquired the lease.
+- Make filesystem-backed state read/modify/write operations atomic across processes sharing the same storage root.
+
+Implementation
+- `core/storage/index.js` now exposes `atomicUpdate(key, updater)`. It serializes updates with an exclusive per-key filesystem lock directory, atomically replaces JSON records, and can recover a lock left by a dead local process.
+- `core/storage/state/index.js` exposes `mutate(scope, id, mutator)` and routes filesystem-backed mutations through `storage.atomicUpdate`, preserving version-checked writes across independent processes.
+- `apps/agentic/backend/store.js` adds owner-scoped `mutateOwned` and the `work-execution-leases` scope.
+- `apps/agentic/backend/mission-execution-lease.js` uses atomic owner-scoped mutations when supported, adds lease tokens and monotonic fencing numbers, rejects expired renewals, verifies ownership, and exports `createWorkExecutionLease`.
+- `apps/agentic/backend/application.js` wires a durable Work execution lease into every `runWork`/resume execution. `workExecutionLeaseMs` can be set for deployments and tests; default is 120 seconds.
+- `apps/agentic/backend/work-execution.js` acquires the lease before transitioning Work state, renews it on a heartbeat, maps cross-process lease conflicts to `WORK_EXECUTION_IN_PROGRESS`, and aborts a run if the lease is lost.
+- `apps/agentic/backend/work.js` persists a monotonically increasing execution fence and rejects stale fenced transitions or task/execution attachments. This prevents a late process from overwriting the state claimed by a newer lease holder.
+- Lease release is owner-token checked. Approval, pause, stop, cancel, and terminal lifecycle behavior remains governed by the existing Work state machine.
+
+Regression coverage
+- Durable lease record and release after a completed Work.
+- Heartbeat renewal for a run longer than its lease duration.
+- Two separate Node processes racing to run the same Work; exactly one may execute.
+- Expired lease takeover with a higher fencing number.
+- Cross-process atomic counter increments with no lost updates.
+- Recovery of a lock left by a dead local process.
+- Rejection of stale Work transitions after a newer fencing number is claimed.
+
+Validation
+- Batch 104 focused regression tests: 7/7 PASS.
+- Full cumulative `npm test`: 582/582 PASS.
+- JavaScript/MJS syntax validation: 133/133 PASS.
+- Relative import resolution: 0 missing relative imports; the cumulative Batch 102 regression test also passes.
+- Full cumulative tests after extracting the ZIP: 582/582 PASS.
+- Focused Batch 104 tests after extracting the ZIP: 7/7 PASS.
+- Extracted JavaScript/MJS syntax validation: 133/133 PASS.
+- ZIP integrity validation with `zip -T` and `unzip -t`: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+- Cross-process locking applies to processes sharing the same filesystem-backed storage root. It is not a distributed lease for unrelated hosts with non-shared storage, and the JSON backend is not a substitute for a transactional database in high-contention multi-host deployments.
+- Lock recovery can reclaim abandoned same-host lock directories when their recorded process is no longer alive. Foreign-host lock recovery uses a bounded age threshold.
+- A lost lease aborts the local runner and fences subsequent Work state transitions. Side effects already performed by an external provider before lease loss cannot be rolled back by the lease service.
+
+Next unfinished stage: Batch 105 — Crash Recovery and Lease-Loss Reconciliation.

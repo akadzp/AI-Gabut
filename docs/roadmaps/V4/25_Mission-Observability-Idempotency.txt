@@ -1,0 +1,19 @@
+V4 Batch 25 — Mission Observability Idempotency & Timeline Consistency
+
+Tujuan: membuat mission evidence events aman terhadap retry/recovery tanpa mengubah execution authority.
+
+Scope:
+- optional durable dedupe key untuk mission events
+- deterministic event identity untuk event yang dapat diulang
+- idempotent replay untuk approval-requested/resolved dan operator-control evidence
+- stable timeline ordering dengan sequence metadata
+- observability-only guard; tidak menjalankan Work dan tidak melewati approval gate
+
+Implementation:
+- mission observability menerima dedupeKey opsional
+- event yang sudah ada dikembalikan kembali tanpa membuat duplicate evidence
+- race pada insert deduplicated event direconcile ke event yang sudah tersimpan
+- approval request/decision/expiry dan mission-control evidence memakai dedupe keys stabil
+- timeline mengurutkan event berdasarkan sequence lalu timestamp/id
+
+DoD: retry terhadap lifecycle evidence tidak menghasilkan duplicate durable events, timeline tetap deterministik, dan execution/approval authority tetap tidak berubah.

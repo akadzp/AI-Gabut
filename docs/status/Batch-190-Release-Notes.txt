@@ -1,0 +1,5 @@
+Batch 190 — Recovery-Receipt Ledger External Anchoring, Freshness-Attestation Renewal/Revocation, and Closure-Checkpoint Recovery CAS Continuity Audit.
+
+Added an independent external snapshot checkpoint for the closure recovery-receipt ledger; strict current-anchor preflight before new receipt writes; single-event continuity validation and idempotent retry after local append/external CAS interruption; signed challenge-bound renewal and revocation of checkpoint freshness attestations; receipt-source-count binding that makes attestations stale after later ledger changes; and continuity findings integrated into closure/decision-use audits. Added authenticated API/HTTP routes for checkpoint status, enrollment, reconciliation, audit, continuity, and freshness lifecycle operations.
+
+Batch 190 focused regression tests: 7/7 PASS. Batch 185–190 focused regression tests: 47/47 PASS. All 177 test files passed in controlled groups: 1,298/1,298 test cases. JavaScript/MJS/CJS syntax: 270/270 PASS; relative imports: 0 missing. ZIP integrity and clean-extraction equivalence passed. No GitHub commit was made.

@@ -1,0 +1,18 @@
+V4 Batch 66 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Repair Recovery Status Recovery Status
+
+Scope completed:
+- adds a read-only status view for the durable observability intent created by Batch 64 and recovered by Batch 65
+- reports clear, pending, or error phase and distinguishes valid recoverable intent from malformed pending state
+- exposes bounded reconciliation ID, creation time, retry marker, durable error, issue codes, and storage version
+- detects an orphaned durable error when no pending intent exists without attempting repair
+- preserves owner-scoped mission lookup and performs no mutation, retry, or event emission
+- exposes getMissionControlAuditRecoveryEvidenceRepairRecoveryStatusRepairRecoveryStatusRepairRecoveryStatusRecoveryStatus at the application boundary
+
+Validation:
+- Batch 66 dedicated regression tests: 5/5 PASS
+- JavaScript/MJS syntax validation: 80/80 PASS
+- cumulative npm test: 199/204 PASS; five known baseline failures remain: missing core/storage/state/index.js affects two test files, missing core/security/index.js affects one test file, and two existing external-feedback tests fail
+- ZIP integrity validation: PASS (zip -T and unzip -t)
+- no GitHub commit was made
+
+Next unfinished stage: Batch 67.

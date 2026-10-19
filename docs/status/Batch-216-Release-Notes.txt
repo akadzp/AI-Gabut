@@ -1,0 +1,18 @@
+Agentic AI V4 — Batch 216 Release Notes
+
+Scope:
+- Finalization-attestation lifecycle receipt-attestation renewal and revocation.
+- Cross-generation predecessor/replacement supersession integrity.
+- Independent external checkpoint for lifecycle events.
+- Snapshot-bound challenge replay protection and idempotent recovery.
+- Recovery-gate convergence enforcement for stale, revoked, or unanchored lifecycle evidence.
+
+Validation:
+- Batch 216 focused tests: 3/3 PASS individually after extraction.
+- Batch 215 focused compatibility tests: 2/2 PASS individually after extraction.
+- Batch 214 focused compatibility test: 1/1 PASS individually after extraction.
+- JavaScript syntax and relative imports validated across the full cumulative source tree.
+- ZIP integrity and source SHA-256 equality verified after extraction.
+- Full cumulative npm test is not claimed as passing.
+
+No GitHub commit was performed.

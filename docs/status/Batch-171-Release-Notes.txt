@@ -1,0 +1,44 @@
+Agentic AI V4 — Batch 171 Release Notes
+======================================
+
+Batch
+-----
+171 — Remediation Execution Attestation/Finalization External Binding, Policy-Binding Receipt Lifecycle Crash-Recovery, and Cross-Domain Checkpoint Freshness/Replay Audit.
+
+Implemented
+-----------
+- Added Ed25519-signed remediation finalization attestations. Each attestation binds the finalization digest, recovery intent, execution receipt, action, source execution checkpoint binding, signing key ID, and issue time.
+- Added fail-closed attestation verification for payload digest, signature, deterministic attestation ID, finalization digest, execution digest/action, timestamp freshness, and checkpoint usability.
+- Added idempotent creation and audit of finalization attestations. Duplicate, orphaned, mismatched, invalid, stale, and future-dated attestations are surfaced rather than silently replaced.
+- Added a dedicated external snapshot checkpoint domain, `cross_domain_drift_remediation_finalizations`, whose snapshot treats each finalization plus its attestation as one event. Reconciliation advances only one uniquely provable event at a time.
+- Added finalization-checkpoint enrollment, status, reconciliation, audit, marker-recovery inspection, and intent-bound marker recovery. If a crash leaves a finalization without its required attestation, recovery can create the deterministic attestation before attempting marker repair.
+- Added policy-binding receipt lifecycle checkpoint recovery using durable, sequence/digest-linked recovery intents. Recovery verifies exact source digest/count, anchor sequence/digest, policy binding, and postconditions. Policy drift, rollback, source advancement, and unhealthy evidence fail closed.
+- Added a cross-domain checkpoint freshness/replay audit across registered checkpoint services. It checks freshness, history proof, policy drift, unhealthy/rollback states, duplicate anchor digests across domains, and finalization-attestation health.
+- Added authenticated HTTP routes for finalization attestations, finalization checkpoint lifecycle/recovery, policy-binding receipt lifecycle recovery, recovery-intent audit, and cross-domain freshness/replay audit.
+- Added six Batch 171 regression tests, including a real remediation execution path that automatically creates a signed finalization attestation.
+- Added deployment configuration: `AGENTIC_CROSS_DOMAIN_DRIFT_REMEDIATION_FINALIZATION_ANCHOR_URL`, `AGENTIC_CROSS_DOMAIN_DRIFT_REMEDIATION_FINALIZATION_ANCHOR_TOKEN`, `AGENTIC_REQUIRE_CROSS_DOMAIN_DRIFT_REMEDIATION_FINALIZATION_ANCHOR`, `AGENTIC_DRIFT_REMEDIATION_FINALIZATION_ATTESTATION_PUBLIC_KEYS`, `AGENTIC_REQUIRE_DRIFT_REMEDIATION_FINALIZATION_ATTESTATION`, `AGENTIC_DRIFT_REMEDIATION_FINALIZATION_ATTESTATION_MAX_AGE_MS`, and `AGENTIC_DRIFT_REMEDIATION_FINALIZATION_ATTESTATION_FUTURE_SKEW_MS`. The signing function/private key is injected by the host application; no private key is shipped in the ZIP.
+
+Validation
+----------
+- Batch 171 regression tests: 6/6 PASS.
+- Full cumulative test suite: 1,158/1,158 PASS. For reliable execution in this large suite, validation used `node --test --test-concurrency=4`; after extraction, all test files were run in four bounded groups totaling 1,158 tests.
+- JavaScript/MJS/CJS syntax: 250/250 PASS.
+- Relative imports: 481 checked, 0 missing.
+- ZIP integrity: `zip -T` and `unzip -t` PASS.
+- Clean-extraction validation: 432 files; all per-file SHA-256 hashes match the packaged source; no missing or unexpected files.
+- No GitHub commit was made.
+
+Operational Boundaries
+----------------------
+- First external enrollment preserves `historyNotProven`; a new anchor does not retroactively prove pre-enrollment history.
+- Attestation signature validity is distinct from current usability. Current use requires fresh evidence and the required checkpoint bindings to be current and history-proven.
+- Finalization checkpoint enrollment is explicit. Until the checkpoint is enrolled and current, the finalization remains historical-only for current decisions.
+- Policy-binding lifecycle recovery is marker recovery, not policy-drift remediation. Policy drift and rollback remain blocked for explicit governance or manual investigation.
+- Cross-domain replay detection flags duplicate anchor digests across distinct domains and relies on each checkpoint service's own marker/anchor chain validation for rollback detection.
+- External CAS durability, provider independence, and atomicity across local storage and external anchors remain deployment responsibilities.
+- No evidence deletion or automatic compaction is performed.
+- HTTP listener startup is not claimed as validated; the test suite validates application APIs and route wiring without requiring the Express runtime to be installed.
+
+Next Unfinished Stage
+---------------------
+Batch 172 — Finalization Attestation Key-Cutoff/Lifecycle Binding, Cross-Domain Replay Incident Ledger, and Recovery-Intent CAS Finalization Audit.

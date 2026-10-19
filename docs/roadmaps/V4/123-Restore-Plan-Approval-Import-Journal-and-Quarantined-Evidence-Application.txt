@@ -1,0 +1,28 @@
+Batch 123 — Restore Plan Approval, Import Journal, and Quarantined Evidence Application
+
+Implemented
+- Added explicit owner-scoped restore approval bound to the exact plan digest, source bundle digest, source verification status, ordered action digest, and action counts. Approval requires a 12–240 character reason and a typed confirmation string containing the first 12 characters of the plan digest.
+- Approval validates the submitted plan digest and recomputes a fresh read-only plan against the current target before recording authorization. Altered plans, source mismatches, target changes, and missing trusted signatures under strict policy are rejected before an import journal is created.
+- Added a durable per-approval import journal with deterministic identity, a hash-linked event history, replay-based state validation, monotonic status transitions, bounded item/event counts, and idempotent recovery.
+- Added quarantine-only evidence staging. Imported source records are stored as `recovery-slo-restore-quarantined-evidence` wrappers containing the original payload and content digest. The original record IDs are not inserted into the active evidence namespace by this stage, and no activation/promotion API is provided.
+- Added crash recovery for the window where a quarantine record is durably stored but the journal item update is interrupted. Recovery verifies the original bundle digest, source-record digests, approval binding, and deterministic quarantine record before recording the item transition.
+- Added target rechecks immediately before staging. If a target ID appeared with identical content, the journal records `already_present`; if the target differs, the item is recorded as a conflict and the journal becomes blocked. Existing data is never overwritten.
+- Added bounded owner-scoped APIs for applying an approved plan, recovering an interrupted import, reading/listing journals, listing quarantine records, and auditing journal/approval/quarantine bindings. Audit is read-only and does not repair records.
+- Added authenticated HTTP routes for approval, import application, interrupted-import recovery, journal retrieval/listing, import audit, and quarantine listing.
+
+Validation
+- Batch 123 regression tests: 12/12 PASS.
+- Full cumulative `npm test`: 801/801 PASS.
+- JavaScript/MJS syntax, relative import resolution, ZIP integrity, and extracted-source validation: PASS.
+- Approval confirmation/reason checks, plan digest tampering, source tampering, stale target rejection, quarantine-only staging, idempotent application, concurrent application, interruption recovery, owner isolation, bounded read-only audit/listing, and tamper detection: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+- Batch 123 stages imported records in a separate quarantine kind and does not activate them as live SLO policy, alert, archive, or evaluation evidence. Promotion/release requires a later explicitly controlled stage.
+- A restore approval is bound to one source bundle digest. Re-approval of the same bundle is idempotent for the same plan; an alternate plan for the same bundle is rejected. Evidence already quarantined with the same source record digest is not staged again.
+- Import journals and quarantine records use SHA-256 hash-linked evidence, not an external signature. An actor able to rewrite the complete storage and recompute all hashes remains outside this protection boundary.
+- The application uses durable per-record writes and recovery, not a global atomic transaction spanning every quarantine record and the journal. Interrupted operations remain visible and require recovery; active evidence is never overwritten.
+- Quarantine and journal capacities are bounded and fail closed. Quarantine payloads may contain sensitive operational evidence and require appropriate storage access controls.
+- HTTP route mapping and source syntax were validated, but the HTTP listener was not boot-tested in this isolated environment.
+
+Next unfinished stage: Batch 124 — Quarantine Review, Evidence Promotion Approval, and Restore Finalization Audit.

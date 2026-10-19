@@ -1,0 +1,27 @@
+Batch 138 — External Trust-Policy Checkpoint Anchoring, Policy-Authority Rotation and Revocation, and Conformance Evidence Retention
+
+Objective
+Protect provider-identity trust policies with an independent external checkpoint, govern the lifecycle of policy-authority keys, and retain provider-identity baseline conformance reports as auditable evidence.
+
+Scope
+1. Anchor per-owner drift-event, recovery-attestation, and policy-authority policy checkpoints through a dedicated external trust domain.
+2. Enforce CAS, monotonic anchor sequence, digest continuity, and read-after-write verification.
+3. Expose explicit enrollment for legacy local policies without claiming pre-enrollment history; reject automatic re-enrollment after a known anchor loss.
+4. Rotate and revoke policy-authority keys using digest-bound challenges, authorization signatures, and replacement-key proof of possession.
+5. Replay and verify historical authority transitions, including rejection of signatures created after retirement or compromise cutoff.
+6. Automatically retain provider-identity baseline conformance reports in the bounded evidence registry and chain; audit binding and expiry/tombstone state.
+7. Add authenticated APIs and cross-domain provider-independence checks.
+
+Validation
+- Focused regression tests: 6/6 PASS.
+- Cumulative test suite: 956/956 PASS.
+- Syntax, import resolution, archive integrity, and extracted-source tests: PASS.
+- No GitHub commit.
+
+Known boundaries
+- External anchor durability and independent administration are properties of the deployed provider, not established by application code alone.
+- Policy-authority key replacement must be preconfigured in the trusted public-key registry.
+- Revoking the active authority key is blocked until a replacement is active; compromised-root recovery remains an out-of-band procedure.
+- Tombstones preserve digests but cannot reconstruct expired payloads.
+
+Next unfinished stage: Batch 139 — Trust-Policy Anchor Provider Conformance, Policy-Authority Root Recovery, and Retention Audit Reconciliation.

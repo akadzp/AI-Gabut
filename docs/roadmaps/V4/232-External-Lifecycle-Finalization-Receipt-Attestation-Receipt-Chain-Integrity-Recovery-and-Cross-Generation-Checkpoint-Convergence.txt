@@ -1,0 +1,17 @@
+Agentic AI V4 — Batch 232
+
+Objective
+Add signed external attestation for Batch 231 lifecycle finalization receipts and enforce receipt-chain integrity, key-cutoff awareness, and independent checkpoint convergence.
+
+Delivered
+- Batch 232 signed event type and ledger validation.
+- Receipt-prefix digest and deterministic operation IDs.
+- Monotonic attestation generations with predecessor ID/digest continuity.
+- Idempotent replay and current-key re-attestation after key cutoff.
+- Fail-closed audit for missing, orphaned, misbound, or invalid attestation evidence.
+- Existing independent external-attestation snapshot now includes Batch 232 events.
+- Owner-scoped attest, audit, snapshot, and reconcile routes.
+- Overall recovery-gate convergence includes Batch 232 attestation status.
+
+Next-stage direction
+Validate the complete positive end-to-end lifecycle across Batch 231 receipt creation, Batch 232 attestation, signing-key rotation, checkpoint write interruption, replay recovery, and terminal revocation. Continue one batch per run and preserve local ZIP delivery without GitHub commits.

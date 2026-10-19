@@ -1,0 +1,35 @@
+Batch 148 — Freshness-Policy Approval Anchor Conformance, Recovery-Intent External Checkpointing, and Revocation-State Continuity Anchoring
+
+Implemented
+-----------
+- Added a disposable-namespace conformance challenge for the freshness-policy approval external anchor. It validates provider identity/contract metadata, genesis CAS, read-after-write, stale-CAS rejection without mutation, monotonic sequence and digest linkage, owner/namespace isolation, and concurrent single-winner behavior. Completed reports are digest-bound, retained, audited, and replay-idempotent. The probe explicitly does not claim hidden infrastructure independence.
+- Added a reusable owner-scoped external snapshot checkpoint service with monotonic CAS sequence, snapshot digest/count binding, hash-linked checkpoints, local marker verification, explicit legacy enrollment, retryable CAS recovery, marker repair only for a provable one-step write-before-marker interruption, and fail-closed rollback/mismatch handling.
+- Added a recovery-intent snapshot source bound to the recovery-intent continuity audit, intent status/digest, and transition-history head. The external checkpoint can enroll a legacy snapshot only through an explicit challenge and can advance only after a healthy/recoverable source audit.
+- Added a proof-revocation snapshot source bound to the root-trust continuity-proof revocation audit and the digest/status of each revocation state. Revocation-state checkpointing uses its own external provider domain and blocks reconciliation if the source audit is unhealthy.
+- Added authenticated application APIs and HTTP routes for conformance, checkpoint status, explicit enrollment, reconciliation, and audits. Added both checkpoint domains to cross-domain anchor-independence checks.
+- Registered `retention_freshness_policy_approval_anchor_conformance` as a supported retained-evidence artifact and added report/challenge/payload digest binding checks, including digest-preserving tombstone handling.
+
+Configuration
+-------------
+- Freshness approval conformance uses the configured freshness approval anchor provider: `AGENTIC_RETENTION_FRESHNESS_POLICY_APPROVAL_ANCHOR_URL` and `AGENTIC_RETENTION_FRESHNESS_POLICY_APPROVAL_ANCHOR_TOKEN`.
+- Optional/required recovery-intent checkpoint: `AGENTIC_RETENTION_DECISION_GATE_RECOVERY_INTENT_ANCHOR_URL`, `AGENTIC_RETENTION_DECISION_GATE_RECOVERY_INTENT_ANCHOR_TOKEN`, and `AGENTIC_REQUIRE_RETENTION_DECISION_GATE_RECOVERY_INTENT_ANCHOR=true`.
+- Optional/required proof-revocation checkpoint: `AGENTIC_ROOT_TRUST_BASELINE_PROOF_REVOCATION_ANCHOR_URL`, `AGENTIC_ROOT_TRUST_BASELINE_PROOF_REVOCATION_ANCHOR_TOKEN`, and `AGENTIC_REQUIRE_ROOT_TRUST_BASELINE_PROOF_REVOCATION_ANCHOR=true`.
+- Recovery-intent and proof-revocation checkpoint providers must be independently configured from other trust domains. When required but not configured, application initialization fails.
+- Legacy enrollment binds the source digest/count and requires a digest-bound confirmation. It preserves `historyNotProven`; it does not prove pre-enrollment history.
+
+Validation
+----------
+- Batch 148 regression tests: 7/7 PASS.
+- Full cumulative `npm test`: 1029/1029 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax checks, relative import resolution, ZIP integrity, and extracted-source revalidation: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+----------------------
+- Provider conformance proves only the observed CAS contract in a disposable namespace; it does not prove hidden administrative or infrastructure independence. Providers without delete support may retain disposable probe records.
+- External checkpoint durability and CAS semantics remain deployment responsibilities. Rollback, marker loss, source corruption, and unproven continuity fail closed.
+- Recovery-intent and proof-revocation checkpoint history before explicit enrollment remains unproven. The checkpoint snapshots protect the state observed at enrollment and subsequent advances, not unrecorded earlier history.
+- Snapshot reconciliation advances only a provably behind local snapshot; it does not rewrite local source evidence or recreate a missing external anchor after enrollment.
+- HTTP listener startup was not exercised in this isolated validation run; route mapping, syntax, imports, cumulative tests, and archive integrity were checked.
+
+Next unfinished stage: Batch 149 — Cross-Domain Snapshot Anchor Conformance, Checkpoint Freshness/Retention Audit, and Recovery/Revocation Anchor Independence Reconciliation.

@@ -1,0 +1,8 @@
+V4 Batch 42 — Mission Control Audit Reconciliation Recovery Action
+
+Scope:
+- expose an explicit owner-scoped recovery action for pending audit reconciliation evidence
+- make recovery bounded and idempotent by delegating to the existing reconciliation lifecycle
+- report recovery phase before and after execution
+- keep clear/error-without-pending states read-only and non-mutating
+- preserve existing integrity, observability, concurrency, and execution authority boundaries

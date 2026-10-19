@@ -1,0 +1,40 @@
+Agentic AI V4 — Batch 168 Release Notes
+=======================================
+
+Batch
+-----
+168 — Recovery-Intent Ledger Policy-Drift/Rollback Recovery, Retention Approval Revocation/Replacement, and Cross-Ledger Consistency Audit.
+
+Implemented
+-----------
+- Added owner-scoped inspection and guarded recovery for the recovery-intent ledger checkpoint. Marker recovery requires an external anchor and exact source/anchor/policy binding. Policy drift is not silently accepted; it is reported as requiring explicit checkpoint policy-binding approval. Rollback or unproven continuity blocks automatic repair.
+- Added append-only revocation challenge and revocation records for signed verification-receipt retention approvals. Revocation binds the original approval digest, source snapshot digest/count, external checkpoint digest/sequence, policy digest, reason, and expiry. Replay is idempotent; invalid, stale, or conflicting revocations fail closed.
+- Added replacement approval workflow. A replacement must reference an existing valid approval and its valid revocation, and the binding is carried through the replacement challenge and approval. Duplicate replacements and orphaned replacement references are detected by audit.
+- Extended retention approval audit to validate revocation challenge/record linkage, identify revoked approvals, prevent revoked or replaced approvals from remaining current, and surface duplicate revocations/replacements. Evidence is retained; no deletion or compaction occurs.
+- Added a read-only cross-ledger consistency audit spanning recovery-intent ledger, attestation lifecycle checkpoint, manifest gap-finalization checkpoint, verification-receipt checkpoint and retention review, and manifest approval ledger. It reports component health, orphaned receipt references, and malformed recovery-intent records without mutation.
+- Added authenticated application APIs and HTTP routes for recovery-intent checkpoint recovery inspection/execution, cross-ledger consistency audit, retention-approval revocation, and replacement approval preparation.
+- Added five focused regression tests covering local-only fail-closed recovery, real policy-drift rejection, revocation/replacement linkage and evidence preservation, cross-ledger orphan detection, and API/route exposure.
+
+Validation
+----------
+- Batch 168 regression tests: 5/5 PASS.
+- Full cumulative `npm test`: 1141/1141 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax validation: PASS.
+- Relative import resolution: PASS, zero missing references.
+- ZIP integrity (`zip -T` and `unzip -t`): PASS.
+- Clean-extraction test and syntax revalidation: PASS; file-level SHA-256 comparison found no missing, extra, or content-different files.
+- No GitHub commit was made.
+
+Operational boundaries
+----------------------
+- Policy drift is not auto-repaired. Operators must use the existing explicit checkpoint policy-binding challenge/apply workflow and re-audit before relying on the checkpoint.
+- Rollback suspicion or unproven continuity remains a hard blocker; this batch does not attempt to rewrite or reset the external anchor.
+- Retention approval revocation and replacement are append-only. Original approval, challenge, and revocation records remain available for audit.
+- Retention approval lifecycle events are audited cross-ledger but are not independently external-anchored in a dedicated lifecycle checkpoint in this batch. Current-use decisions remain subject to existing source and checkpoint freshness gates.
+- Cross-ledger audit is read-only. It reports observed inconsistencies; it does not automatically remediate them.
+- External provider CAS durability and infrastructure independence remain deployment responsibilities.
+- HTTP listener startup was not smoke-tested because the `express` runtime package is unavailable in the validation environment; syntax, route wiring, application-level tests, and archive integrity were verified.
+
+Next unfinished stage
+---------------------
+Batch 169 — Recovery-Intent Ledger Policy-Binding Receipt Verification, Retention Approval Lifecycle External Anchoring, and Cross-Ledger Drift Remediation Plan/Execution Guard.

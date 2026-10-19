@@ -1,7 +1,45 @@
-import crypto from "node:crypto";
-const ALGORITHM = "aes-256-gcm";
-function keyFromEnvironment() { const raw = process.env.AGENTIC_CREDENTIAL_KEY; if (!raw) throw new Error("AGENTIC_CREDENTIAL_KEY wajib dikonfigurasi untuk credential storage"); return crypto.createHash("sha256").update(raw, "utf8").digest(); }
-export function hashPassword(password) { if (typeof password !== "string" || password.length < 10) throw new Error("Password minimal 10 karakter"); const salt = crypto.randomBytes(16); const derived = crypto.scryptSync(password, salt, 64); return `${salt.toString("base64url")}.${derived.toString("base64url")}`; }
-export function verifyPassword(password, stored) { try { const [saltText, hashText] = String(stored).split("."); const salt = Buffer.from(saltText, "base64url"); const expected = Buffer.from(hashText, "base64url"); const actual = crypto.scryptSync(String(password), salt, expected.length); return actual.length === expected.length && crypto.timingSafeEqual(actual, expected); } catch { return false; } }
-export function encryptSecret(secret) { const iv = crypto.randomBytes(12); const cipher = crypto.createCipheriv(ALGORITHM, keyFromEnvironment(), iv); const ciphertext = Buffer.concat([cipher.update(String(secret), "utf8"), cipher.final()]); const tag = cipher.getAuthTag(); return JSON.stringify({v:1,alg:ALGORITHM,iv:iv.toString("base64url"),tag:tag.toString("base64url"),data:ciphertext.toString("base64url")}); }
-export function decryptSecret(payload) { const value = typeof payload === "string" ? JSON.parse(payload) : payload; if (!value || value.v !== 1 || value.alg !== ALGORITHM) throw new Error("Credential payload tidak valid"); const decipher = crypto.createDecipheriv(ALGORITHM, keyFromEnvironment(), Buffer.from(value.iv, "base64url")); decipher.setAuthTag(Buffer.from(value.tag, "base64url")); return Buffer.concat([decipher.update(Buffer.from(value.data, "base64url")), decipher.final()]).toString("utf8"); }
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
+
+const PREFIX = "agsec:v1:";
+function encryptionKey() {
+  const configured = process.env.AGENTIC_ENCRYPTION_KEY || process.env.AGENTIC_SECRET_KEY;
+  if (!configured && process.env.NODE_ENV === "production") {
+    const error = new Error("AGENTIC_ENCRYPTION_KEY wajib dikonfigurasi pada production");
+    error.code = "CREDENTIAL_ENCRYPTION_KEY_REQUIRED";
+    throw error;
+  }
+  // The fallback is explicitly development-only; production refuses to start encryption without a secret.
+  return createHash("sha256").update(configured || "agentic-v4-local-development-only-key-change-before-deployment").digest();
+}
+
+export function encryptSecret(value) {
+  if (typeof value !== "string" || !value.length) throw new TypeError("Secret harus berupa string non-kosong");
+  const iv = randomBytes(12);
+  const cipher = createCipheriv("aes-256-gcm", encryptionKey(), iv);
+  const ciphertext = Buffer.concat([cipher.update(value, "utf8"), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return `${PREFIX}${iv.toString("base64url")}:${tag.toString("base64url")}:${ciphertext.toString("base64url")}`;
+}
+
+export function decryptSecret(value) {
+  if (typeof value !== "string" || !value.startsWith(PREFIX)) {
+    const error = new Error("Credential terenkripsi tidak valid");
+    error.code = "CREDENTIAL_CIPHERTEXT_INVALID";
+    throw error;
+  }
+  const [ivText, tagText, cipherText, extra] = value.slice(PREFIX.length).split(":");
+  if (!ivText || !tagText || cipherText === undefined || extra !== undefined) {
+    const error = new Error("Format credential terenkripsi tidak valid");
+    error.code = "CREDENTIAL_CIPHERTEXT_INVALID";
+    throw error;
+  }
+  try {
+    const decipher = createDecipheriv("aes-256-gcm", encryptionKey(), Buffer.from(ivText, "base64url"));
+    decipher.setAuthTag(Buffer.from(tagText, "base64url"));
+    return Buffer.concat([decipher.update(Buffer.from(cipherText, "base64url")), decipher.final()]).toString("utf8");
+  } catch {
+    const error = new Error("Credential tidak dapat didekripsi; periksa kunci enkripsi");
+    error.code = "CREDENTIAL_DECRYPTION_FAILED";
+    throw error;
+  }
+}

@@ -1,0 +1,16 @@
+V4 Batch 62 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Integrity
+
+Scope completed:
+- added read-only integrity verification for the Batch 61 status view's durable recovery intent
+- validates optional nullable reconciliation metadata, retry marker, creation timestamp, and deterministic event dedupe key
+- detects malformed pending state and orphaned durable errors without mutation or event emission
+- bounds returned metadata and keeps access owner-scoped
+- exposes verifyMissionControlAuditRecoveryEvidenceRepairRecoveryStatusRepairRecoveryStatusRepairRecoveryStatus at the application boundary
+
+Validation:
+- Batch 62 dedicated regression tests: 7/7 PASS
+- JavaScript/MJS syntax validation: 76/76 PASS
+- cumulative npm test: 167/172 PASS; five known baseline failures remain outside Batch 62: two test files cannot import missing core/storage/state/index.js, one cannot import missing core/security/index.js, one external-feedback test has an ID/provenance expectation mismatch, and another mock lacks github.workflowRuns
+- ZIP integrity validation: PASS (zip -T and unzip -t)
+
+Next unfinished stage: Batch 63.

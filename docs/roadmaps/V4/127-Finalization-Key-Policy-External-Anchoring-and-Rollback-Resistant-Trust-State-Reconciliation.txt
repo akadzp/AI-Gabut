@@ -1,0 +1,54 @@
+Agentic AI V4 — Batch 127
+Finalization Key-Policy External Anchoring and Rollback-Resistant Trust-State Reconciliation
+
+Purpose
+-------
+Bind every finalization signing-key policy revision to an independently operated monotonic anchor. Detect restoration of an older but internally valid local policy, reconcile only a provable ancestor, and fail closed when the external state cannot be verified.
+
+Implementation
+--------------
+- Finalization key-policy verification now reconstructs the digest and event head for every revision.
+- A dedicated external anchor record binds owner, policy revision, policy digest, event head hash, bootstrap digest, anchor sequence, prior anchor digest, timestamp, reason, and record digest.
+- Genesis anchoring is allowed only for a valid revision-1 policy with its bootstrap event intact.
+- A local policy missing while an external anchor exists is treated as rollback, never as permission to bootstrap a replacement policy.
+- Anchor revision ahead of local state is rollback_detected; a matching ancestor is behind_registry; mismatched digest/head/bootstrap state is mismatch.
+- A behind anchor may be advanced only after its current record is proven to be an exact ancestor of the local event history. Rollback, mismatch, invalid records, and provider outages are not auto-repaired.
+- Key-policy reads and audits report anchor status without changing local storage.
+- Key transitions require the current external anchor. A local transition that commits while the anchor write fails is returned as anchor_pending and remains blocked until explicit reconciliation succeeds.
+- Receipt-key resolution checks the anchor, so a cryptographically valid signature is not authorized when local key policy has rolled back.
+- The key-policy anchor is deliberately separate from the general attestation trust anchor.
+
+Application API
+---------------
+- getRecoverySloFinalizationKeyPolicyAnchorStatus(ownerId)
+- reconcileRecoverySloFinalizationKeyPolicyAnchor(ownerId)
+
+HTTP endpoints
+--------------
+GET  /api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor/slo/finalization-keys/anchor
+POST /api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor/slo/finalization-keys/anchor/reconcile
+
+Configuration
+-------------
+Inject recoverySloFinalizationKeyPolicyAnchor with a provider implementing read(ownerId) and compareAndSet(ownerId, expectedDigest, candidate), or configure:
+- AGENTIC_FINALIZATION_KEY_POLICY_ANCHOR_URL
+- AGENTIC_FINALIZATION_KEY_POLICY_ANCHOR_TOKEN
+
+The endpoint/store must be independently operated, durable, owner-scoped, and enforce monotonic compare-and-set semantics. It must not share the same owner namespace as AGENTIC_TRUST_ANCHOR_URL. The application rejects identical configured URLs and the same injected provider object. Set requireRecoverySloFinalizationKeyPolicyAnchor=true to make the anchor mandatory at application construction.
+
+Safety boundaries
+-----------------
+- The external anchor is not initialized over an existing remote record when local policy is absent.
+- Automatic reconciliation never rolls an anchor backward or overwrites a mismatched record.
+- The application can detect local rollback only if the independent anchor remains trustworthy and monotonic. If an attacker can roll back both stores or rewrite the external anchor service, this mechanism alone cannot guarantee detection.
+- Hashes are integrity commitments, not signatures. External provider authenticity, access control, durability, and append-only CAS are deployment responsibilities.
+- If the anchor write succeeds remotely but the response is lost, a later read can prove the committed state; until then the result remains pending/unavailable and sensitive operations fail closed.
+
+Validation
+----------
+- Batch 127 regression tests cover genesis, rotation, rollback detection, transient anchor write failure, safe ancestor reconciliation, mismatch, outage, missing local policy, receipt verification after rollback, owner isolation, and configuration separation.
+- Full cumulative test suite and syntax/import/archive checks are required before applying the ZIP locally.
+
+Next stage
+----------
+Batch 128 — External Anchor Provider Conformance, Anchor Continuity Proofs, and Operator Recovery Evidence.

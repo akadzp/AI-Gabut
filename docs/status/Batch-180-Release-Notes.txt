@@ -1,0 +1,29 @@
+Agentic AI V4 — Batch 180 Release Notes
+
+Scope
+- Adds an independent external snapshot checkpoint for recovery decision-gate receipt attestation history.
+- Revalidates receipt attestation against the current signing-key lifecycle, policy state, attestation freshness, and attestation-checkpoint status.
+- Adds an append-only CAS-guarded recovery-finalization receipt ledger for successful recovery of the decision-gate receipt checkpoint.
+- Adds inspection, enrollment, reconciliation, audit, and marker-recovery APIs/routes for the attestation checkpoint.
+- Adds bounded CAS retries, deterministic postcondition keys, duplicate detection, and post-write integrity validation for recovery-finalization receipts.
+
+Trust-domain configuration
+AGENTIC_CROSS_DOMAIN_RECOVERY_DECISION_GATE_AUDIT_RECEIPT_ATTESTATION_ANCHOR_URL=https://your-independent-anchor
+AGENTIC_CROSS_DOMAIN_RECOVERY_DECISION_GATE_AUDIT_RECEIPT_ATTESTATION_ANCHOR_TOKEN=your-token
+AGENTIC_REQUIRE_CROSS_DOMAIN_RECOVERY_DECISION_GATE_AUDIT_RECEIPT_ATTESTATION_ANCHOR=true
+
+The attestation checkpoint must use a distinct provider endpoint from every other trust domain. Required mode fails closed when the provider is not configured. A fresh empty genesis baseline may be explicitly enrolled; enrolling a non-empty pre-existing history marks that history as unproven and does not establish retroactive trust.
+
+Receipt attestation verification returns historical-only status after expiry, policy-state change, signing-key rotation/revocation, or when the required independent attestation checkpoint is not current. A valid Ed25519 signature alone does not establish current usability.
+
+Recovery finalization uses a deterministic operation key derived from the anchored receipt checkpoint postcondition and compare-and-set writes to an append-only ledger. It does not rewrite source history, delete evidence, or claim a successful current decision when checkpoint integrity/freshness requirements are not met.
+
+Validation
+- Batch 180 regression tests: 6/6 passed.
+- Batch 178–180 regression tests: 25/25 passed.
+- Batch 165–180 targeted regression tests: 99/99 passed across completed grouped runs.
+- All 167 test files were exercised in bounded groups; 1,222 assertions passed with zero failures in completed file-level runs. One oversized multi-file invocation exceeded the environment runtime limit, so the file-level/grouped runs are the evidence for this result.
+- JavaScript syntax and relative import resolution are validated for the complete source tree before packaging.
+- ZIP archive integrity and extracted-file SHA-256 equivalence are validated before delivery.
+
+GitHub: no commit performed.

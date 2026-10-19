@@ -1,0 +1,17 @@
+V4 Batch 78 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Repair Recovery Status Recovery Status Recovery Status Repair
+
+Scope completed:
+- adds a concurrency-safe repair operation for Batch 77's durable recovery-observability status state
+- clears only an orphaned durable error marker when no pending intent exists
+- preserves valid and malformed pending intents without replaying events or mutating state
+- delegates pending-state validation to the Batch 77 read-only verifier
+- uses version-checked writes with bounded retries and a fail-closed conflict response
+- preserves owner-scoped mission lookup and emits no observability events during repair
+
+Validation:
+- dedicated regression tests: 8/8 PASS
+- cumulative npm test: expected to retain five known baseline failures (missing core/storage/state/index.js imports in artifacts and work recovery, missing core/security/index.js import in work Git, external-feedback ID/provenance assertion mismatch, and missing github.workflowRuns mock); no new failures
+- JavaScript/MJS syntax validation and ZIP integrity checks are recorded with the delivered archive
+- no GitHub commit
+
+Next unfinished stage: Batch 79.

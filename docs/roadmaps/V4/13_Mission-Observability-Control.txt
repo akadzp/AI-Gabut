@@ -1,0 +1,20 @@
+V4 — MISSION OBSERVABILITY & CONTROL
+
+Tujuan: membuat execution mission dapat diamati dan dikendalikan tanpa mengambil alih execution authority.
+
+Scope:
+- durable mission event timeline
+- stage start/completion/failure/pause/resume evidence
+- checkpoint visibility
+- current/next stage snapshot
+- approval visibility
+- owner-scoped observability
+- realtime mission activity
+
+Implementation:
+- mission events disimpan owner-scoped
+- snapshot membaca state mission tanpa mengubah authority
+- timeline menjadi evidence sequence untuk audit/recovery
+- realtime hanya sebagai notification surface
+
+DoD: user dapat melihat state mission, stage aktif/berikutnya, checkpoint, approval state, dan event timeline secara konsisten tanpa bypass terhadap Work Execution authority.

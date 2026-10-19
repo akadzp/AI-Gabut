@@ -1,0 +1,29 @@
+Agentic AI V4 — Batch 200
+
+Objective:
+Establish an independently anchored checkpoint over rollback-revalidation lifecycle phases and require its currentness for lifecycle operations and closure decisions.
+
+Scope:
+- Add a lifecycle-only projection of signed intent, applied, and finalized events.
+- Register a dedicated external trust domain and enforce provider/endpoint independence.
+- Require enrollment and current checkpoint state before lifecycle mutations.
+- Advance the independent checkpoint after each durable phase through a one-event continuity gate.
+- Resume pending lifecycle operations after external checkpoint failures without duplicating receipts.
+- Resume finalization when the finalization receipt exists but challenge-state persistence was interrupted.
+- Detect external checkpoint drift and block automated repair when rollback, unhealthy state, policy drift, or unproven gaps are present.
+- Integrate lifecycle checkpoint currentness into lifecycle audits, drift monitoring, and closure decision-gate conformance.
+
+Operational invariants:
+- The lifecycle snapshot contains only the three lifecycle event phases; unrelated recovery-receipt events do not alter the projection.
+- Recovery reuses deterministic operation IDs and verifies stored bindings.
+- External anchors are never rewritten to conceal rollback.
+- A successful local challenge status does not override stale, missing, or unanchored evidence.
+- Private signing keys are not distributed in source archives.
+
+Validation:
+- Batch 200 tests: 6/6 PASS.
+- Batch 190–200 tests: 80/80 PASS across separate batch runs.
+- Full cumulative suite and live HTTP listener startup are not claimed as verified.
+- No GitHub commit.
+
+Next: Batch 201 — Independent Lifecycle Checkpoint Freshness Attestation, Drift Evidence Retention, and Recovery-Gate Revalidation.

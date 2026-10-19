@@ -1,0 +1,26 @@
+V4 Batch 98 — Mission Control Recovery Observability Integrity Orphaned Error Repair Recovery Status View Integrity Repair
+
+Scope:
+- adds a bounded repair for an orphaned durable error marker in the Batch 94/95 recovery-observability state tracked by Batch 96 and verified by Batch 97
+- clears only the durable error marker when no pending intent exists and the Batch 97 verifier reports exactly OBSERVABILITY_ERROR_WITHOUT_PENDING
+- preserves valid and malformed pending intents and any associated error markers
+- uses owner-scoped optimistic-concurrency-safe writes with bounded retries
+- performs no event emission, recovery, or source-repair replay
+- exposes the repair through the mission-control service and application boundary
+
+Validation:
+- dedicated Batch 98 regression tests: 9/9 PASS
+- cumulative `npm test`: 508/513 PASS; the same five baseline failures from Batch 97 remain with no new failures
+- JavaScript/MJS syntax validation: 112/112 PASS
+- application-boundary mapping: PASS (service export and application mapping verified)
+- ZIP integrity validation: PASS (`zip -T` and `unzip -t`)
+- extracted-archive regression recheck: 9/9 PASS; extracted cumulative `npm test`: 508/513 PASS with the same five baseline failures; extracted JavaScript/MJS syntax: 112/112 PASS; application-boundary mapping: PASS
+- no GitHub commit
+
+Known baseline failures from Batch 97:
+- `core/storage/state/index.js` is missing for the artifacts and work-recovery tests
+- `core/security/index.js` is missing for the work-Git test
+- external-feedback ID/provenance expectation mismatch (`feedback-1` expected, `external-feedback` actual)
+- GitHub CI feedback mock does not provide `github.workflowRuns`
+
+Next unfinished stage: Batch 99.

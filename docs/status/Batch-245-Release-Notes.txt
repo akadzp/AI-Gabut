@@ -1,0 +1,7 @@
+Agentic AI V4 — Batch 245
+
+Implemented renewal/revocation lifecycle for Batch 244 external attestations with signed intent/action/supersession/finalization events, finalization receipts, cross-generation continuity, deterministic replay, signing-key cutoff enforcement, independent checkpoint reconciliation, recovery-gate convergence, and owner-scoped API routes.
+
+Validation scope: focused Batch 245 tests plus selected prior regression tests; JavaScript syntax/import checks; ZIP integrity and post-extraction source hash equality. Full cumulative test suite and complete positive end-to-end lifecycle remain unclaimed unless separately completed.
+
+GitHub: no commit performed.

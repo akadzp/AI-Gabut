@@ -1,0 +1,24 @@
+Batch 156 — Policy-Binding Audit Checkpoint Freshness Attestation, Manifest Approval Revocation/Supersession, and Concurrent Revalidation Consistency
+
+- Added signed Ed25519 freshness attestations for policy-binding audit checkpoints. Attestations bind checkpoint/audit snapshots and the active freshness policy digest inputs (maximum age and future-skew tolerance). Verification distinguishes historical signature validity, currentness, and usability for current decisions. A checkpoint with unproven pre-enrollment history may be signed as historical evidence, but is explicitly marked history_unproven and cannot authorize a current decision.
+- Added explicit challenge-bound revocation for provider-baseline receipt compaction-manifest approvals. Revocation is available only after the manifest is no longer current/eligible, binds the exact observed source state, and fails if that state changes or becomes eligible again before application. Approval records remain immutable; audits report current approvals, superseded approvals, and revoked approvals separately. No compaction or deletion is performed.
+- Added per-owner/per-approval single-flight revalidation so overlapping requests share one result and cannot independently publish conflicting cache outcomes. Cache audit now reports coalesced and in-flight revalidation counts. Freshness deadline expiry is classified as external_checkpoint_pending rather than being misreported as a source race; actual generation conflicts still fail closed as revalidation_race_detected and are not cached.
+- Added authenticated API methods and HTTP routes for checkpoint freshness attestation creation/verification/audit and manifest-approval revocation challenges/application/audit. Required attestation mode rejects startup unless an external signer, key ID, and matching trusted Ed25519 public key are configured.
+- Added regression coverage for signed historical/current attestation behavior, freshness-policy drift, manifest supersession and explicit revocation, stale revocation challenges, concurrent revalidation coalescing, and required signer configuration.
+
+Validation:
+- Batch 156 regression tests: 4/4 PASS.
+- Full cumulative npm test: 1088/1088 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax validation: 235/235 PASS.
+- Relative import resolution: 424 references checked, 0 missing.
+- ZIP integrity (`zip -T`, `unzip -t`): PASS. Final clean-extraction revalidation: 1088/1088 tests PASS; syntax 235/235 PASS; relative imports 424 checked, 0 missing; source diff before/after extraction empty.
+- No GitHub commit was made.
+
+Operational boundaries:
+- Freshness attestation signs observed state; historyNotProven remains explicit and prevents current-decision use.
+- Revocation is challenge-bound and only allowed when source qualification has been lost; revocation does not alter the original approval or perform compaction.
+- Concurrent requests for the same owner/approval share an in-flight promise within one application process; cross-process coordination still depends on the shared evidence/checkpoint stores and their CAS semantics.
+- The revalidation cache remains in-memory and non-authoritative.
+- HTTP listener startup remains unverified; syntax, API exposure, route mapping, and test suites are validated separately.
+
+At completion of Batch 156, next unfinished stage: Batch 157 — Attestation Key-Rotation/Revocation Handling, Manifest-Approval Supersession Ledger Anchoring, and Cross-Process Revalidation Lease/Recovery.

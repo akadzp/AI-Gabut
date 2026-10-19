@@ -1,0 +1,7 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createMissionExecutionLease} from '../../apps/agentic/backend/mission-execution-lease.js';
+function runtime(){const records=new Map(); let now='2026-10-07T08:00:00.000Z'; const store={async getOwned(scope,owner,id){return records.get(`${scope}:${owner}:${id}`)||null},async putOwned(scope,owner,id,v){records.set(`${scope}:${owner}:${id}`,v);return v}}; return {store,clock:()=>now,setNow(v){now=v},lease:createMissionExecutionLease({leaseStore:store,clock:()=>now,leaseMs:60_000})};}
+test('only one active execution owns a mission lease',async()=>{const r=runtime();await r.lease.acquire('u1','m1','e1');await assert.rejects(()=>r.lease.acquire('u1','m1','e2'),{code:'LEASE_CONFLICT'});});
+test('expired lease can be acquired by the next execution',async()=>{const r=runtime();await r.lease.acquire('u1','m1','e1');r.setNow('2026-10-07T08:01:01.000Z');const next=await r.lease.acquire('u1','m1','e2');assert.equal(next.executionId,'e2');});
+test('renew and release require lease ownership',async()=>{const r=runtime();await r.lease.acquire('u1','m1','e1');await assert.rejects(()=>r.lease.renew('u1','m1','e2'),{code:'LEASE_NOT_OWNER'});await r.lease.renew('u1','m1','e1');assert.deepEqual(await r.lease.release('u1','m1','e1'),{released:true});const next=await r.lease.acquire('u1','m1','e2');assert.equal(next.executionId,'e2');});

@@ -1,0 +1,23 @@
+Agentic AI V4 — Batch 232 Release Notes
+
+Stage: External Lifecycle Finalization-Receipt Attestation, Receipt-Chain Integrity Recovery, and Cross-Generation Checkpoint Convergence.
+
+Implementation
+- Signed attestations for Batch 231 finalization receipts.
+- Generation/predecessor continuity and receipt-prefix digest validation.
+- Key-cutoff-aware re-attestation under the current signing key.
+- Snapshot inclusion in the existing independent external-attestation checkpoint.
+- Authenticated owner-scoped API routes and recovery-gate integration.
+
+Focused regression
+- Batch 223–232 plus Batch 102 HTTP/application API surface: 35 tests passed, 0 failed.
+- Batch 232 tests: 2 passed, 0 failed.
+- JavaScript/MJS/CJS syntax: 324/324 passed.
+- Relative import references: 622 checked, 0 missing.
+
+Known validation limits
+- Full cumulative `npm test` exceeded the 300-second execution budget after 1,119 subtests; no failing subtest was present in the captured log before timeout, but the full suite is not reported as passing.
+- Positive end-to-end renewal/revocation through the full historical bootstrap remains unverified.
+- Live HTTP listener startup is not claimed; route registration and application API reference tests passed.
+
+GitHub commit: none.

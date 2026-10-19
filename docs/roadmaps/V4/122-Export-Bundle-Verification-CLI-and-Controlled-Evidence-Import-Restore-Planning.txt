@@ -1,0 +1,26 @@
+Batch 122 — Export Bundle Verification CLI and Controlled Evidence Import/Restore Planning
+
+Implemented
+- Added `scripts/verify-recovery-slo-export.mjs`, a storage-independent CLI for verifying Batch 121 recovery-SLO export JSON bundles. It checks canonical manifest/section digests, the bundle digest, schema and record shapes, owner bindings, duplicate top-level record IDs, archive-index dependencies, storage-metadata exclusion, declared byte length, read-only metadata, and bounded object depth/size.
+- CLI accepts `--bundle <file.json>`, optional `--public-key <public.pem>`, optional `--expected-owner <ownerId>`, and `--require-signature`. It emits a machine-readable JSON report and never imports or restores data. Exit code 0 means checks passed, 2 means invalid/untrusted required signature, 64 means CLI usage error, and 66 means input/key file error.
+- Added Ed25519 verification when a public key is supplied. A cryptographically valid signature does not make a supplied key trusted; the key's trust must be established independently. `--require-signature` requires successful verification with the supplied public key.
+- Added `createRecoverySloExportRestorePlanner()` and owner-scoped `planRecoverySloEvidenceRestore()`. The planner validates a bundle against the target owner, optionally requires a signature matching the application's configured export key, checks target storage for identical records and ID conflicts, orders planned actions by dependency, and emits a digest-bound dry-run plan.
+- Restore planning is strictly read-only: no records are imported, no storage versions are changed, and the returned plan always states `dryRun: true`, `restoreExecuted: false`, and `mutationAllowed: false`. Conflicts, missing archive-index dependencies, owner mismatch, action-limit overflow, invalid structure, and required-signature failure block the plan.
+- Added authenticated HTTP route `POST /api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor/slo/evidence-export/restore-plan` and application API `planRecoverySloEvidenceRestore()`.
+- Added npm command `npm run verify:recovery-slo-export -- --bundle <file.json> [--public-key <public.pem>] [--expected-owner <ownerId>] [--require-signature]`.
+
+Validation
+- Batch 122 regression tests: 10/10 PASS.
+- Full cumulative `npm test`: 789/789 PASS.
+- CLI valid/invalid input, owner mismatch, Ed25519 verification, wrong-key rejection, strict signature requirement, dry-run no-write guarantee, conflict detection, archive dependency validation, bounds, and API route mapping: PASS.
+- JavaScript/MJS syntax, relative import resolution, ZIP integrity, and extracted-source validation: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+- This batch intentionally implements verification and restore planning only. It does not apply imported records or provide a restore execution endpoint.
+- An integrity-only bundle is not proof of origin. Before any future import execution, operators should require a trusted signature or separately validate the source and use a backup/isolated target.
+- A valid signature proves possession of the signing key, not that the key is trusted. Public-key trust must be configured independently.
+- The restore plan compares IDs and canonical record content against the target owner store. A `ready` plan is a preflight result, not a guarantee that a later restore will remain conflict-free if the target changes.
+- HTTP listener startup is not claimed as boot-tested in this isolated validation runtime.
+
+Next unfinished stage: Batch 123 — Restore Plan Approval, Import Journal, and Quarantined Evidence Application.

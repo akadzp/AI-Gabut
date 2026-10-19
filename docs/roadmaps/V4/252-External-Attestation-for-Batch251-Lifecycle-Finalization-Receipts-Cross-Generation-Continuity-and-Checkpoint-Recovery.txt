@@ -1,0 +1,13 @@
+Batch 252 Roadmap
+
+Goal: externally attest Batch 251 lifecycle finalization receipts with cross-generation continuity and independent checkpoint recovery.
+
+Scope:
+1. Validate each Batch 251 finalization receipt against its lifecycle finalization event and binding digests.
+2. Produce a signed append-only Batch 252 attestation event with deterministic operation IDs.
+3. Enforce monotonic attestation generations and predecessor ID/digest continuity.
+4. Bind source receipt prefix digest, checkpoint fingerprint, lifecycle audit digest, and signing-key lifecycle.
+5. Detect missing receipts, invalid signatures, chain corruption, key cutoff, terminal revocation, and stale checkpoint state.
+6. Expose owner-scoped attest/audit/snapshot/reconcile APIs.
+7. Include Batch 252 evidence in checkpoint snapshots and recovery-gate convergence.
+8. Validate syntax, imports, focused regression tests, ZIP integrity, and post-extraction equivalence.

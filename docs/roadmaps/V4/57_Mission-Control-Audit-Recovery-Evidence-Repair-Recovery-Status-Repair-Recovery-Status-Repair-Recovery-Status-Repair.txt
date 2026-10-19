@@ -1,0 +1,17 @@
+V4 Batch 63 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Repair Recovery Status Repair
+
+Scope completed:
+- added bounded repair for an orphaned durable error in the Batch 61 recovery-status state, as detected by Batch 62 integrity verification
+- clears only the error marker when no pending intent exists
+- preserves all pending intents, including malformed intents, and reports integrity findings without mutation
+- uses owner-scoped lookup and optimistic-concurrency-safe writes with bounded retries
+- performs no recovery replay and emits no observability events
+- exposes repairMissionControlAuditRecoveryEvidenceRepairRecoveryStatusRepairRecoveryStatusRepairRecoveryStatus at the application boundary
+
+Validation:
+- Batch 63 dedicated regression tests: 7/7 PASS
+- JavaScript/MJS syntax validation: 77/77 PASS
+- cumulative npm test: 174/179 PASS; five known baseline failures remain outside Batch 63: two test files cannot import missing core/storage/state/index.js, one cannot import missing core/security/index.js, one external-feedback test has an ID/provenance expectation mismatch, and another mock lacks github.workflowRuns
+- ZIP integrity validation: PASS (zip -T and unzip -t)
+
+Next unfinished stage: Batch 64.

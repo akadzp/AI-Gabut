@@ -1,0 +1,24 @@
+Agentic AI V4 — Batch 195 Roadmap Record
+
+Objective
+Add explicit, auditable disposition for marker-recovery journal lifecycle recovery intents that cannot safely resume, and independently verify the intent/lifecycle/finalization chain.
+
+Delivered
+1. Signed append-only quarantine and mark_unrecoverable disposition events.
+2. Signed disposition finalization receipts with checkpoint binding and key-cutoff evidence.
+3. Deterministic target-scoped operation IDs and CAS-safe idempotent recovery.
+4. Independent finalization continuity audit covering signatures, order, duplicates, orphaned events, challenge bindings, and current signing-key lifecycle.
+5. Closure enforcement: disposition reduces operational ambiguity but does not restore current-decision eligibility.
+6. Owner-scoped HTTP routes for disposition and continuity audit.
+
+Safety invariants
+- Never delete or rewrite historical lifecycle evidence.
+- Do not disposition a healthy, current, fully finalized lifecycle intent.
+- Require explicit confirmation and a bounded challenge lifetime.
+- Reject key rotation between challenge preparation and first disposition commit.
+- If a disposition event has already committed, permit idempotent recovery of its checkpoint/finalization chain without duplicating receipts.
+- Treat key-cutoff and dispositioned records as stale for current-decision use.
+- Fail closed on duplicate operation IDs, invalid signatures, broken sequence ordering, missing finalization records, or orphaned events.
+
+Next planned stage
+Batch 196: Disposition-Ledger External Checkpoint Separation, Recovery Challenge Expiry Reconciliation, and Closure Decision-Gate Conformance.

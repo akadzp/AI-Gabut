@@ -1,0 +1,28 @@
+Agentic AI V4 — Batch 133 Release Notes
+
+Stage: Recovery-Journal Anchor Provider Conformance and Retention Checkpoint Externalization
+
+New environment variables:
+- AGENTIC_RETENTION_CHECKPOINT_ANCHOR_URL: independently operated external anchor endpoint for retention-policy checkpoints.
+- AGENTIC_RETENTION_CHECKPOINT_ANCHOR_TOKEN: bearer token for that endpoint.
+- AGENTIC_REQUIRE_RETENTION_CHECKPOINT_ANCHOR=true: fail closed if the provider is not configured.
+
+The retention-checkpoint provider must be independent from the general attestation, finalization key-policy, and recovery-journal anchor providers. The application rejects reuse of the same provider instance or duplicate configured anchor URLs across trust domains.
+
+New application APIs:
+- prepareRecoverySloRecoveryJournalAnchorProviderConformance(ownerId, input)
+- runRecoverySloRecoveryJournalAnchorProviderConformance(ownerId, challengeId, input)
+- getRecoverySloRetentionCheckpointAnchorStatus(ownerId)
+- anchorRecoverySloRetentionCheckpoint(ownerId, input)
+- reconcileRecoverySloRetentionCheckpointAnchor(ownerId)
+
+Legacy retention checkpoint enrollment requires explicit confirmation:
+ANCHOR RETENTION CHECKPOINT <first 12 characters of checkpoint digest>
+
+The enrollment reason must be 12–240 characters. A legacy enrollment is marked historyNotProven because no mechanism can reconstruct history from before enrollment. Never treat this flag as proof of historical continuity.
+
+Provider conformance creates records in a disposable namespace prefixed with __agentic_v4_recovery_journal_conformance__. Providers without deletion support may retain those records. The probe does not write to a production journal namespace.
+
+Validation: Batch 133 tests 13/13 PASS; cumulative npm test 912/912 PASS; JavaScript/MJS syntax and relative imports validated; ZIP integrity and extracted-source validation PASS.
+
+No GitHub commit was made.

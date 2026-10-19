@@ -1,0 +1,21 @@
+V4 Batch 85 — Mission Control Recovery Observability Recovery
+
+Scope:
+- adds an explicit bounded recovery operation for the durable observability intent created by Batch 84
+- emits the same mission-scoped event type and deterministic dedupe key as Batch 84
+- validates the pending intent shape before event emission and fails closed on malformed intent or an orphaned error marker
+- preserves the pending intent and stores a bounded error when event emission fails
+- clears pending intent and error only after successful event emission and a version-checked write
+- retries optimistic-concurrency conflicts within the configured recovery bound
+- preserves pending state when persistence fails after event emission so a deduplicated retry remains possible
+- remains owner-scoped and exposes the recovery operation through the application boundary
+
+Validation:
+- dedicated Batch 85 regression tests: 12/12 PASS
+- cumulative npm test: 375/380 PASS; the same five baseline failures remain
+- JavaScript/MJS syntax validation: 99/99 PASS
+- application-boundary mapping: PASS
+- ZIP integrity validation: PASS (`zip -T` and `unzip -t`); extracted regression recheck: 12/12 PASS; extracted syntax recheck: 99/99 PASS
+- no GitHub commit
+
+Next unfinished stage: Batch 86.

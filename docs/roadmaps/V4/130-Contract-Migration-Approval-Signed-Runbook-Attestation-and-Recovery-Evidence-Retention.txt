@@ -1,0 +1,35 @@
+Batch 130 — Contract Migration Approval, Signed Runbook Attestation, and Recovery Evidence Retention
+
+Scope
+- Add a persistent owner-scoped contract migration ledger with a hash-linked event chain and a restart-persistent active contract version.
+- Require a recent successful behavioral conformance probe before migration to provider contract 1.1.0.
+- Separate migration planning, digest-bound explicit approval, and apply. Recheck source version, target compatibility, plan expiry, approval expiry, and conformance evidence at each boundary.
+- Prohibit contract downgrade from 1.1.0 to 1.0.0 and fail closed when migration ledger integrity is invalid.
+- Sign the entire recovery runbook through an external Ed25519 signer. Bind the attestation to owner, runbook ID, runbook digest, issue time, and trusted key ID. Verify attestation separately from runbook content integrity.
+- Keep unsigned runbook compatibility explicit when strict mode is disabled. When a signer is configured, signer failures do not silently downgrade to unsigned output. Strict mode requires signer/key configuration at startup.
+- Persist exported runbooks and signed continuity evidence under a configurable retention policy (default 90 days). Audit payload and record digests; prune expired payloads into digest-preserving tombstones rather than silently deleting the audit record.
+- Add bounded owner-scoped listing, auditing, pruning, authenticated HTTP routes, and operator-evidence events for migration, runbook attestation, and retention pruning.
+
+Safety properties
+- Contract migration is not applied during planning or approval.
+- Approval binds an immutable plan digest and requires an explicit confirmation token.
+- The active contract version is resolved from the validated persistent migration ledger after restart.
+- Migration plans expire after 30 minutes; approvals expire 30 minutes after approval; behavioral conformance evidence for 1.1.0 must be no older than 24 hours.
+- Retention defaults to 90 days and can be configured from 1 to 3650 days. Payload retention is bounded to 500 active artifacts per owner; the tombstone registry is bounded to 2000 records per owner. Pruning is bounded to 100 records per call.
+- Runbook size remains bounded to 1 MiB after adding its attestation.
+- Hash-linked local evidence detects inconsistent edits but is not a substitute for an independently operated rollback-resistant trust anchor.
+
+Validation
+- Batch 130 regression tests: 11/11 PASS.
+- Full cumulative npm test: 875/875 PASS.
+- JavaScript/MJS syntax validation, relative import resolution, ZIP integrity, and extracted-source revalidation: required before release.
+- No GitHub commit.
+
+Operational boundaries
+- Approval is owner-scoped and digest-bound, but this stage does not enforce two distinct human identities for proposer and approver.
+- The external signer private key remains outside application storage; trusted public keys must be provisioned independently.
+- Retention tombstones preserve metadata and payload digests, not the original payload bytes.
+- External anchor provider metadata remains declarative; behavioral conformance is still required.
+- HTTP listener startup must be verified in the target deployment environment.
+
+Next unfinished stage: Batch 131 — Migration Rollback Recovery, Runbook Trust-Key Rotation, and Retention Policy Change Audit.

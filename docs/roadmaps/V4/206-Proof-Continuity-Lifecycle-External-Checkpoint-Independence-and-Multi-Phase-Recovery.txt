@@ -1,0 +1,16 @@
+Batch 206 — Proof-Continuity Lifecycle External Checkpoint Independence, Revocation Evidence Retention, and Multi-Phase Recovery Reconciliation
+
+Delivered:
+- Independent external checkpoint for proof-continuity lifecycle events (intent, renewal, revocation, supersession, finalization).
+- Explicit enrollment, freshness/policy checks, provider/endpoint independence checks, audit, and reconciliation APIs.
+- Lifecycle apply advances the general continuity checkpoint and dedicated lifecycle checkpoint after each persisted phase.
+- Retry resumes the same challenge and deterministic phase operation IDs after external-write failure.
+- Revocation evidence remains append-only and terminal for the target.
+- Aggregate proof-continuity decision gate blocks current-decision use when lifecycle checkpoint evidence is missing, stale, or pending recovery.
+
+Configuration:
+AGENTIC_CROSS_DOMAIN_RECOVERY_INTENT_CLOSURE_RECOVERY_GATE_PROOF_CONTINUITY_LIFECYCLE_ANCHOR_URL
+AGENTIC_CROSS_DOMAIN_RECOVERY_INTENT_CLOSURE_RECOVERY_GATE_PROOF_CONTINUITY_LIFECYCLE_ANCHOR_TOKEN
+AGENTIC_REQUIRE_CROSS_DOMAIN_RECOVERY_INTENT_CLOSURE_RECOVERY_GATE_PROOF_CONTINUITY_LIFECYCLE_ANCHOR
+
+Validation: 6/6 focused Batch 206 tests passed individually; syntax/import/archive validation is performed on the final cumulative ZIP. Full cumulative npm test and direct HTTP startup are not claimed. No GitHub commit.

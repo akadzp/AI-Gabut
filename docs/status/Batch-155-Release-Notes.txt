@@ -1,0 +1,24 @@
+Batch 155 — Policy-Binding Audit-Chain External Checkpointing, Compaction Manifest Approval Workflow, and Cache Invalidation Race/Freshness Tests
+
+- Added a dedicated external checkpoint trust domain for the combined cross-domain policy-binding audit chain. The source snapshot binds event IDs, domains, sequences, event digests, previous-event links, challenge digests, resulting anchor digests, target policy digests, and timestamps.
+- Added explicit enrollment, status, audit, and reconciliation APIs for the policy-binding audit-chain checkpoint. Reconciliation advances exactly one provable event and rejects source-chain tampering, unhealthy local audits, and multi-event jumps. The new provider is included in provider-instance and endpoint independence checks.
+- Added a challenge-bound approval workflow for provider-baseline receipt compaction manifests. Approval binds the manifest digest, source fingerprint, and checkpoint sequence/digest, revalidates source state before application, supports idempotent recovery, and audits duplicate or tampered approvals. Approval is for controlled review only: no compaction, deletion, or automatic destructive action is performed.
+- Hardened retention-decision revalidation caching with a bounded cache age and checkpoint freshness deadline. Cache reuse now performs a second fingerprint capture; a source, checkpoint, policy, or retention-state change during evaluation returns `revalidation_race_detected` and is not cached.
+- Retention-decision currentness now requires a fresh, current external retention-review checkpoint when configured. A configured policy-binding audit-chain checkpoint is also fingerprinted and must be anchored and fresh; pre-enrollment history remains explicitly marked as unproven.
+- Added authenticated application APIs and HTTP routes for policy-binding audit-chain checkpoint lifecycle and compaction-manifest approval/audit.
+
+Validation:
+- Batch 155 regression tests: 8/8 PASS.
+- Full cumulative `npm test`: 1084/1084 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax: 233/233 PASS. Relative import references: 418 checked, 0 missing.
+- ZIP integrity: `zip -T` and `unzip -t` PASS. Extracted archive: 1084/1084 tests PASS; syntax 233/233 PASS; relative imports 418 checked, 0 missing; source diff empty.
+- No GitHub commit was made.
+
+Operational boundaries:
+- External checkpoint durability and CAS guarantees remain provider responsibilities.
+- Initial external enrollment deliberately preserves `historyNotProven` for pre-enrollment history.
+- Manifest approval does not perform compaction; it authorizes review only.
+- The revalidation cache is in-memory, bounded, and non-authoritative; a race is rejected rather than cached.
+- HTTP listener startup remains unverified; syntax, route mapping, API exposure, and test suites are verified.
+
+At completion of Batch 155, next unfinished stage: Batch 156.

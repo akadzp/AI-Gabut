@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { createMissionControlIntegrity } from '../../apps/agentic/backend/mission-control-integrity.js';
+import { createMissionControlIntegrityGate } from '../../apps/agentic/backend/mission-control-integrity-gate.js';
+
+const base={id:'m1',ownerId:'u1',status:'paused',controlId:'c1',controlReason:'hold',controlRequestId:'r1',controlHistory:[{controlId:'c1',action:'pause',reason:'hold',requestId:'r1',createdAt:'2026-10-08T00:00:00.000Z'}],_storage:{version:1}};
+function storeOf(initial){let current={...initial};return {async getOwned(_c,_o,id){return id===current.id?current:null;},async putOwned(_c,_o,id,next){current={...next,_storage:{version:(current._storage?.version||0)+1}};return current;},current:()=>current};}
+
+test('gate passes valid control state without persistence',async()=>{const store=storeOf(base);const gate=createMissionControlIntegrityGate({missionStore:store,integrity:createMissionControlIntegrity()});const r=await gate.ensure('u1',store.current());assert.equal(r.changed,false);assert.equal(r.mission,store.current());});
+test('gate persists bounded control repair before operator transition',async()=>{const store=storeOf({...base,controlHistory:[...base.controlHistory,{...base.controlHistory[0]}],controlEvidencePending:{controlId:'missing',action:'pause'}});const gate=createMissionControlIntegrityGate({missionStore:store,integrity:createMissionControlIntegrity()});const r=await gate.ensure('u1',store.current());assert.equal(r.repaired,true);assert.equal(store.current().controlHistory.length,1);assert.equal(store.current().controlEvidencePending,undefined);});
+test('gate rejects unrecoverable control state',async()=>{const broken={...base,ownerId:'other-owner',controlHistory:[{controlId:'c1',action:'pause',reason:'hold',requestId:'r1',createdAt:'bad'}],controlId:'missing'};const store=storeOf(broken);const gate=createMissionControlIntegrityGate({missionStore:store,integrity:createMissionControlIntegrity()});await assert.rejects(()=>gate.ensure('u1',store.current()),e=>e.code==='MISSION_CONTROL_INTEGRITY_UNREPAIRABLE');});
+test('validation mode rejects without mutating',async()=>{const store=storeOf({...base,controlEvidenceError:'orphan'});const gate=createMissionControlIntegrityGate({missionStore:store,integrity:createMissionControlIntegrity()});await assert.rejects(()=>gate.ensure('u1',store.current(),{repair:false}),e=>e.code==='MISSION_CONTROL_INTEGRITY_INVALID');assert.equal(store.current().controlEvidenceError,'orphan');});

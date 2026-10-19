@@ -1,0 +1,35 @@
+Agentic AI V4 — Batch 172 Release Notes
+======================================
+
+Scope
+-----
+- Added challenge-bound activate/rotate/revoke lifecycle events for remediation-finalization Ed25519 signing keys.
+- Bound new finalization attestations to the active signing-key lifecycle sequence, lifecycle event digest, and trusted public-key fingerprint.
+- Separated historical key-cutoff validity from current usability; a rotated or revoked key cannot continue authorizing new current attestations.
+- Added an append-only, digest-chained cross-domain replay incident ledger with deterministic deduplication and fail-closed integrity auditing.
+- Added recovery-intent CAS/finalization audits for missing, duplicated, tampered, or mismatched execution/finalization records and checkpoint recovery postconditions.
+- Added authenticated application APIs and HTTP routes for lifecycle transitions, replay incident audit, and CAS-finalization audit.
+
+Validation
+----------
+- Batch 165–172 focused cumulative regressions: 40/40 passed.
+- Batch 102 application API/import/dependency checks: 13/13 passed.
+- JavaScript/MJS/CJS syntax checks: 251/251 passed.
+- Relative import resolution: passed.
+- ZIP test (`zip -T`): passed.
+- ZIP integrity (`unzip -t`): passed.
+- Clean extraction source hashes: identical, no differences.
+- Clean-extraction Batch 165–172 regressions: 40/40 passed.
+- Clean-extraction Batch 102 API/import checks: 13/13 passed.
+
+Validation limitations
+---------------------
+- The complete 159-file cumulative test invocation was attempted but exceeded the available runtime before finishing; no assertion failures appeared in the captured output, but a full-suite pass is not claimed.
+- Direct HTTP listener startup was not run because the declared Express dependency is not installed in the validation environment (ERR_MODULE_NOT_FOUND). Route wiring is covered by tests.
+- Key lifecycle and replay incident ledgers are locally persisted and digest-chained in this batch; they are not yet independently externally anchored.
+- External provider commits and local persistence do not form one distributed atomic transaction.
+
+Repository
+----------
+- No GitHub commit was made.
+- This archive contains the complete cumulative source tree through Batch 172.

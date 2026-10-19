@@ -1,0 +1,21 @@
+V4 Batch 69 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Repair Recovery Status Recovery Status Observability
+
+Scope completed:
+- adds durable, deterministic observability for Batch 68's orphaned recovery-status error-marker repair
+- atomically clears the source error marker while persisting a new retryable observability intent using owner-scoped optimistic-concurrency-checked storage
+- emits a mission-scoped event with a deterministic dedupe key after the intent is durable
+- preserves the intent and records a bounded durable error when emission fails, allowing a later invocation to retry without replaying the source repair
+- retries existing valid pending intents and reuses the same event type/dedupe key after optimistic-concurrency conflicts
+- fails closed on malformed destination intents and orphaned destination error markers
+- preserves source pending intents and their errors, including malformed source state reported by the Batch 67 verifier
+- bounds retries and error metadata and remains owner-scoped
+- exposes repairAuditRecoveryEvidenceRepairRecoveryStatusRepairRecoveryStatusRepairRecoveryStatusRecoveryStatusWithObservability through the application boundary
+
+Validation:
+- Batch 69 dedicated regression tests: 11/11 PASS
+- JavaScript/MJS syntax validation: 83/83 PASS
+- cumulative npm test: 225/230 PASS; the same five baseline failures remain (two missing core/storage/state/index.js imports, one missing core/security/index.js import, one external-feedback ID/provenance mismatch, and one missing github.workflowRuns mock)
+- ZIP integrity validation: PASS (zip -T and unzip -t); extracted-archive regression recheck: 11/11 PASS; extracted syntax validation: 83/83 PASS
+- no GitHub commit was made
+
+Next unfinished stage: Batch 70.

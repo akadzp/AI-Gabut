@@ -1,0 +1,21 @@
+Agentic AI V4 Batch 184 — Attestation-Lifecycle External Recovery Receipt, Freshness Enforcement, and Decision-Gate Audit Repair
+
+Scope:
+- Add an append-only recovery receipt for each attestation lifecycle renewal/revocation event, binding the exact lifecycle event and matching reconciliation receipt.
+- Sign recovery receipts with the current Ed25519 key when available and require a valid attestation when strict finalization attestation policy is enabled.
+- Protect the recovery receipt ledger with an independently configured external snapshot checkpoint and reject provider/endpoint reuse across trust domains.
+- Bind lifecycle challenges to current recovery-receipt checkpoint state; fail closed when required checkpoint freshness, continuity, or policy binding is not proven.
+- Recover a pending external checkpoint write idempotently without duplicating the lifecycle event or recovery receipt.
+- Add audit/repair APIs for missing legacy recovery receipts, signing-key cutoff re-attestation, checkpoint enrollment/reconciliation, and marker crash-recovery.
+- Detect receipt-chain tampering, orphaned lifecycle events, reconciliation-binding mismatch, stale key binding, rollback, and unproven gaps; feed current-use failures into lifecycle/decision-gate audit.
+- Use filesystem-safe recovery-intent IDs for the new marker-recovery domain.
+
+Validation:
+- Batch 184 tests: 9/9 pass.
+- Batches 178–184 focused tests: 54/54 pass.
+- JavaScript/MJS/CJS syntax: 263/263 pass.
+- Relative import references: 520 checked, 0 missing.
+- Full cumulative suite attempted in bounded groups; older grouped test processes exceeded runtime limits, so no full-suite completion claim is made.
+- ZIP integrity and extracted source SHA-256 equality pass.
+
+No GitHub commit.

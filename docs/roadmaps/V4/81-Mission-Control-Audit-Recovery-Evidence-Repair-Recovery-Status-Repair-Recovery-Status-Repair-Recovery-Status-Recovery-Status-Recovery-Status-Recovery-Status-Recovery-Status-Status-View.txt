@@ -1,0 +1,18 @@
+V4 Batch 81 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Repair Recovery Status Recovery Status Recovery Status Recovery Status Recovery Status Status View
+
+Scope completed:
+- adds a read-only, owner-scoped status view for the durable observability intent created by Batch 79 and recovered by Batch 80
+- reports clear, pending, or error phases and recoverability without performing writes, retries, repairs, recovery, or event emission
+- validates nullable reconciliation ID, creation timestamp, and repaired-by-retry metadata
+- detects malformed pending intents and orphaned durable error markers with stable issue codes
+- bounds returned metadata and durable error text
+- exposes the status view through the application boundary
+
+Validation:
+- dedicated regression tests: 8/8 PASS
+- cumulative npm test: expected 334/339 PASS; the same five Batch 80 baseline failures remain (missing core/storage/state/index.js in artifacts and work-recovery, missing core/security/index.js in work-git, external-feedback ID/provenance mismatch, and missing github.workflowRuns mock)
+- JavaScript/MJS syntax validation: 95/95 PASS
+- ZIP integrity validation: PASS (`zip -T` and `unzip -t`); extracted-archive regression recheck: 8/8 PASS; extracted syntax validation: 95/95 PASS
+- no GitHub commit
+
+Next unfinished stage: Batch 82.

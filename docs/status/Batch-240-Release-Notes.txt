@@ -1,0 +1,29 @@
+Agentic AI V4 — Batch 240 Release Notes
+
+Title
+External Attestation for Batch 239 Lifecycle Finalization Receipts, Cross-Generation Receipt Continuity, and Independent Checkpoint Recovery
+
+Scope
+- Adds a signed external-attestation event for each Batch 239 lifecycle finalization receipt.
+- Binds attestation to receipt ID/digest/generation, lifecycle finalization event, action, target attestation, source receipt, intent/action events, replacement attestation, receipt-chain prefix, source checkpoint, lifecycle audit digest, and signing-key lifecycle binding.
+- Enforces a monotonically increasing attestation generation and predecessor ID/digest chain.
+- Audits historical signatures, source receipt continuity, missing attestations, key-cutoff revalidation, and checkpoint freshness.
+- Adds read-only snapshot/audit surfaces and checkpoint-aware reconciliation.
+- Includes Batch 240 events in the independent finalization-receipt checkpoint snapshot.
+- Integrates Batch 240 audit status into overall recovery-gate convergence.
+- Adds authenticated application routes for attest, audit, snapshot, and reconcile.
+
+Recovery behavior
+- Missing source receipts do not create attestations.
+- Missing attestation evidence yields recovery_required.
+- Invalid source binding, predecessor chain, or signature yields unhealthy.
+- Terminal source revocation remains decision_blocked.
+- External checkpoint lag remains recovery_required until reconciled.
+- Operation IDs are deterministic; conflicting reuse is rejected by the existing append-only ledger contract.
+
+Validation
+- Focused Batch 240 tests are provided in tests/apps/agentic-recovery-slo-v4-batch240-external-lifecycle-finalization-receipt-attestation.mjs.
+- Full cumulative npm test must be run in the deployment environment; this release does not claim a complete cumulative suite pass.
+
+GitHub
+- No commit performed.

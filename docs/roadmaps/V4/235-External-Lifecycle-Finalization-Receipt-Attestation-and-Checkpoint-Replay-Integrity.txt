@@ -1,0 +1,20 @@
+Agentic AI V4 — Batch 235
+
+Objective
+Add a signed external-attestation chain for Batch 234 lifecycle finalization receipts, including receipt-prefix continuity, key-cutoff revalidation, independent checkpoint advancement, and recovery-gate convergence.
+
+Delivered
+- Batch 235 signed ledger event with schema validation and historical signature verification.
+- Finalization receipt ID/digest/generation, lifecycle finalization, intent/action, source-attestation, and source-receipt bindings.
+- Receipt-prefix digest and deterministic operation IDs for idempotent replay.
+- Monotonic attestation generation and predecessor ID/digest continuity.
+- Audit findings for missing attestations, invalid bindings, signature failures, stale checkpoints, and terminal revocation.
+- Existing independent finalization-receipt external-attestation snapshot now covers Batch 235 events.
+- Owner-scoped attest, audit, snapshot, and reconcile API routes.
+- Overall recovery-gate convergence includes Batch 235 when Batch 234 finalization receipts exist.
+
+Validation
+Focused regression tests cover empty-history behavior, convergence integration, application API wiring, and route registration. Syntax/import/archive checks are performed independently. Positive end-to-end renewal/revocation integration remains a separate validation requirement and is not inferred from focused tests.
+
+Next-stage direction
+Verify positive end-to-end Batch 233 lifecycle finalization → Batch 234 finalization receipt → Batch 235 external attestation, including key rotation, missing-attestation recovery, checkpoint write interruption/replay, and terminal revocation.

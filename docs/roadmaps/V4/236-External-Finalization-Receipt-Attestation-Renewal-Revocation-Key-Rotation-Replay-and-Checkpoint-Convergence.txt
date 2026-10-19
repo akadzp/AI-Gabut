@@ -1,0 +1,16 @@
+Batch 236 — External Finalization-Receipt Attestation Renewal, Revocation, Key-Rotation Replay, and Independent Checkpoint Convergence
+
+Deliverables:
+- Challenge-bound signed lifecycle events for renewal and revocation of Batch 235 external attestations.
+- Monotonic generation and predecessor/replacement continuity checks.
+- Terminal revocation and descendant rejection.
+- Stored-challenge replay after interruption, with checkpoint advancement between phases.
+- Recovery-gate convergence integration and authenticated prepare/apply/audit/reconcile endpoints.
+- Focused regression tests and complete cumulative source ZIP.
+
+Acceptance:
+- Empty history remains read-only and cannot create lifecycle events.
+- Renewal requires a current source attestation and independent checkpoint state.
+- Revocation is terminal; any descendant lifecycle is unhealthy.
+- Conflicting operation IDs fail closed; retries reuse identical signed events.
+- ZIP extraction preserves every source file and all JavaScript syntax/import checks pass.

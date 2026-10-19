@@ -1,0 +1,18 @@
+Batch 213 — Finalization-Attestation Lifecycle Receipt Continuity and Independent Checkpointing
+
+Objective
+Add a signed receipt chain for finalization-attestation lifecycle renewal and revocation, independently checkpoint that chain, and enforce receipt currentness during recovery-gate convergence.
+
+Implemented
+- Added proof_continuity_finalization_attestation_lifecycle_receipt_finalized events.
+- Bound each receipt to lifecycle finalization/action events, target and replacement attestations, key lifecycle, and predecessor receipt.
+- Split lifecycle finalization and receipt persistence into separate resumable phases.
+- Added an independent external snapshot checkpoint in trust domain cross_domain_recovery_gate_finalization_attestation_lifecycle_receipts.
+- Added enrollment/status/audit/reconcile APIs and provider/endpoint independence checks.
+- Integrated the checkpoint into multi-checkpoint advancement, lifecycle audits, and convergence binding.
+- Added replay/idempotency, generation-chain, signature, stale-key, and missing-receipt checks.
+
+Validation
+- Five Batch 213 tests passed when run individually.
+- Syntax and archive validation are performed on the cumulative source ZIP.
+- Full cumulative npm test is not claimed as passing.

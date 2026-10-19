@@ -1,0 +1,26 @@
+V4 — AUTONOMOUS MISSION SCHEDULER
+
+Tujuan: membuat rangkaian Work dapat berjalan sebagai mission terjadwal tanpa user harus standby atau mengirim "next" setiap interval.
+
+Scope:
+- durable mission definition
+- ordered stage execution
+- exactly one stage per scheduler interval
+- one-hour default cadence
+- persisted nextRunAt/checkpoint
+- automatic continuation setelah stage berhasil
+- approval gate menghentikan advancement tanpa bypass security authority
+- failure tetap pada stage yang gagal; tidak lompat ke stage berikutnya
+- restart-safe scheduling melalui persisted mission state
+- internal scheduler tick dengan timer yang tidak menahan process shutdown
+- mission activity/realtime evidence
+- provider/security/execution authority tetap memakai boundary V4 yang sudah ada
+
+Boundary:
+- scheduler hanya mengatur urutan, timing, dan checkpoint mission;
+- Work Execution tetap menjadi authority eksekusi;
+- Repair/Replan tetap menggunakan bounded V4 repair authority;
+- approval tidak boleh dibypass oleh scheduler;
+- credential/provider tetap berada pada boundary masing-masing.
+
+DoD: Mission dapat menjalankan stage pertama, menyimpan checkpoint, menunggu satu interval sebelum stage berikutnya, melanjutkan otomatis tanpa interaksi user, berhenti pada approval/failure, dan melanjutkan secara aman setelah process restart.

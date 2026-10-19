@@ -1,0 +1,41 @@
+Agentic AI V4 — Batch 114
+External Integrity Attestation and Quarantine State Hardening
+
+Scope
+- Add independent Ed25519 attestations as a required clearance control for critical mutation-outcome-ledger quarantine incidents.
+- Bind each signed attestation to the exact owner, incident, quarantine-policy revision, ledger revision/head/snapshot digest, and a complete clean audit digest.
+- Persist one-time attestation challenges, verify signatures using administrator-configured trusted public keys, reject expired/stale/replayed attestations, and preserve signed receipts in policy history.
+- Harden quarantine policy state-machine validation so inconsistent active/clear transitions, malformed histories, and critical acknowledgements without valid signed receipts fail closed.
+- Keep ledger repair and quarantine release explicit; no automatic repair or mutation execution is introduced.
+
+Implementation
+- `createRecoveryAuditPlanningService` accepts `integrityAttestationPublicKeys`; when omitted, it reads `AGENTIC_INTEGRITY_ATTESTATION_PUBLIC_KEYS` as a JSON object mapping key IDs to Ed25519 PEM public keys.
+- Added challenge, signature submission, retrieval, and bounded listing APIs for owner-scoped ledger integrity attestations.
+- Challenges expire within five minutes and bind the current policy revision, ledger head and record digest, and deterministic digest of the clean audit result.
+- The trusted external attestor signs the exact canonical challenge payload (UTF-8 JSON with recursively sorted object keys and no whitespace) using Ed25519; the signature is submitted as base64url.
+- Critical incidents cannot be acknowledged without a verified, unexpired attestation that still matches current policy and ledger context. High-severity recoverable incidents retain the prior explicit-reason acknowledgement path.
+- Policy history embeds the signed receipt for critical clearance; policy verification validates the receipt signature and its binding before accepting a cleared state.
+- Added authenticated endpoints for challenge creation, attestation verification, attestation retrieval/listing, and attestation-bound acknowledgement.
+
+Deployment protocol
+1. Configure one or more trusted Ed25519 public keys in `AGENTIC_INTEGRITY_ATTESTATION_PUBLIC_KEYS`, for example a JSON object like `{"auditor-2026":"-----BEGIN PUBLIC KEY-----\\n...\\n-----END PUBLIC KEY-----\\n"}`.
+2. Keep the corresponding private key outside the application and its storage. The application never needs the private key.
+3. After a critical incident is quarantined, restore the ledger from a separately trusted source and obtain a clean, complete audit. The application will not issue a clearance challenge while audit findings remain.
+4. Request a challenge for the active incident and configured key ID. The external auditor independently reviews the restored ledger/audit context and signs the returned payload exactly as received.
+5. Submit the base64url signature to verify the challenge, then acknowledge the active incident with the returned challenge record ID as `attestationId` and a bounded human-readable reason.
+6. If policy revision, ledger digest/head, audit findings, or expiry changes before acknowledgement, request a new challenge. Challenges are one-use and cannot be replayed after verification.
+
+Validation
+- Batch 114 regression tests: 11/11 PASS.
+- Full cumulative `npm test`: 696/696 PASS.
+- JavaScript/MJS syntax and relative import resolution: validated across the complete source tree.
+- ZIP integrity (`zip -T`, `unzip -t`) and extracted-source validation: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+- The attestation proves that a holder of a configured trusted private key signed the bound payload. It does not prove that the external auditor is independent unless key custody and review procedures are independent operationally.
+- SHA-256 record digests are not signatures. Critical clearance relies on the Ed25519 receipt, but a party able to rewrite all application storage can still delete records or roll back the whole store; resistance to whole-store rollback requires an external monotonic anchor or write-once audit service.
+- Storage mutations are atomic only for processes sharing the same supported storage root; there is no cross-host distributed transaction.
+- The HTTP listener was not boot-tested because Express is unavailable in this isolated validation environment. Server syntax, application mapping, and route presence were tested.
+
+Next unfinished stage: Batch 115 — Attestation Trust Rotation, Revocation, and Quarantine Recovery Audit.

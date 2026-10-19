@@ -1,0 +1,21 @@
+Agentic AI V4 — Batch 252 Release Notes
+
+Stage: External Attestation for Batch 251 Lifecycle Finalization Receipts, Cross-Generation Receipt Continuity, and Independent Checkpoint Recovery.
+
+Changes:
+- Adds a signed external-attestation event for Batch 251 lifecycle finalization receipts.
+- Binds receipt/finalization digests, action and challenge context, source/replacement attestations, receipt-chain prefix, checkpoint fingerprint, lifecycle audit digest, signing-key lifecycle, cutoff state, and predecessor chain.
+- Adds attestation, audit, snapshot, and reconciliation APIs plus owner-scoped HTTP routes.
+- Includes Batch 252 events in ledger schema validation and independent checkpoint snapshots.
+- Integrates Batch 252 audit status into overall recovery-gate convergence.
+- Adds focused regression tests and technical documentation.
+
+GitHub commit: none.
+
+Validation performed on extracted source:
+- Focused Batch 242–251 regression tests: 20/20 PASS.
+- Batch 252 regression tests: 2/2 PASS.
+- Batch 102 application/API/import checks: 13/13 PASS.
+- JavaScript/MJS/CJS syntax checks: 344/344 PASS.
+- Relative import references: 642 checked, 0 missing.
+- Full cumulative test suite: not completed; a broader multi-file regression invocation timed out before producing a final TAP summary.

@@ -1,0 +1,8 @@
+Batch 187 roadmap
+
+1. Append-only attested status-transition events for recovery intents.
+2. CAS-protected transition ledger with chain and current-pointer validation.
+3. Explicit orphan disposition with short-lived challenge, owner binding, intent digest binding, key-cutoff checks, and immutable disposition receipt.
+4. Cross-domain closure audit integrating intent checkpoint freshness, lifecycle evidence, transition attestation, and disposition state.
+5. Decision-use guard: a dispositioned orphan is operationally closed but remains historical-only and unusable for current decisions.
+6. Tests for transition signing, orphan disposition, replay idempotency, key cutoff, source drift, tamper detection, and HTTP route exposure.

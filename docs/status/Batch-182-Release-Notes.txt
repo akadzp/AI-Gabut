@@ -1,0 +1,16 @@
+Agentic AI V4 — Batch 182 Release Notes
+
+Implemented:
+- Ed25519 attestation for recovery-finalization receipts.
+- Signing-key lifecycle cutoff and historical-only status enforcement.
+- Independent external checkpoint for finalization reconciliation receipts.
+- CAS append, deterministic replay protection, recovery-intent binding, and before/after checkpoint evidence.
+- Decision-gate enforcement for stale finalization continuity and required reconciliation checkpoint state.
+
+Validation:
+- Batch 182 tests: 7/7 PASS.
+- Batch 178–182 tests: 39/39 PASS.
+- No GitHub commit.
+- Cumulative regression suite: 1,236 test cases across 169 test files passed in bounded groups or individual runs.
+- Syntax: 261/261 files passed.
+- Relative imports: 514 checked, 0 missing.

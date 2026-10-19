@@ -1,0 +1,30 @@
+Agentic AI V4 — Batch 99
+Mission Control Recovery Status-View Integrity Orphaned-Error Repair Observability
+
+Scope
+-----
+Add durable, deterministic observability to the Batch 98 repair of an orphaned error marker in the recovery-status-view integrity state.
+
+Behavior
+--------
+- Verify the exact Batch 97 orphaned-error finding before changing source state.
+- Atomically clear the source error marker and persist a destination pending intent using an owner-scoped version-checked write.
+- Emit a stable mission-scoped event with a deterministic dedupe key.
+- Clear the destination pending intent only after successful event emission and a successful version-checked write.
+- Retain the pending intent and a bounded error message when event emission fails.
+- Retry pending intents without replaying the source repair.
+- Fail closed on malformed source/destination pending intents, orphaned destination errors, and overlong dedupe keys.
+- Preserve source pending intent and associated source error state.
+- Use bounded optimistic-concurrency retries and expose the operation through the application boundary.
+
+Validation
+----------
+- Focused Batch 99 regression tests: 12/12 PASS.
+- Cumulative npm test: 520/525 PASS. The same five baseline failures reproduced before Batch 99 remain: missing core/storage/state/index.js imports in artifacts and work recovery, missing core/security/index.js in work Git, external-feedback ID/provenance mismatch, and missing github.workflowRuns mock. No new test failures were introduced.
+- JavaScript/MJS syntax checks: 113/113 PASS.
+- Application-boundary mapping: PASS.
+- ZIP integrity checks (zip -T and unzip -t): PASS.
+- Extracted-archive focused tests, syntax, and cumulative suite rechecked.
+- No GitHub commit was made.
+
+Next unfinished stage: Batch 100.

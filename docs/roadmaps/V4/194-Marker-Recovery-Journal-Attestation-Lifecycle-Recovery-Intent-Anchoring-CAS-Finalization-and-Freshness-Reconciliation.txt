@@ -1,0 +1,13 @@
+Batch 194 — Marker-Recovery Journal Attestation Lifecycle Recovery-Intent Anchoring, CAS Finalization, and Cross-Domain Freshness Reconciliation
+
+Delivered:
+- Signed, append-only recovery-intent events for marker-recovery journal attestation renewal/revocation.
+- Recovery intent externally anchored through the existing recovery-receipt checkpoint before lifecycle mutation.
+- Lifecycle events bind the persistent recovery-intent ID/digest.
+- Signed finalization receipt binds challenge, intent, lifecycle event, and key-cutoff observation.
+- Challenge completion uses CAS and records the final recovery-receipt anchor digest/sequence/source snapshot.
+- Idempotent recovery after interruption at the intent, lifecycle-event, and finalization stages.
+- Dedicated lifecycle recovery audit and HTTP endpoint.
+- Closure/freshness gate rejects pending, stale, tampered, or key-cutoff lifecycle evidence.
+
+Validation: see docs/agentic-ai-v4-batch194.md and tests/apps/agentic-recovery-slo-v4-batch194.mjs.

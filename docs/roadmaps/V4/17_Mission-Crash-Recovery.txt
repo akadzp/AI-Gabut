@@ -1,0 +1,17 @@
+V4 Batch 17 — Mission Crash Recovery & Lease Finalization
+
+Objective:
+- Make mission execution resilient to process restarts and stale running stages.
+
+Delivered:
+- Persistent mission recovery scan for stale running stages.
+- Active lease protection during recovery.
+- Interrupted stages are returned to pending/scheduled state with recovery provenance.
+- Scheduler lease release is finalized even when mission persistence throws.
+- Application exposes mission recovery and server performs startup recovery.
+- Dedicated recovery tests.
+
+Authority:
+- Recovery never skips a stage.
+- Recovery never bypasses approval state.
+- A non-expired execution lease blocks recovery.

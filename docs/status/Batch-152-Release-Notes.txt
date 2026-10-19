@@ -1,0 +1,35 @@
+Batch 152 — Audit-Attestation Checkpoint Freshness/Retention Enforcement, Provider-Baseline Replay-Resistant Transition Receipts, and Retention-Review External Decision Reconciliation
+
+Implemented
+-----------
+- Added freshness enforcement at the cross-domain audit-attestation decision boundary. Verification distinguishes historical signature validity from current usability; an aged checkpoint cannot authorize current use until an explicit refresh appends a digest-linked checkpoint over an unchanged, verified source snapshot. Excessive future clock skew and invalid timestamps fail closed.
+- Added retention classification for signed audit attestations. Evidence beyond the configured retention window requires an explicit, digest-bound review. A `retain` decision only restores eligibility after the decision's external checkpoint is current when that trust domain is enabled; `escalate`, pending approval, invalid evidence, and unreviewed overdue evidence remain unusable for current decisions. No evidence is automatically deleted.
+- Added deterministic provider-baseline transition receipts binding owner, domain, revision, source challenge, prepared challenge digest, previous baseline digest, resulting baseline digest, provider identity/contract fingerprints, source conformance report, previous receipt digest, and issue time. Receipt chains are audited for tampering, missing/orphan receipts, gaps, and invalid linkage. Legacy transitions without receipts remain explicitly distinguishable; the first receipt after legacy history marks history as unproven.
+- Added resumable receipt finalization for an interruption after the baseline is stored and its receipt is written but before the completed challenge is finalized. Recovery is permitted only when the current baseline and prepared challenge exactly match the receipt.
+- Added one-transition-only retention-review checkpoint reconciliation. A pending decision can advance the external checkpoint only when removing exactly one approval recreates the prior anchored snapshot digest. Multi-decision jumps, same-count rewrites, invalid replay guards, and unprovable continuity are rejected.
+- Added an authenticated API/HTTP route for provider-baseline transition-receipt audits. Existing audit-attestation checkpoint status and reconciliation APIs now expose freshness and refresh behavior.
+
+Configuration
+-------------
+- Reuses `AGENTIC_CROSS_DOMAIN_SNAPSHOT_CHECKPOINT_MAX_AGE_MS`, `AGENTIC_CROSS_DOMAIN_SNAPSHOT_CHECKPOINT_FUTURE_SKEW_MS`, and `AGENTIC_CROSS_DOMAIN_SNAPSHOT_CHECKPOINT_RETENTION_DAYS`.
+- Reuses the independent audit-attestation, provider-baseline, and retention-review external checkpoint provider settings from Batch 151.
+- Existing explicit enrollment and required-provider fail-closed behavior remain unchanged. Private keys are not included in the archive.
+
+Validation
+----------
+- Batch 152 regression tests: 8/8 PASS.
+- Full cumulative `npm test`: 1062/1062 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax validation: 229/229 PASS.
+- Relative import resolution: 407 references checked, 0 missing.
+- ZIP integrity (`zip -T`, `unzip -t`) and full extracted-source revalidation: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+----------------------
+- External checkpoint durability and CAS semantics remain deployment responsibilities.
+- Legacy enrollment does not prove pre-enrollment history.
+- A retention `retain` approval is non-destructive; it does not delete or compact records.
+- Provider fingerprints do not prove hidden infrastructure or administrative independence.
+- HTTP listener startup was not exercised; route mapping, syntax, imports, cumulative tests, and archive integrity were verified.
+
+At completion of Batch 152, next unfinished stage: Batch 153 — External Checkpoint Freshness Policy Binding, Baseline Receipt Recovery/Compaction Guardrails, and Retention Decision Evidence Revalidation.

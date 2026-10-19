@@ -1,0 +1,24 @@
+Agentic AI V4 — Batch 101
+Core Runtime Dependency and Baseline Test Restoration
+
+Scope
+- Restore the missing JSON-backed storage adapter and scoped state service used by the Agentic store.
+- Add optimistic-version checks, overwrite protection, scope validation, namespace isolation, and safe atomic file replacement.
+- Restore the missing tool-security contract with approval tokens bound to the requested tool and canonical input, expiry, one-time use, and bounded in-memory retention.
+- Repair the external-feedback GitHub ingestion name shadowing bug and keep feedback IDs linked to Work references.
+- Add owner-scoped external-feedback and Git-workflow store contracts.
+- Preserve execution checkpoints when preparing interrupted Work for resume.
+- Add regression coverage for the restored runtime contracts.
+
+Validation
+- Batch 101 focused regression tests: 9/9 PASS.
+- Full cumulative npm test: 553/553 PASS; all five historical baseline failures are resolved.
+- JavaScript/MJS syntax: 118/118 PASS.
+- ZIP integrity checked with both zip -T and unzip -t.
+- Extracted-archive regression tests and syntax validation rerun successfully.
+- No GitHub commit made.
+
+Known follow-up
+- The existing application/server/GitHub entrypoints still reference 12 relative source modules absent from the Batch 100 source set: auth.js, connections.js, workspaces.js, work-execution.js, work-changes.js, verification.js, realtime.js, deployment.js, crypto.js, credential-store.js, core/agent-engine/index.js, and core/agent-engine/reliability/runtime.js. The 553-test suite does not import the main application entrypoint, so application boot is not yet validated. Restore those runtime dependencies in a subsequent stage rather than claiming full application startup.
+
+Next unfinished stage: Batch 102 — Application Entry-Point Dependency Restoration.

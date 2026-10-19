@@ -1,0 +1,19 @@
+V4 Batch 92 — Mission Control Recovery Observability Integrity
+
+Scope:
+- adds a read-only, owner-scoped integrity verifier for Batch 91's recovery-observability status view
+- validates nullable reconciliation ID, creation timestamp, retry marker, and deterministic mission-scoped dedupe key
+- detects malformed pending intent and orphaned durable errors with stable issue codes
+- bounds reconciliation ID to 200 characters, timestamp to 100 characters, dedupe key to 260 characters, and durable error output to 1,000 characters
+- exposes only normalized metadata and never returns raw malformed intent objects
+- performs no mutation, retry, recovery, repair, or event emission
+
+Validation:
+- dedicated Batch 92 regression tests: 9/9 PASS
+- cumulative npm test: 443/448 PASS; same five baseline failures remain (missing core/storage/state/index.js imports in artifacts and work recovery, missing core/security/index.js import in work Git, external-feedback ID/provenance mismatch, and missing github.workflowRuns mock); no new failures
+- JavaScript/MJS syntax validation: 106/106 PASS
+- application-boundary mapping: PASS
+- ZIP integrity validation: PASS (zip -T and unzip -t); extracted-archive regression recheck: 9/9 PASS; extracted cumulative npm test: 443/448 PASS with same five baseline failures; extracted syntax validation: 106/106 PASS
+- no GitHub commit
+
+Next unfinished stage: Batch 93.

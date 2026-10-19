@@ -1,0 +1,13 @@
+V4 Batch 28 — Mission Execution Observability Lifecycle Integration
+
+Tujuan: menjadikan execution lifecycle mission sebagai durable evidence tanpa mengubah execution authority.
+
+Scope:
+- durable stage_started evidence setelah running state dipersist
+- durable stage_completed/stage_failed evidence setelah terminal stage result dipersist
+- durable mission_completed evidence saat mission mencapai terminal completed state
+- waiting_approval tetap menggunakan approval_requested evidence
+- deterministic dedupe keys untuk retry-safe lifecycle evidence
+- journal recovery path tetap observable tanpa menjalankan Work ulang
+
+DoD: setiap transisi execution yang telah dipersist memiliki evidence timeline owner-scoped yang idempotent, sementara scheduler/lease/journal/approval tetap menjadi satu-satunya execution authority.

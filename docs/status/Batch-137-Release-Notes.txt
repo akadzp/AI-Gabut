@@ -1,0 +1,25 @@
+Agentic AI V4 — Batch 137 Release Notes
+
+Stage
+Provider-Identity Baseline Anchor Conformance, Drift-Event Key Rotation and Revocation, and Recovery-Attestation Trust Policy
+
+Changes
+- Added a digest-bound provider conformance challenge and disposable namespace probe for baseline anchor providers. The probe validates metadata, genesis and advancing CAS, stale-CAS rejection, read-after-write, owner isolation, monotonicity, and concurrent single-winner semantics.
+- Added per-owner persisted trust policies for `drift_event` and `recovery_attestation`. Policies include a revision, active key ID, key lifecycle entries, a hash-linked event sequence, and a policy digest. Read-only status/audit paths do not bootstrap state.
+- Added challenge-bound rotation and revocation. Each transition requires a signature from a separately configured policy authority; rotation additionally requires proof of possession from the target key. Stale revisions, replay, expired challenges, invalid signatures, and owner substitution are rejected.
+- Added compromise cutoff enforcement. Receipts signed before retirement can remain verifiable; receipts at or after revocation/cutoff are rejected. Revoking an active key blocks further signing until an approved replacement is installed.
+- Wired application APIs and authenticated HTTP routes for conformance, policy status/audit, and key transitions.
+
+Validation
+- Batch 137 regression tests: 10/10 PASS.
+- Cumulative `npm test`: 949/949 PASS, exit code 0.
+- JavaScript/MJS syntax: 187/187 PASS.
+- Relative import resolution: 312 references checked, 0 missing.
+- ZIP integrity (`zip -T`, `unzip -t`) and extracted-source revalidation: PASS.
+- GitHub commit: none.
+
+Operational boundaries
+- Policy authority public keys must be configured independently. External signer callbacks must route by payload `signing.keyId`. Retired/revoked public keys must remain in the trusted registry to verify eligible historical receipts.
+- The policy hash chain is local; a coordinated rewrite of the entire local record is not prevented without independent external anchoring.
+- Conformance writes disposable records that may remain if the provider has no delete operation.
+- HTTP listener startup was not tested directly in this isolated environment.

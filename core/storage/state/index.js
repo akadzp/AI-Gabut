@@ -1,90 +1,175 @@
-import { createStorage } from "../index.js";
-import { StorageError, STORAGE_ERRORS } from "../errors.js";
+const hasOwn = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
+const absentExpectedVersion = value => value === undefined || value === null || value === false;
 
-const DEFAULT_SCOPES = Object.freeze(["sessions", "memories", "executions", "runtime"]);
-const SAFE_SCOPE = /^[a-zA-Z0-9._-]+$/;
-
-function assertNamespace(namespace) {
-  if (typeof namespace !== "string" || !namespace || !SAFE_SCOPE.test(namespace)) {
-    throw new StorageError(STORAGE_ERRORS.VALIDATION_ERROR, "Invalid state namespace");
-  }
-  return namespace;
+function stateError(code, message) {
+  const error = new Error(message);
+  error.code = code;
+  return error;
 }
 
-function assertScope(scope) {
-  if (typeof scope !== "string" || !scope || !SAFE_SCOPE.test(scope)) {
-    throw new StorageError(STORAGE_ERRORS.VALIDATION_ERROR, "Invalid state scope");
-  }
-  return scope;
-}
-
-function assertStateKey(key) {
-  if (typeof key !== "string" || !key.trim()) {
-    throw new StorageError(STORAGE_ERRORS.VALIDATION_ERROR, "State key is required");
-  }
-  return key;
-}
-
-export function createStateService({ storage = createStorage(), namespace = "state", scopes = DEFAULT_SCOPES } = {}) {
-  if (!storage || typeof storage.records !== "function") {
-    throw new StorageError(STORAGE_ERRORS.VALIDATION_ERROR, "A storage service is required");
+/**
+ * Adapts records(namespace) or read/write/remove/list storage into scoped state.
+ * If the backing storage exposes atomicUpdate, optimistic writes are serialized
+ * across processes sharing that backend, not merely within this service instance.
+ */
+export function createStateService({ storage, namespace = "default", scopes = [] } = {}) {
+  if (!storage || (typeof storage.records !== "function" && ![
+    "read", "write", "remove", "list"
+  ].every(method => typeof storage[method] === "function"))) {
+    throw new TypeError("State service membutuhkan storage.records() atau read/write/remove/list");
   }
 
-  const safeNamespace = assertNamespace(namespace);
-  const configuredScopes = [...new Set(scopes)].map(assertScope);
-  const stores = new Map(configuredScopes.map(scope => [scope, storage.records(`${safeNamespace}-${scope}`)]));
+  const allowedScopes = new Set(scopes.map(String));
+  const adapters = new Map();
+  const locks = new Map();
 
-  function store(scope) {
-    assertScope(scope);
-    const result = stores.get(scope);
-    if (!result) throw new StorageError(STORAGE_ERRORS.NOT_FOUND, `State scope not configured: ${scope}`);
+  function assertScope(scope) {
+    const value = String(scope ?? "");
+    if (!value || (allowedScopes.size && !allowedScopes.has(value))) {
+      throw stateError("STATE_SCOPE_INVALID", `State scope tidak diizinkan: ${value.slice(0, 100)}`);
+    }
+    return value;
+  }
+
+  function backend(scope) {
+    if (adapters.has(scope)) return adapters.get(scope);
+    let result;
+    if (typeof storage.records === "function") {
+      const records = storage.records(`${namespace}:${scope}`);
+      if (!records || typeof records.get !== "function" || typeof records.put !== "function" || typeof records.delete !== "function" || typeof records.list !== "function") {
+        throw new TypeError(`Storage records contract tidak lengkap untuk scope ${scope}`);
+      }
+      result = { kind: "records", records };
+    } else {
+      const prefix = `${namespace}/${scope}/`;
+      result = {
+        kind: "key-value",
+        key: id => `${prefix}${encodeURIComponent(String(id))}`,
+        prefix
+      };
+    }
+    adapters.set(scope, result);
     return result;
   }
 
-  async function get(scope, key) {
-    return store(scope).get(assertStateKey(key));
+  async function withLock(key, operation) {
+    const previous = locks.get(key) || Promise.resolve();
+    let release;
+    const current = new Promise(resolve => { release = resolve; });
+    locks.set(key, current);
+    await previous;
+    try {
+      return await operation();
+    } finally {
+      release();
+      if (locks.get(key) === current) locks.delete(key);
+    }
   }
 
-  async function put(scope, key, value, options = {}) {
-    return store(scope).put(assertStateKey(key), value, options);
+  async function get(scope, id) {
+    const s = assertScope(scope);
+    if (id === undefined || id === null || String(id) === "") return null;
+    const b = backend(s);
+    return b.kind === "records" ? (await b.records.get(String(id))) ?? null : (await storage.read(b.key(id))) ?? null;
   }
 
-  async function update(scope, key, value, options = {}) {
-    return store(scope).update(assertStateKey(key), value, options);
+  async function mutate(scope, id, mutator) {
+    const s = assertScope(scope);
+    const recordId = String(id ?? "");
+    if (!recordId) throw stateError("STATE_ID_INVALID", "State record ID wajib diisi");
+    if (typeof mutator !== "function") throw new TypeError("State mutator must be a function");
+    const b = backend(s);
+    const lockKey = `${namespace}:${s}:${recordId}`;
+
+    async function decide(currentValue) {
+      const current = currentValue ?? null;
+      const decision = await mutator(current);
+      if (!decision || typeof decision !== "object" || Array.isArray(decision)) {
+        throw stateError("STATE_MUTATION_INVALID", "State mutator harus mengembalikan decision object");
+      }
+      if (decision.write === false) return { write: false, result: decision.result };
+      if (decision.delete === true) return { delete: true, result: decision.result };
+      if (!decision.value || typeof decision.value !== "object" || Array.isArray(decision.value)) {
+        throw stateError("STATE_VALUE_INVALID", "State record harus berupa object");
+      }
+      const next = {
+        ...decision.value,
+        _storage: {
+          ...(decision.value._storage && typeof decision.value._storage === "object" ? decision.value._storage : {}),
+          version: (Number(current?._storage?.version) || 0) + 1
+        }
+      };
+      return { write: true, value: next, result: hasOwn(decision, "result") ? decision.result : next };
+    }
+
+    if (b.kind === "key-value" && typeof storage.atomicUpdate === "function") {
+      return storage.atomicUpdate(b.key(recordId), current => decide(current));
+    }
+    if (b.kind === "records" && typeof b.records.atomicUpdate === "function") {
+      return b.records.atomicUpdate(recordId, current => decide(current));
+    }
+
+    return withLock(lockKey, async () => {
+      const current = b.kind === "records" ? (await b.records.get(recordId)) ?? null : (await storage.read(b.key(recordId))) ?? null;
+      const outcome = await decide(current);
+      if (outcome.write === false) return outcome.result;
+      if (outcome.delete === true) {
+        if (current === null) return outcome.result;
+        if (b.kind === "records") await b.records.delete(recordId, { expectedVersion: current?._storage?.version });
+        else await storage.remove(b.key(recordId));
+        return outcome.result;
+      }
+      if (b.kind === "records") {
+        const saved = await b.records.put(recordId, outcome.value, {
+          overwrite: true,
+          ...(current?._storage?.version == null ? {} : { expectedVersion: current._storage.version })
+        });
+        return hasOwn(outcome, "result") && outcome.result !== undefined ? outcome.result : (saved ?? outcome.value);
+      }
+      await storage.write(b.key(recordId), outcome.value);
+      return hasOwn(outcome, "result") && outcome.result !== undefined ? outcome.result : outcome.value;
+    });
   }
 
-  async function remove(scope, key, options = {}) {
-    return store(scope).delete(assertStateKey(key), options);
+  async function put(scope, id, value, options = {}) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) throw stateError("STATE_VALUE_INVALID", "State record harus berupa object");
+    return mutate(scope, id, current => {
+      const expected = options.expectedVersion;
+      if (!absentExpectedVersion(expected) && (current?._storage?.version ?? null) !== expected) {
+        throw stateError("VERSION_CONFLICT", "State record berubah sejak terakhir dibaca");
+      }
+      if (options.overwrite === false && current !== null) {
+        throw stateError("STATE_RECORD_EXISTS", "State record sudah ada");
+      }
+      return { value };
+    });
   }
 
-  async function exists(scope, key) {
-    return store(scope).exists(assertStateKey(key));
+  async function remove(scope, id, options = {}) {
+    const s = assertScope(scope);
+    const recordId = String(id ?? "");
+    if (!recordId) return false;
+    return mutate(s, recordId, current => {
+      if (current === null) return { write: false, result: false };
+      const expected = options.expectedVersion;
+      if (!absentExpectedVersion(expected) && (current?._storage?.version ?? null) !== expected) {
+        throw stateError("VERSION_CONFLICT", "State record berubah sejak terakhir dibaca");
+      }
+      return { delete: true, result: true };
+    });
   }
 
   async function list(scope) {
-    return store(scope).list();
+    const s = assertScope(scope);
+    const b = backend(s);
+    if (b.kind === "records") return [...new Set((await b.records.list()).map(String))].sort();
+    const keys = await storage.list(b.prefix);
+    return keys.map(key => decodeURIComponent(key.slice(b.prefix.length))).sort();
   }
 
-  function hasScope(scope) {
-    return typeof scope === "string" && stores.has(scope);
+  async function exists(scope, id) {
+    return (await get(scope, id)) !== null;
   }
 
-  function listScopes() {
-    return [...stores.keys()];
-  }
-
-  return Object.freeze({
-    get,
-    put,
-    update,
-    delete: remove,
-    exists,
-    list,
-    hasScope,
-    listScopes,
-    sessions: () => store("sessions"),
-    memories: () => store("memories"),
-    executions: () => store("executions"),
-    runtime: () => store("runtime")
-  });
+  return Object.freeze({ get, put, delete: remove, remove, list, exists, mutate });
 }

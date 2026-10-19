@@ -1,0 +1,25 @@
+Batch 135 — Cross-Domain Independence Attestation, Retention Evidence Chain Anchoring, and Provider Identity Drift Monitoring
+
+Scope
+1. Sign cross-domain anchor-independence reports using Ed25519 and verify them against an independent trusted public-key registry.
+2. Retain signed reports as evidence and verify their signatures during evidence audits.
+3. Add a persistent per-owner append-only retained-evidence hash chain for retain/prune transitions.
+4. Support a distinct optional/required external CAS anchor for the retained-evidence chain, including post-write verification, sequence continuity, and rollback/removal detection.
+5. Establish provider identity baselines only through digest-bound, expiring operator challenges.
+6. Detect identity drift and reject baseline application if identities changed after the challenge was prepared.
+7. Expose owner-scoped application APIs and HTTP routes for attestation, chain status/audit/reconciliation, and drift baseline management.
+
+Acceptance criteria
+- Signatures are validated before an attestation is retained.
+- Attestation verification distinguishes signature integrity from approval and does not overclaim infrastructure independence.
+- Retained evidence and tombstone transitions are bound to hash-linked chain events.
+- External chain anchor rollback, missing anchor after enrollment, digest mismatch, and provider outage fail closed for pruning.
+- Identity baseline is not auto-created or auto-updated.
+- Baseline challenge replay, expiry, stale baseline, and identity snapshot drift are rejected.
+- Owner isolation and route/API mapping are tested.
+- Full cumulative tests and archive integrity checks pass.
+
+Known limitations
+- External anchoring is optional for compatibility; strict deployments must enable it.
+- The provider identity audit observes declared endpoint/backend identities and cannot prove independent administrative control of remote infrastructure.
+- Local baseline and chain storage cannot detect rollback if all local state is restored together and no independent anchor is configured.

@@ -1,0 +1,22 @@
+Agentic AI V4 — Batch 177 Release Notes
+
+Implemented:
+- Independent external checkpoint for attestation-related recovery-intent bindings.
+- Recovery-intent snapshot includes both attestation-checkpoint marker-recovery intents and receipt-lifecycle operation intents.
+- Intent-bound anchoring before required attestation marker recovery.
+- Append-only, hash-linked recovery-decision gate audit receipt ledger.
+- Audit receipt binding for decision status, inspected checkpoints, evidence digests, and finding digests.
+- Fail-closed behavior when the decision-gate receipt ledger is corrupt or a receipt cannot be persisted.
+- Central recovery-intent checkpoint reconciliation guard for rollback, policy drift, and multi-event gaps.
+- Filesystem-safe compact IDs for new attestation checkpoint marker-recovery intents, with legacy-ID lookup compatibility.
+- Authenticated, owner-scoped HTTP routes for the new checkpoint and receipt audit.
+
+Validation:
+- Batch 177 tests: 9/9 PASS.
+- Batch 176–177 tests: 15/15 PASS.
+- Batch 165–177 regression tests: 74/74 PASS.
+- JavaScript/MJS/CJS syntax and relative imports: PASS.
+- ZIP integrity: PASS.
+- Full all-in-one suite timed out at 300 seconds after 1,128 passing results had been emitted; no failing assertion was present in that captured output. No claim of a completed full-suite run is made.
+
+GitHub commit: not performed.

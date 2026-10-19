@@ -1,0 +1,57 @@
+Agentic AI V4 — Batch 170 Roadmap
+=================================
+
+Stage
+-----
+170 — Remediation-Execution Receipt External Anchoring, Policy-Binding Receipt Lifecycle/Revocation, and Cross-Ledger Remediation Crash-Recovery.
+
+Objectives
+----------
+1. Anchor immutable remediation recovery intents and execution receipts in a dedicated external checkpoint domain.
+2. Persist the exact authorized remediation action before side effects and recover safely after interrupted execution or checkpoint CAS conflicts.
+3. Add revocation and replacement workflows for checkpoint policy-binding verification receipts, with challenge expiry, exact digest bindings, replay protection, and append-only evidence.
+4. Externally checkpoint the policy-binding receipt lifecycle and retain explicit historyNotProven semantics after first enrollment.
+5. Fail closed on digest corruption, stale source snapshots, changed checkpoint/policy bindings, conflicting replacement records, rollback, and unproven continuity.
+6. Expose authenticated application and HTTP APIs for checkpoint enrollment, audit, reconciliation, lifecycle operations, and recovery.
+
+Implementation Notes
+--------------------
+- Remediation execution checkpoint domain: cross_domain_drift_remediation_executions.
+- Policy-binding receipt lifecycle checkpoint domain: cross_domain_policy_binding_receipt_lifecycle.
+- Each domain must use an independent provider/endpoint and compare-and-set semantics.
+- Execution checkpoint source binds immutable recovery-intent and execution-record digests; local finalization records reference the externally anchored execution record.
+- Recovery reuses the original plan/action binding and does not authorize an alternate action.
+- A stored execution record with a pending external checkpoint can be finalized after a later successful reconciliation.
+- Policy-binding receipt revocation/replacement uses 10-minute challenges bound to the original receipt, lifecycle snapshot, target domain checkpoint, and policy digest.
+- Replacement receipts use deterministic IDs derived from the revoked receipt and revocation digest to make retry after partial writes idempotent.
+- The old receipt remains retained and is reported as superseded after a valid replacement.
+- No evidence deletion or automatic compaction is performed.
+
+Deployment
+----------
+Optional remediation execution anchor:
+  AGENTIC_CROSS_DOMAIN_DRIFT_REMEDIATION_EXECUTION_ANCHOR_URL
+  AGENTIC_CROSS_DOMAIN_DRIFT_REMEDIATION_EXECUTION_ANCHOR_TOKEN
+  AGENTIC_REQUIRE_CROSS_DOMAIN_DRIFT_REMEDIATION_EXECUTION_ANCHOR=true
+
+Optional policy-binding receipt lifecycle anchor:
+  AGENTIC_CROSS_DOMAIN_POLICY_BINDING_RECEIPT_LIFECYCLE_ANCHOR_URL
+  AGENTIC_CROSS_DOMAIN_POLICY_BINDING_RECEIPT_LIFECYCLE_ANCHOR_TOKEN
+  AGENTIC_REQUIRE_CROSS_DOMAIN_POLICY_BINDING_RECEIPT_LIFECYCLE_ANCHOR=true
+
+Both providers must be independent of every other trust-domain provider. Strict mode refuses execution when required enrollment/freshness cannot be established.
+
+Acceptance Criteria
+-------------------
+- Receipt revocation and replacement are challenge-bound, append-only, and replay-safe.
+- Revoked receipts are unusable; replaced receipts are reported as superseded.
+- A replacement receipt is not current while its replacement-link event is missing.
+- Recovery intent is stored before an authorized remediation side effect.
+- External checkpoint CAS conflicts leave a recoverable state and do not claim current usability.
+- Recovery only resumes the same plan/action and rejects corrupt or stale bindings.
+- Full cumulative tests, syntax, import resolution, ZIP integrity, and clean-extraction source equivalence pass.
+- No GitHub commit.
+
+Next Stage
+----------
+Batch 171 — Remediation Execution Attestation/Finalization External Binding, Policy-Binding Receipt Lifecycle Crash-Recovery, and Cross-Domain Checkpoint Freshness/Replay Audit.

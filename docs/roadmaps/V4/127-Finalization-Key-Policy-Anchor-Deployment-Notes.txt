@@ -1,0 +1,7 @@
+Batch 127 deployment notes
+
+For rollback-resistant finalization key policy, configure a dedicated external anchor service using AGENTIC_FINALIZATION_KEY_POLICY_ANCHOR_URL and AGENTIC_FINALIZATION_KEY_POLICY_ANCHOR_TOKEN, or inject recoverySloFinalizationKeyPolicyAnchor. The service must provide durable, owner-scoped read and compare-and-set operations and must reject stale expected digests and non-monotonic candidates.
+
+Do not reuse the general attestation trust-anchor URL/store for this policy anchor. It is a separate trust domain. Keep the anchor service credentials separate from finalization signing keys and recovery-authority private keys.
+
+To require the protection, set requireRecoverySloFinalizationKeyPolicyAnchor=true in createAgenticApplication. This mode fails startup if no dedicated provider is configured. If the local policy revision is behind the external anchor, do not restore a local backup over it. Investigate the source of rollback first. If the local policy is ahead after a transient anchor write failure, inspect the reported anchor status and call the explicit reconcile endpoint; reconciliation advances only when the existing anchor exactly matches a recorded ancestor.

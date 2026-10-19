@@ -1,0 +1,28 @@
+Agentic AI V4 — Batch 138 Release Notes
+
+Stage
+External Trust-Policy Checkpoint Anchoring, Policy-Authority Rotation and Revocation, and Conformance Evidence Retention
+
+Changes
+- Added a dedicated external trust-policy anchor domain for per-owner drift-event, recovery-attestation, and policy-authority lifecycle ledgers. Anchors bind domain, owner hash, revision, policy digest, previous policy digest, monotonic anchor sequence, previous anchor digest, anchor type, and history limitations.
+- Trust-policy reads and mutations now fail closed when a configured required anchor is unavailable, behind, rolled back, missing after enrollment, invalid, or inconsistent. Trust-policy mutations advance the external checkpoint with CAS and read-after-write verification. Read-only status, explicit legacy enrollment, and bounded continuity reconciliation APIs are exposed.
+- Added explicit digest-confirmed enrollment for pre-existing local trust policies. Enrollment is only allowed when no prior external anchor or local marker proves previous enrollment; it preserves `historyNotProven`. Known remote-anchor loss is not silently re-enrolled.
+- Added a persisted policy-authority lifecycle ledger with hash-linked events, external anchoring, active/standby/retired/revoked key states, digest-bound rotation/revocation challenges, policy-authority signature validation, and proof of possession for replacement keys. Active authority keys must be rotated before revocation; ordinary revocation cannot disable the active authority.
+- Added historical policy-authority authorization verification. The audit replays lifecycle events and verifies signatures under the authority that was active at each transition. Historical trust evaluation rejects signatures created after a key was retired, even if the key was revoked later.
+- Added automatic retention for provider-identity baseline conformance reports using the existing bounded retained-evidence registry and hash chain. Retention is idempotent, digest-bound, auditable, and supports expiry to digest-preserving tombstones.
+- Added the `provider_identity_trust_policy` trust domain to provider-independence checks and enforced provider-instance / configured endpoint separation. Added authenticated application APIs and HTTP routes for anchor status, reconciliation, legacy enrollment, policy-authority transitions, policy-authority audit, and historical authorization verification.
+
+Validation
+- Batch 138 regression tests: 6/6 PASS.
+- Full cumulative `npm test`: 956/956 PASS, exit code 0.
+- JavaScript/MJS syntax, relative import resolution, ZIP integrity, and extracted-source revalidation: PASS.
+- GitHub commit: none.
+
+Operational boundaries
+- The trust-policy anchor provider must be independently operated and expose owner-scoped CAS, monotonic sequence, and read-after-write semantics. Provider behavior still requires conformance testing against the deployed service.
+- The initial policy-authority key is selected from the configured trusted registry; set `recoverySloProviderIdentityPolicyAuthorityInitialKeyId` or `AGENTIC_PROVIDER_IDENTITY_POLICY_AUTHORITY_INITIAL_KEY_ID` explicitly when multiple keys are configured.
+- Replacement policy-authority public keys must already be present in the configured registry before a transition is prepared. Public keys must remain available to verify eligible historical events.
+- An active policy-authority key must be rotated before it can be revoked. Emergency recovery from a compromised active authority requires an out-of-band root procedure and is not silently automated.
+- Local markers aid rollback detection but cannot prevent a coordinated rollback of all local state and the external provider to a consistent old snapshot. External provider durability and administrative independence remain deployment responsibilities.
+- Conformance evidence expires under the configured retention policy; after pruning, a tombstone retains the digest and expiry metadata, not the original report payload.
+- HTTP listener startup remains unverified in this isolated validation environment; route mapping, source syntax, imports, and tests are validated.

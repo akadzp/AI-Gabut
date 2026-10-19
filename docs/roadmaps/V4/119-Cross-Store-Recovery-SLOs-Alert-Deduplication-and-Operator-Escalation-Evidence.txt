@@ -1,0 +1,42 @@
+Agentic AI V4 — Batch 119
+Cross-Store Recovery SLOs, Alert Deduplication, and Operator Escalation Evidence
+
+Scope
+- Evaluate bounded service-level objectives for external anchor configuration/availability, cross-store recovery integrity and latency, telemetry integrity, and anchor response latency.
+- Deduplicate repeated breaches into one active owner-scoped alert per objective while preserving observation counts and lifecycle transitions.
+- Persist hash-linked operator escalation and acknowledgement evidence, with explicit integrity audit and fail-closed behavior.
+
+Implementation
+- Added `apps/agentic/backend/recovery-slo-alerting.js` and wired the service through the application boundary.
+- `evaluateRecoverySLOs(ownerId, options)` runs an anchor health poll, inspects the bounded telemetry window and cross-store journal audit, evaluates bounded thresholds, and updates the alert ledger atomically. Default window is one hour, minimum sample count is three, anchor availability target is 99%, pending recovery limit is five minutes, and anchor latency target is one second. Inputs are clamped to safe bounds.
+- Objectives cover external-anchor configuration, anchor availability, cross-store recovery integrity/latency, telemetry integrity, and anchor response latency. Results explicitly distinguish `met`, `breached`, `insufficient_data`, and `not_applicable`.
+- Alerts use a stable alert key for deduplication while each incident receives a unique ID. Repeated breaches update the same active alert; they do not create duplicate active alerts. Escalation advances from the initial severity to `high` after repeated observations or five minutes, and to `critical` after ten observations or fifteen minutes.
+- The owner-scoped `recovery-slo-alert-ledger` stores alert lifecycle state and a hash-linked event history. Events capture open, observation, escalation, acknowledgement, and resolution, with evaluation digest/summary, timestamps, severity transitions, actor owner, and operator reason where applicable.
+- Acknowledgement requires a reason of 12–240 characters, is owner-scoped, and is idempotent. Acknowledging an alert does not clear the breach or authorize any recovery mutation. A resolved alert cannot be acknowledged.
+- Added read-only alert-ledger integrity audit and bounded event listing. Corrupt ledgers are not overwritten; evaluation and acknowledgement fail closed. Alert/event capacity limits reject further writes rather than silently dropping history.
+- Added authenticated HTTP routes under `/api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor/slo` for evaluation, alert listing, event listing, ledger audit, and operator acknowledgement.
+
+Operational procedure
+1. Configure the external anchor provider before expecting the external-anchor configuration and availability objectives to pass.
+2. Call `POST .../anchor/slo/evaluate` on an operator-controlled cadence. The endpoint performs a health poll and writes a telemetry sample; it is not read-only.
+3. Inspect the returned objectives and alert counters. `insufficient_data` means the configured minimum sample count has not yet been reached; it is not a pass or a breach by itself.
+4. Use `GET .../anchor/slo/alerts` and `GET .../anchor/slo/alerts/events` to inspect current incidents and the bounded, hash-linked history.
+5. Acknowledge an alert only after review, using `POST .../anchor/slo/alerts/:id/acknowledge` with a reason. Acknowledgement records operator evidence but does not suppress the underlying breach from future evaluation or clear quarantine.
+6. If the ledger audit reports `unhealthy`, stop writes and investigate storage integrity. The service does not reconstruct or reset a corrupted hash chain.
+7. Resolved incidents remain in the ledger for history. A later recurrence opens a new incident ID under the same deduplication key.
+
+Validation
+- Batch 119 regression tests: 11/11 PASS.
+- Full cumulative `npm test`: 756/756 PASS.
+- JavaScript/MJS syntax and relative import resolution: validated across the complete source tree.
+- ZIP integrity and extracted-source validation: PASS.
+- No GitHub commit was made.
+
+Operational boundaries
+- The alert ledger is hash-linked but not signed. It detects inconsistent edits, but an actor able to rewrite the entire application storage and recompute all hashes may be able to forge a replacement history; external write-once anchoring is still needed for stronger tamper resistance.
+- SLO evaluation is a point-in-time assessment based on retained telemetry (up to 200 health samples) and a bounded cross-store audit. It does not guarantee continuous monitoring between calls.
+- Alert acknowledgement is evidence of operator review, not proof that an underlying incident is repaired. It does not authorize mutation, recovery, or quarantine release.
+- Alert/event capacity is bounded. At capacity, writes fail closed and require a separately designed archival/rotation stage; no history is silently discarded.
+- The HTTP listener was not startup-tested in this validation environment; route mapping, application API references, syntax, and cumulative tests were validated, but live HTTP boot is not claimed.
+
+Next unfinished stage: Batch 120 — Alert Ledger Archival, SLO Evaluation Evidence Retention, and Escalation Policy Versioning.

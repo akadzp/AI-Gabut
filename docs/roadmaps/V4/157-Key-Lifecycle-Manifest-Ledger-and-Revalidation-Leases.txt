@@ -1,0 +1,52 @@
+Agentic AI V4 — Batch 157 Roadmap
+
+Objective
+
+Make checkpoint-attestation signing-key lifecycle changes explicit and auditable, anchor manifest approval supersession/revocation evidence independently, and extend retention-decision revalidation coordination across processes with lease recovery and fencing.
+
+Implemented in Batch 157
+
+1. Attestation signing-key lifecycle
+   - Owner-scoped digest-linked rotation and revocation events.
+   - Ten-minute confirmation challenges bound to active key, lifecycle head, and target key.
+   - Rotation requires a configured signer and trusted public key for the target key.
+   - Active keys cannot be revoked before rotation; retired keys remain available for historical signature verification.
+   - Attestations bind their lifecycle sequence. Verification checks whether the signing key was active at that sequence and applies a revocation cutoff. Legacy attestations without lifecycle sequence do not prove pre-revocation timing.
+
+2. Manifest approval supersession/revocation ledger
+   - Explicit, idempotent supersession events bind the approval, manifest, and observed source-state digest.
+   - Audit verifies the event digest, monotonically increasing sequence, previous-event digest, approval linkage, and source-state binding.
+   - A dedicated external snapshot checkpoint anchors the supersession/revocation event list.
+   - Enrollment is explicit; after enrollment, reconciliation accepts only one new event whose removal uniquely reconstructs the previously anchored snapshot.
+   - Provider object reuse and normalized endpoint reuse across trust domains are rejected at startup.
+   - No receipt compaction or evidence deletion is performed.
+
+3. Cross-process revalidation leases
+   - Durable owner/approval lease records use atomic `mutateEvidence`.
+   - Lease acquisition, renewal, release, reclaim, and recovery are linked by a digest chain.
+   - Lease expiry and monotonically increasing fencing tokens prevent stale workers from publishing after recovery.
+   - Explicit recovery and audit APIs are exposed through the application and HTTP server.
+   - Revalidation fingerprints exclude lease-control records to preserve valid cache behavior.
+
+Validation
+
+- Batch 157 regression tests: 4/4 PASS.
+- Full cumulative npm test before and after extraction: 1092/1092 PASS.
+- JavaScript/MJS/CJS syntax: 236/236 PASS.
+- Relative imports: 428 checked, 0 missing.
+- ZIP integrity (`zip -T`, `unzip -t`) PASS; extracted source matches the build tree exactly.
+- Final archive contains 395 files and 413 ZIP entries.
+- No GitHub commit is made.
+
+Known limitations
+
+- Key lifecycle events are owner-scoped; global signing-key revocation still must be enforced by the external signer/KMS/HSM.
+- Public keys must remain configured to verify historical signatures.
+- Pre-enrollment history remains unproven.
+- Cross-process lease support requires an atomic shared store implementation; unsupported stores fail closed.
+- External checkpoint durability and true infrastructure independence remain deployment responsibilities.
+- HTTP listener startup is not part of the verified boundary.
+
+Next stage
+
+Batch 158 — Key-Lifecycle External Checkpointing, Manifest-Ledger Freshness/Retention Audit, and Revalidation Lease Contention/Crash-Recovery Hardening.

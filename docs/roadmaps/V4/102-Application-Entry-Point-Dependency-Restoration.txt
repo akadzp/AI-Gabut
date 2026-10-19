@@ -1,0 +1,30 @@
+Agentic AI V4 — Batch 102
+Application Entry-Point Dependency Restoration
+
+Scope
+- Restore the 12 missing relative modules referenced by the existing Agentic application, GitHub service, and HTTP server: auth, connections, workspaces, work execution, work changes, verification, realtime, deployment, crypto, credential storage, agent-engine runtime, and execution reliability runtime.
+- Repair application.js's missing createMissionControlIntegrity import, expose createWorkspace/getWorkspace/createConnection/getConnection application-boundary methods used by the HTTP routes, and restore Work attachTask/attachExecution/reopenForRepair service methods.
+- Implement password-hashed authentication, expiring hashed bearer sessions, owner-scoped connection/workspace services, encrypted provider credentials, bounded work execution, staged change management, allowlisted verification commands, owner-scoped realtime replay, deployment origin checks, and security headers.
+- Keep the default model runtime fail-closed and honest: if no provider adapter is configured, execution reports MODEL_PROVIDER_NOT_CONFIGURED rather than claiming the task was completed. Providers can be registered through registerAgentProvider().
+- Declare Express as the HTTP server runtime dependency in package.json.
+- Add regression coverage for application construction, API boundary completeness, auth lifecycle, credential encryption/revocation, work execution, staged file changes, verification policy, realtime owner isolation, deployment configuration, and relative import resolution.
+
+Validation
+- Batch 102 focused regression tests: 13/13 PASS.
+- Full cumulative npm test: 566/566 PASS.
+- JavaScript/MJS syntax: 131/131 PASS.
+- Relative JavaScript import resolution: 0 missing relative imports.
+- Application construction: PASS; all application services initialize.
+- HTTP server top-level API mapping: PASS.
+- ZIP integrity checked with zip -T and unzip -t.
+- Extracted-archive regression tests and syntax validation rerun before delivery.
+- No GitHub commit made.
+
+Operational notes
+- The HTTP server depends on Express, declared in package.json. Run npm install before npm start in a local environment.
+- The isolated build environment did not have Express installed and package installation could not complete, so the actual HTTP listener was not booted here. The server file passed syntax validation and all application-level startup checks passed.
+- Set AGENTIC_ENCRYPTION_KEY to a strong, stable secret before production use. The built-in fallback key is for local development only; production encryption refuses to operate without an explicit key.
+- Configure a model provider adapter with registerAgentProvider() before expecting model-driven Work or chat execution. The default runner reports a failed, non-executed status when no provider is configured.
+- Work Change edit/rollback operations stage content in the change record; rollback does not write to the filesystem. Verification commands are allowlisted and executed without a shell.
+
+Next unfinished stage: Batch 103 — Runtime Integration and Lifecycle Hardening.

@@ -1,0 +1,41 @@
+Agentic AI V4 — Batch 151
+Audit-Attestation External Checkpointing, Provider-Baseline Lifecycle Continuity, and Retention-Review Decision Replay Protection
+
+Purpose
+- Anchor signed cross-domain audit-attestation history in an independent external checkpoint.
+- Prove provider-baseline lifecycle continuity across accepted baseline revisions.
+- Prevent concurrent or replayed retention-review decisions from creating duplicate approvals.
+
+Implementation
+- Reused the owner-scoped external snapshot checkpoint service for three distinct trust domains: cross-domain audit attestation, provider baseline, and retention review.
+- Added explicit enrollment, status, reconciliation, and audit application APIs and authenticated HTTP routes for each domain.
+- Audit-attestation snapshots bind retained record IDs/digests, attestation payload digests, issuance times, and key IDs. When a checkpoint is configured, historical verification remains distinct from current-decision usability.
+- Provider-baseline snapshots are reconstructed from completed baseline challenges grouped by domain and ordered by revision. Each transition binds the challenge digest, source conformance report, expected prior baseline digest, result revision, and result baseline digest.
+- Provider-baseline checkpoint reconciliation accepts only a single terminal transition whose removal reconstructs the previously anchored snapshot digest and count. Same-count rewrites and multiple unanchored transitions are rejected.
+- Retention review reserves a deterministic replay guard and creates a deterministic approval ID. The replay guard records reserved/completed phases and binds owner, challenge digest, decision, target digest, approval ID, and approval digest. Retries can complete an interrupted transition without duplicating the decision.
+- Audits detect duplicate approvals, missing completed approvals, replay-guard corruption, and unproven legacy replay history. Existing non-destructive retention behavior is preserved.
+- Corrected external snapshot checkpoint audit status precedence so underlying status fields cannot overwrite normalized unhealthy/pending audit classifications.
+
+Configuration
+- `AGENTIC_CROSS_DOMAIN_SNAPSHOT_AUDIT_ANCHOR_URL` / `_TOKEN` and `AGENTIC_REQUIRE_CROSS_DOMAIN_SNAPSHOT_AUDIT_ANCHOR`.
+- `AGENTIC_CROSS_DOMAIN_PROVIDER_BASELINE_ANCHOR_URL` / `_TOKEN` and `AGENTIC_REQUIRE_CROSS_DOMAIN_PROVIDER_BASELINE_ANCHOR`.
+- `AGENTIC_CROSS_DOMAIN_RETENTION_REVIEW_ANCHOR_URL` / `_TOKEN` and `AGENTIC_REQUIRE_CROSS_DOMAIN_RETENTION_REVIEW_ANCHOR`.
+- Each enabled trust domain requires its own provider instance and endpoint. Private signing keys remain external.
+
+Safety properties
+- No automatic legacy enrollment or re-anchoring occurs after an enrolled external anchor disappears.
+- Current-decision usability of signed audit attestations requires both historical validity and an aligned external checkpoint when checkpointing is configured.
+- Baseline checkpoint reconciliation is one-transition-only and prefix-digest bound.
+- One challenge can create at most one deterministic retention-review approval; replay is idempotent only when the existing guard and approval agree.
+- Retention review never deletes or rewrites target evidence.
+
+Validation
+- Eight Batch 151 regression tests cover audit-attestation enrollment/advancement, baseline continuity and drift rotation, concurrent replay protection, replay-guard tampering, required configuration, rollback, and API/route exposure.
+- Full cumulative test suite: 1054/1054 PASS.
+- JavaScript/MJS/CJS syntax: 228/228 PASS; relative imports: 404 checked, 0 missing.
+- Final ZIP integrity and extracted-source revalidation: PASS. No GitHub commit was made.
+
+Operational limitations
+- External CAS semantics, durability, and administrative independence are deployment responsibilities.
+- Legacy checkpoint enrollment proves continuity only from enrollment onward.
+- HTTP listener startup was not exercised.

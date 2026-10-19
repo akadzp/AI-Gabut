@@ -1,0 +1,40 @@
+Agentic AI V4 — Batch 140 Release Notes
+
+Stage
+-----
+Root-Recovery Trust Rotation and Revocation Audit, Retention Reconciliation Evidence Attestation, and Provider Conformance Drift Watch
+
+Changes
+-------
+- Added a persistent, owner-scoped root-recovery trust policy with hash-linked lifecycle events for root key rotation and revocation. Transitions require a signature from the current active root, digest/revision-bound confirmation, and proof of possession for a replacement root key. Active root keys cannot be revoked directly; rotate first.
+- Connected root-recovery trust lifecycle to policy-authority root recovery. New root-recovery challenges require the currently active root key; applying a prepared challenge rechecks that the root remains active. Historical policy-authority root-recovery authorization also evaluates root key lifecycle at the event timestamp.
+- Added explicit lifecycle audit and key trust evaluation. Historical signatures may remain trusted before retirement/revocation, while signatures at/after the relevant cutoff or after the key loses authority are rejected. Root trust registry history remains marked unproven before its first enrollment.
+- Added signed retention-reconciliation audit attestations using Ed25519. Attestations bind the full reconciliation snapshot, owner, reason, timestamp, and signing key, and are retained in the existing evidence registry/hash chain. Verification checks signature, payload digest, retention binding, and an optional caller-supplied expected audit digest.
+- Added provider conformance drift watch. Successful conformance reports now include fingerprints of provider identity and normalized contract metadata. Operators must explicitly enroll a baseline or rotate it from a fresh conformant report. Live identity/contract changes and later conformance regressions are reported as drift; audit never silently changes the accepted baseline.
+- Added authenticated HTTP routes for root trust lifecycle, retention reconciliation attestation, and provider conformance drift baseline/audit.
+
+Configuration
+-------------
+- Root recovery lifecycle uses the existing `recoverySloProviderIdentityPolicyAuthorityRootRecoveryPublicKeys` registry or `AGENTIC_PROVIDER_IDENTITY_POLICY_AUTHORITY_ROOT_RECOVERY_PUBLIC_KEYS`. All candidate root keys must be provisioned in the trusted registry before use; private keys remain out of application storage.
+- `recoverySloRetentionReconciliationSigner`, `recoverySloRetentionReconciliationKeyId`, and `recoverySloRetentionReconciliationPublicKeys` configure signed retention reconciliation evidence.
+- `AGENTIC_REQUIRE_RETENTION_RECONCILIATION_ATTESTATION=true` requires a complete signer/key configuration at application startup.
+- Provider conformance drift watch uses the configured provider identity trust-policy anchor provider. It does not provision or silently rotate the baseline.
+
+Validation
+----------
+- Batch 140 regression tests: 6/6 PASS.
+- Full cumulative `npm test`: 969/969 PASS, exit code 0.
+- JavaScript/MJS syntax and relative import resolution: verified in the final archive build.
+- ZIP integrity (`zip -T`, `unzip -t`) and extracted-source revalidation: PASS.
+- GitHub commit: none.
+
+Operational boundaries
+----------------------
+- Root-recovery trust lifecycle is stored locally and does not yet have a separate external checkpoint of its own. Protect the application storage and retain independent offline root key custody; a future stage should external-anchor this lifecycle.
+- Root rotation among configured keys requires the current root's signature. If the active root itself is compromised, do not accept an ordinary self-authorized rotation as a trustworthy recovery; use an independently governed out-of-band rebootstrap procedure.
+- Provider identity fingerprints detect observable identity/contract changes but do not prove administrative or infrastructure independence.
+- Retention reconciliation attestation signs a snapshot; it does not itself repair state or authorize reconciliation mutations. A later state change does not rewrite the historical snapshot.
+- Provider conformance probes can leave disposable namespace records if the provider does not support deletion.
+- HTTP listener startup has not been exercised in this isolated validation environment; syntax, route mappings, API exports, and tests were checked.
+
+Next unfinished stage: Batch 141 — Root-Recovery Trust External Checkpoint Anchoring, Reconciliation Attestation Freshness Policy, and Conformance Drift Event Retention.

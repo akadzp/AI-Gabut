@@ -1,0 +1,18 @@
+Batch 181 — Recovery-Finalization Ledger External Anchoring, Attestation-Checkpoint Recovery-Intent CAS Binding, and Cross-Domain Key-Cutoff/Receipt Continuity Audit
+
+Deliverables
+1. Independent external snapshot checkpoint for the decision-gate receipt recovery-finalization ledger.
+2. Explicit enrollment/status/reconcile/audit and intent-bound marker recovery APIs.
+3. Schema-v2 finalization receipts binding completed recovery intent ID/digest/event digest, source receipt checkpoint state, attestation source digest, and signing-key lifecycle binding.
+4. Backward-compatible audit of schema-v1 finalization receipts.
+5. Cross-domain continuity audit that revalidates receipt attestations and current signing-key lifecycle.
+6. Fail-closed handling for invalid/missing recovery intent, stale key lifecycle binding, checkpoint rollback, ambiguous continuity, and unproven gaps.
+7. Recovery of a zero-record genesis marker only when the exact external anchor proves the empty snapshot.
+
+Validation gate
+- Batch 181 regression tests pass.
+- Existing Batch 178–180 regressions pass.
+- Full test files are executed in bounded groups to avoid runtime contention.
+- Syntax, relative imports, archive integrity, and extracted-source SHA-256 equality pass.
+
+No GitHub commit.

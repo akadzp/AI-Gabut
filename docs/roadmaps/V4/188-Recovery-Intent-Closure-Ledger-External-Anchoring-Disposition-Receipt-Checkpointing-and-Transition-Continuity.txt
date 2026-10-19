@@ -1,0 +1,10 @@
+Batch 188 roadmap
+
+1. Add an independent external snapshot checkpoint for the recovery-intent status-transition ledger.
+2. Add a separate external snapshot checkpoint for signed orphan-disposition receipts.
+3. Enforce independent providers and endpoint URLs for both new trust domains.
+4. Require current checkpoint state before new transition/disposition mutations when anchoring is configured or mandatory.
+5. Advance external anchors only when a single event uniquely reconstructs the prior anchored snapshot.
+6. Recover local-append/external-CAS interruption idempotently without duplicate transition or disposition receipts.
+7. Integrate checkpoint freshness, rollback, policy drift, and continuity findings into closure and decision-use audits.
+8. Add tests for independent anchoring, crash recovery, checkpoint reconciliation, tamper detection, and provider reuse rejection.

@@ -1,0 +1,31 @@
+Agentic AI V4 — Batch 153
+External Checkpoint Freshness Policy Binding, Baseline Receipt Recovery/Compaction Guardrails, and Retention Decision Evidence Revalidation
+
+Scope
+-----
+1. Bind the active freshness/future-skew/retention policy to cross-domain external checkpoint anchors with a canonical domain-scoped policy digest.
+2. Detect policy drift separately from source drift and require explicit, time-limited policy-binding approval before appending a checkpoint under changed policy.
+3. Recover interrupted policy-binding finalization only when the external anchor proves the exact expected one-step append; reject stale challenge or source changes.
+4. Provide read-only provider-baseline transition receipt recovery and compaction guardrails. No destructive compaction occurs.
+5. Revalidate retention-review decisions against the approval, challenge, replay guard, target evidence digests, current status, and external checkpoint/policy binding.
+
+Security invariants
+-------------------
+- Historical checkpoint integrity does not imply current policy conformance.
+- Policy drift blocks current-decision use and ordinary reconciliation until an explicit binding transition succeeds.
+- Policy-binding challenges are owner/domain/source/anchor/policy bound and expire after ten minutes.
+- Source changes invalidate an outstanding policy-binding challenge.
+- Baseline receipt compaction remains prohibited automatically; eligibility is only advisory and requires healthy source audits, a current external checkpoint, no pending transition, and at least two verified receipts.
+- Retention approval cannot authorize current use when target evidence is missing, modified, superseded, replay protection is invalid, or the required external checkpoint is not current.
+- No evidence is deleted, rewritten, or compacted by Batch 153.
+
+Validation target
+-----------------
+- Batch-specific regression suite passes.
+- Full cumulative test suite passes.
+- All JavaScript/MJS/CJS files pass syntax checking.
+- Every relative import resolves.
+- ZIP integrity and post-extraction tests pass.
+- No GitHub commit.
+
+Next stage: Batch 154 — Policy-Binding Approval Audit Chain, Baseline Receipt Compaction Manifest Design, and Retention-Revalidation Decision Cache Invalidation.

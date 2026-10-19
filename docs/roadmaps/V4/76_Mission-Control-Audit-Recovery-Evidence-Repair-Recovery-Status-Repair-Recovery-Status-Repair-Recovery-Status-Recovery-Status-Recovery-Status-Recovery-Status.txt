@@ -1,0 +1,20 @@
+V4 Batch 76 — Mission Control Audit Recovery Evidence Repair Recovery Status Repair Recovery Status Repair Recovery Status Recovery Status Recovery Status Recovery Status
+
+Scope:
+- adds a read-only status view for Batch 74/75's durable recovery-observability intent
+- reports clear, pending, and error phases with stable integrity issue codes
+- validates nullable reconciliation ID, creation timestamp, and repaired-by-retry flag
+- bounds returned reconciliation metadata and durable error text
+- identifies malformed pending intent and orphaned error markers without mutation
+- reports recoverability only when pending intent metadata is valid
+- preserves owner-scoped access and exposes the status view through the application boundary
+- performs no writes, retry, recovery, repair, or event emission
+
+Validation:
+- dedicated regression tests: 8/8 PASS
+- cumulative npm test: 287/292 PASS; the same five Batch 75 baseline failures remain (two missing core/storage/state/index.js imports, one missing core/security/index.js import, one external-feedback ID/provenance mismatch, and one missing github.workflowRuns mock); no new failures
+- JavaScript/MJS syntax validation: 89/89 PASS
+- ZIP integrity validation: pending
+- no GitHub commit
+
+Next unfinished stage: Batch 77.

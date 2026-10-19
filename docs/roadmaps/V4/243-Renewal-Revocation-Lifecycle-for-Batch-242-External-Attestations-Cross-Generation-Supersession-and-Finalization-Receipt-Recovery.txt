@@ -1,0 +1,20 @@
+Batch 243 — Renewal/Revocation Lifecycle for Batch 242 External Attestations
+
+Deliverables
+1. Signed intent, renewal, revocation, supersession, finalization, and finalization-receipt events.
+2. Cross-generation predecessor/replacement validation and terminal revocation enforcement.
+3. Deterministic operation IDs, challenge confirmation, and key-cutoff tracking.
+4. Finalization receipt chain with lifecycle audit and independent checkpoint bindings.
+5. Checkpoint-aware replay/reconciliation and overall recovery-gate convergence.
+6. Owner-scoped authenticated API routes and focused regression tests.
+
+Acceptance criteria
+- Empty lifecycle history is read-only and not_initialized.
+- No mutation occurs unless the Batch 242 source attestation is verified_current.
+- Renewal creates a bound replacement and supersession event; revocation is terminal.
+- Every finalized lifecycle operation has exactly one valid finalization receipt.
+- Missing receipts or checkpoint lag yield recovery_required; invalid signatures/bindings/chains yield unhealthy.
+- All Batch 243 events appear in the independent checkpoint snapshot.
+- ZIP extraction reproduces all source files byte-for-byte.
+
+GitHub commit: not performed.

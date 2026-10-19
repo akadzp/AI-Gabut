@@ -1,0 +1,39 @@
+Agentic AI V4 — Batch 143 Release Notes
+
+Stage
+-----
+Root-Trust Conformance Baseline Attestation, Decision-Gate Audit Evidence, and Drift-Chain Checkpoint Continuity
+
+Changes
+-------
+- Added Ed25519-signed root-trust conformance baseline attestations. Attestations bind the owner, completed challenge, report digest, provider identity fingerprint, contract digest, signing key ID, and issuance time. Issuance rechecks the live provider identity/contract; verification distinguishes historical signature validity from suitability as the current baseline.
+- Added audit evidence for current-decision checks that use retention-reconciliation freshness gates. Both allowed and denied evaluations are retained without copying the full attestation or signature into the audit record. An allow result is returned only after its audit evidence has been retained successfully; audit write failure is fail-closed.
+- Added signed provider-conformance drift-chain checkpoint receipts. Receipts bind a verified chain sequence/head digest and link to the previous receipt digest. Audits reconstruct receipt order from digest links (not wall-clock ordering), verify each checkpoint against the retained-evidence chain history, and reject missing, branched, pruned, tampered, or discontinuous histories.
+- Added owner-scoped APIs and authenticated HTTP routes for baseline attestation issue/verify/audit, audited decision-gate evaluation and evidence audit/listing, and drift-chain checkpoint receipt issue/verify/continuity audit.
+- Extended retained-evidence artifact validation and pruning filters for the three new evidence types.
+- Fixed a pre-existing binding mismatch in root-trust conformance evidence: the completed challenge digest and the report's source challenge digest are now recorded separately. Legacy records are validated against their persisted completed challenge where possible, preserving compatibility without treating an unproven binding as valid.
+
+Configuration
+-------------
+- Root-trust baseline attestation: `recoverySloRootTrustConformanceBaselineSigner`, `recoverySloRootTrustConformanceBaselineKeyId`, `recoverySloRootTrustConformanceBaselinePublicKeys`; environment equivalents include `AGENTIC_ROOT_TRUST_CONFORMANCE_BASELINE_PUBLIC_KEYS` and `AGENTIC_REQUIRE_ROOT_TRUST_CONFORMANCE_BASELINE_ATTESTATION=true`.
+- Drift-chain checkpoint receipts: `recoverySloDriftChainCheckpointSigner`, `recoverySloDriftChainCheckpointKeyId`, `recoverySloDriftChainCheckpointPublicKeys`; environment equivalents include `AGENTIC_PROVIDER_CONFORMANCE_DRIFT_CHECKPOINT_PUBLIC_KEYS` and `AGENTIC_REQUIRE_DRIFT_CHAIN_CHECKPOINT_RECEIPT=true`.
+- Decision-gate evidence uses the existing retained-evidence registry and hash chain. The full attestation payload is not copied into the decision audit record.
+
+Validation
+----------
+- Batch 143 regression tests: 7/7 PASS.
+- Full cumulative `npm test`: 989/989 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax and relative import resolution: PASS.
+- ZIP integrity (`zip -T` and `unzip -t`): PASS.
+- Extracted-source revalidation: PASS.
+- GitHub commit: none.
+
+Operational boundaries
+----------------------
+- Baseline attestation proves the signed conformance snapshot, not administrative independence of the provider. Provider changes invalidate its current-baseline usability but do not erase historical validity.
+- Current decisions must use the explicit freshness decision gate. The audited wrapper records allowed/denied outcomes and fails closed if an allowed decision cannot be audited.
+- Checkpoint receipts require an external signer and trusted Ed25519 public key. Receipt history is considered unproven if records are pruned or continuity links break; it is not silently reconstructed.
+- The root-trust conformance probe may leave disposable namespace records if the provider has no delete API.
+- HTTP listener startup remains unverified in this isolated environment; source syntax, imports, route mapping, tests, archive integrity, and extracted-source revalidation were checked.
+
+Next unfinished stage: Batch 144 — Decision-Gate Evidence Chain Anchoring, Root-Trust Baseline Rotation/Revalidation, and Drift-Checkpoint Freshness Monitoring.

@@ -1,0 +1,17 @@
+Agentic AI V4 — Batch 158 roadmap entry
+
+Completed stage:
+- External checkpointing for attestation signing-key lifecycle, binding initial key identity, public-key fingerprints, and rotation/revocation event digests.
+- Explicit checkpoint enrollment and one-event continuity reconciliation; key-registry drift cannot be treated as a valid transition.
+- Read-only freshness and retention audit for the manifest-approval supersession/revocation ledger.
+- Stronger lease record/event transition validation, cross-process contention coverage, crash-recovery coverage, and stale-worker fencing.
+
+Validation baseline:
+- Cumulative npm test: 1097/1097 PASS.
+- Syntax checks: 237/237 PASS.
+- Relative imports: 432 checked, 0 missing.
+- Clean-extraction and archive-integrity checks: PASS.
+- No GitHub commit.
+
+Next stage:
+Batch 159 — Key-Lifecycle Checkpoint Policy-Rotation Continuity, Manifest-Ledger Retention Review Approval Binding, and Lease Recovery Idempotency/Observability.

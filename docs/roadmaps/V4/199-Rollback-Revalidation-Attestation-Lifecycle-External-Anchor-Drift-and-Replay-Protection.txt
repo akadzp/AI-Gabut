@@ -1,0 +1,23 @@
+Batch 199 — Rollback-Revalidation Attestation Lifecycle, External Anchor Drift Monitoring, and Closure-Gate Replay Protection
+
+1. Lifecycle state machine
+   - Prepare a short-lived challenge bound to the target attestation, checkpoint fingerprint, continuity ledger, and signing-key lifecycle.
+   - Persist signed intent, applied, and finalization receipts under deterministic operation IDs.
+   - Require external recovery-receipt checkpoint reconciliation before marking the challenge complete.
+
+2. Renewal and revocation
+   - Renewal generates a new, signed revalidation generation and links it to the superseded target.
+   - Revocation is terminal for the target attestation.
+   - Replaying a completed challenge must return the same receipts and must not append duplicate phases.
+
+3. External drift monitoring
+   - Compare the latest revalidation with the current external checkpoint fingerprint and continuity digest.
+   - Retain stale historical evidence without letting it mask the latest current evidence.
+   - Report drift without mutating the external anchor.
+
+4. Closure enforcement
+   - Reject invalid signatures, duplicate phases, replayed targets, missing receipts, invalid replacement bindings, and key-cutoff evidence.
+   - A revoked, stale, or unanchored revalidation is not usable for current decisions.
+
+5. Verification
+   - Regression tests cover renewal, revocation, idempotent replay, interrupted external writes, drift monitoring, and API exposure.

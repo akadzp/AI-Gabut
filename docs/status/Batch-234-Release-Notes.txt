@@ -1,0 +1,34 @@
+Agentic AI V4 — Batch 234 Release Notes
+
+Scope
+- Adds a signed append-only finalization receipt for each finalized Batch 233 external-attestation lifecycle renewal/revocation.
+- Binds lifecycle finalization, intent/action, source attestation/receipt, renewal/supersession/replacement, key lifecycle, and predecessor receipt.
+- Adds receipt audit, snapshot, and reconciliation APIs.
+- Extends the external finalization-receipt checkpoint source snapshot to cover Batch 233 lifecycle events and Batch 234 receipts.
+- Makes Batch 233 apply/reconcile generate missing finalization receipts before checkpoint advancement.
+- Includes Batch 234 receipt audit in overall recovery-gate convergence.
+
+Safety and recovery
+- Empty history does not fabricate receipts.
+- Receipts are idempotent by deterministic operation ID.
+- A missing earlier receipt blocks creation of later-generation receipts.
+- Broken source binding, signature, predecessor, duplicate/orphan receipt, or generation conflict fails closed.
+- Terminal revocation remains decision_blocked and cannot be reactivated by a receipt.
+- Stale configured external checkpoint keeps reconciliation incomplete.
+
+Validation
+- Focused regression suite: 39/39 PASS (Batch 223–234 plus Batch 102 API/entrypoint surface).
+- Batch 234-specific tests: 2/2 PASS.
+- Full cumulative npm test: not claimed as passing.
+- Positive end-to-end renewal/revocation through a fully bootstrapped historical Batch 232 chain: not established by the focused tests.
+- Live HTTP listener startup: not tested.
+- No GitHub commit was made.
+
+Final archive validation
+- Source/project files: 622; ZIP entries: 641.
+- JavaScript/MJS/CJS syntax after extraction: 326/326 PASS.
+- Relative import references: 624 checked, 0 missing.
+- Extracted tree comparison: 0 missing, 0 extra, 0 SHA-256 mismatches.
+- `zip -T` and `unzip -t`: PASS.
+- Focused tests on the extracted final package: 39/39 PASS.
+- Full `npm test` timed out before a final summary after 1,129 passing test records; no `not ok` entries were logged before termination. Full-suite success is not claimed.

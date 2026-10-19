@@ -1,0 +1,44 @@
+Agentic AI V4 — Batch 161 Release Notes
+=======================================
+
+Batch
+-----
+161 — Registry-Receipt External Anchoring/Recovery, Retention Approval Revocation-Ledger Continuity, and Lease Audit Export Signing/Checkpoint Binding.
+
+Implemented
+-----------
+- Added the independent `cross_domain_attestation_key_transition_receipts` external checkpoint trust domain, with explicit enrollment, status/audit endpoints, freshness-aware status, and one-receipt continuity reconciliation.
+- Key-transition receipt checkpoint source is derived from retained receipt digests and lifecycle event links. Registry drift and invalid receipt history are rejected; the system does not rebind legacy receipts to a changed trusted key registry.
+- Manifest-approval ledger source validation now checks retention-review approval/revocation challenge linkage before a checkpoint can be treated as a healthy source. Corrupted revocation evidence makes checkpoint audit/reconciliation fail closed.
+- Lease audit export is wrapped in an Ed25519-signed envelope bound to the key-transition receipt checkpoint and signing-key lifecycle sequence. Verification separates signature validity, inner-export integrity, checkpoint binding, and current usability.
+- Added authenticated HTTP routes for receipt checkpoint status, enrollment, reconciliation, audit, and explicit signed-export/verify endpoints.
+
+Configuration
+-------------
+- `AGENTIC_CROSS_DOMAIN_ATTESTATION_KEY_TRANSITION_RECEIPT_ANCHOR_URL`
+- `AGENTIC_CROSS_DOMAIN_ATTESTATION_KEY_TRANSITION_RECEIPT_ANCHOR_TOKEN`
+- `AGENTIC_REQUIRE_CROSS_DOMAIN_ATTESTATION_KEY_TRANSITION_RECEIPT_ANCHOR=true`
+
+The receipt checkpoint must use a distinct provider and endpoint from the existing cross-domain trust domains. When the anchor is required, export signing refuses to issue a bundle while the receipt checkpoint is missing, behind, stale, or otherwise not current.
+
+Validation
+----------
+- Batch 161 regression tests: 4/4 PASS.
+- Full cumulative `npm test`: 1110/1110 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax and relative imports checked on the full source tree and after clean extraction.
+- ZIP integrity checked with `zip -T` and `unzip -t`.
+- Extracted source equivalence: all files compared with no missing, extra, or content-different files.
+- No GitHub commit was made.
+
+Operational boundaries
+----------------------
+- External checkpoint enrollment intentionally marks pre-enrollment history as unproven. A valid signature over an export does not make that history current or independently proven.
+- Receipt checkpoint reconciliation accepts exactly one provable receipt beyond the anchor. Multiple unanchored receipts are blocked rather than silently batched.
+- The signed lease export uses the configured active Ed25519 key and includes the receipt checkpoint binding. Key rotation or checkpoint advancement can make a previously signed export historical-only.
+- SHA-256 protects canonical payload integrity; authenticity is supplied by the Ed25519 signature. Provider durability, CAS behavior, and hidden infrastructure independence remain deployment responsibilities.
+- Retention approval/revocation checks are non-destructive. No evidence deletion or compaction is performed.
+- HTTP listener startup was not exercised directly; syntax, imports, route mapping, tests, and archive integrity were validated.
+
+Next unfinished stage
+---------------------
+Batch 162 — Receipt-Checkpoint Recovery Intent/Crash Finalization, Retention-Ledger Multi-Event Gap Diagnostics, and Signed Lease Export Key-Cutoff Verification.

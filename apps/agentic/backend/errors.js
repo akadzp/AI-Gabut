@@ -1,2 +1,1 @@
-export class AgenticError extends Error { constructor(code, message, status = 400, details = null) { super(message); this.name = "AgenticError"; this.code = code; this.status = status; this.details = details; } }
-export function normalizeAgenticError(error) { if (error instanceof AgenticError) return error; return new AgenticError("INTERNAL_ERROR", error?.message || "Internal server error", 500); }
+export class AgenticError extends Error { constructor(code,message,status=400){super(message);this.name='AgenticError';this.code=code;this.status=status;} }

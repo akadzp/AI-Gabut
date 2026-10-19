@@ -1,0 +1,19 @@
+Batch 187 — Recovery-Intent Status-Transition Attestation, Explicit Orphan Disposition, and Cross-Domain Recovery Closure Enforcement
+
+- Added a signed append-only transition ledger for lifecycle recovery-intent status changes, binding the old/new status and record digest to immutable intent digests and signing-key lifecycle.
+- Added transition-chain audit and fail-closed current-decision enforcement.
+- Added explicit owner-scoped orphan disposition challenges with `quarantine` and `mark_unrecoverable` outcomes; no challenge reconstruction or evidence deletion is performed.
+- Added append-only, CAS-protected, Ed25519-attested disposition receipts with idempotent retry.
+- Integrated closure status with lifecycle and cross-domain continuity audits. Dispositioned orphan evidence remains unusable for current decisions.
+- Added authenticated HTTP routes for transition audit, closure audit, disposition preparation, and disposition application.
+- Focused regression tests: 5/5 PASS; Batch 186–187 regressions: 21/21 PASS before final cumulative validation.
+- JavaScript syntax, relative imports, ZIP integrity, and extracted-source SHA-256 equivalence must be validated on the final cumulative archive.
+- HTTP listener startup not verified because `express` is not installed in the validation environment.
+- No GitHub commit was made.
+
+Next unfinished stage: Batch 188.
+
+Final validation update:
+- Complete cumulative suite: 1,280/1,280 passed across bounded groups covering all 174 test files. A monolithic run exceeded the execution window, so bounded groups were used.
+- After final closure-binding hardening, Batch 174–187 regression set: 113/113 PASS.
+- Final source syntax/import and extracted ZIP checks are recorded in the delivered archive metadata.

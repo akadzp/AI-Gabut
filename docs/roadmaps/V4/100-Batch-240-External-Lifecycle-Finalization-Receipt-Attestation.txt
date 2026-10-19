@@ -1,0 +1,17 @@
+Agentic AI V4 — Batch 240
+
+Objective
+Externally attest Batch 239 lifecycle finalization receipts with verifiable cross-generation continuity and independent checkpoint recovery.
+
+Delivered
+1. Signed Batch 240 attestation event and stable binding schema.
+2. Receipt-prefix digest and source-finalization binding checks.
+3. Historical signature and predecessor-chain audit.
+4. Key-cutoff and checkpoint freshness reporting.
+5. Read-only snapshot and recovery reconciliation APIs.
+6. Overall recovery-gate convergence integration.
+7. HTTP routes for attest, audit, snapshot, and reconcile.
+8. Focused regression coverage for empty history and API/checkpoint wiring.
+
+Next stage candidate
+Batch 241 — Renewal/Revocation Lifecycle for Batch 240 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery.

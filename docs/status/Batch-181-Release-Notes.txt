@@ -1,0 +1,27 @@
+Agentic AI V4 — Batch 181 Release Notes
+
+Scope
+- Adds independent external anchoring for the CAS recovery-finalization receipt ledger.
+- Adds checkpoint enrollment, status, reconciliation, integrity audit, marker recovery inspection, and marker recovery APIs/routes.
+- Binds schema-v2 recovery-finalization receipts to a persisted completed recovery intent, attestation-source snapshot, and signing-key lifecycle digest.
+- Adds a cross-domain continuity audit for key cutoff, receipt-attestation current status, recovery-intent integrity, and finalization checkpoint freshness.
+- Preserves schema-v1 finalization receipt audit compatibility.
+- Allows recovery of an empty genesis checkpoint marker when the exact external anchor proves a zero-record snapshot; no history is fabricated.
+- Adds a filesystem-safe recovery-intent ID for finalization-checkpoint marker recovery.
+
+Trust-domain configuration
+AGENTIC_CROSS_DOMAIN_RECOVERY_DECISION_GATE_RECEIPT_RECOVERY_FINALIZATION_ANCHOR_URL=https://your-independent-anchor
+AGENTIC_CROSS_DOMAIN_RECOVERY_DECISION_GATE_RECEIPT_RECOVERY_FINALIZATION_ANCHOR_TOKEN=your-token
+AGENTIC_REQUIRE_CROSS_DOMAIN_RECOVERY_DECISION_GATE_RECEIPT_RECOVERY_FINALIZATION_ANCHOR=true
+
+The finalization checkpoint must use a provider endpoint distinct from every other trust domain. Strict mode fails closed without a provider and requires explicit enrollment before finalization writes. Non-empty pre-enrollment history is not trusted retroactively.
+
+Validation
+- Batch 181 regression tests: 7/7 passed.
+- Batch 178–181 regression tests: 32/32 passed.
+- All 168 test files were exercised in bounded groups or individually after the final code changes: 1,224 test cases passed, zero failures. One oversized grouped invocation was terminated by the environment while running Batch 169/170 workers; those files were rerun individually and passed, as did all remaining files in bounded runs.
+- JavaScript/MJS/CJS syntax: 260/260 passed.
+- Relative import references: 511 checked, zero missing.
+- ZIP integrity and extracted-source SHA-256 equivalence are validated.
+
+GitHub: no commit performed.

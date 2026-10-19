@@ -1,0 +1,36 @@
+Agentic AI V4 — Batch 167 Roadmap
+=================================
+
+Scope
+-----
+1. Anchor immutable recovery-intent records from the key-transition receipt, recovery-intent attestation lifecycle, manifest gap-finalization, and signed verification-receipt recovery flows in a dedicated external snapshot checkpoint.
+2. Validate each intent family through its schema-specific audit before including it in the external recovery-intent snapshot; do not confuse legacy checkpoint-service intents with digest-chained marker-recovery intents.
+3. Add explicit checkpoint enrollment, freshness/status audit, and one-event continuity reconciliation. Preserve history-not-proven semantics after first enrollment.
+4. Make finalization checkpoint recovery replay-aware: idempotently recognize completed recovery, finalize a pending intent when the external anchor already proves the exact postcondition, reject conflicting unresolved intents, and detect marker rollback after a completed recovery.
+5. Add a challenge-bound retention review for signed verification receipts. Bind exact receipt IDs/digests, source snapshot digest/count, external checkpoint digest/sequence, and policy digest. Revalidate all bindings before applying `retain` or `escalate`.
+6. Keep retention review non-destructive. No evidence deletion or compaction is permitted.
+7. Expose authenticated application APIs and HTTP routes and add focused regression tests.
+
+Security invariants
+-------------------
+- Owner scoping is mandatory for checkpoint, intent, challenge, approval, and receipt access.
+- The external recovery-intent snapshot includes immutable intent bindings but excludes mutable status fields; schema-specific audits remain mandatory.
+- Recovery under strict anchoring requires an anchored, fresh external recovery-intent checkpoint. First enrollment's `historyNotProven` flag remains intact and blocks current-decision use.
+- Ordinary recovery-intent checkpoint reconciliation advances only one provable event. Multi-event gaps are not silently combined.
+- A completed finalization recovery cannot be replayed as a new transition. If its marker disappears afterward, recovery fails closed as rollback.
+- Receipt retention approval is valid only while its challenge, source snapshot, target receipts, checkpoint, and policy bindings remain current.
+- `retain` resolves only the bound review-due targets; `escalate` remains explicit and does not authorize current-decision use.
+- No receipt, approval, challenge, or evidence is deleted or compacted.
+
+Acceptance
+----------
+- Batch-specific tests pass.
+- Full cumulative `npm test` passes.
+- JavaScript/MJS/CJS syntax checks pass and all relative imports resolve.
+- ZIP integrity passes with `zip -T` and `unzip -t`.
+- Extracted source matches archived source byte-for-byte.
+- No GitHub commit.
+
+Next stage
+----------
+Batch 168 — Recovery-Intent Ledger Policy-Drift/Rollback Recovery, Retention Approval Revocation/Replacement, and Cross-Ledger Consistency Audit.

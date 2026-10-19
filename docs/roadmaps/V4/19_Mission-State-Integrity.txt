@@ -1,0 +1,19 @@
+V4 Batch 19 — Mission State Integrity & Reconciliation Guard
+
+Objective:
+- Detect impossible or internally inconsistent mission states before they become hidden scheduler failures.
+- Provide a bounded, non-executing repair path for recoverable state corruption.
+
+Delivered:
+- owner-scoped mission integrity inspection
+- lifecycle/status and current-stage consistency checks
+- duplicate stage-id detection
+- bounded repair that never executes Work or skips an unfinished stage
+- application-level validation and repair entry points
+- dedicated integrity tests
+
+Authority:
+- Integrity inspection is read-only.
+- Repair only normalizes persisted mission metadata; it never runs Work.
+- Repair never marks an unfinished stage completed.
+- Execution, approval, lease and journal authority remain unchanged.

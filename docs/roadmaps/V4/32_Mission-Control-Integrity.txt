@@ -1,0 +1,13 @@
+V4 Batch 32 — Mission Control Integrity
+
+Tujuan: memastikan durable mission control state tetap konsisten setelah retry, evidence recovery, bounded history, dan operator transitions.
+
+Scope:
+- inspect controlHistory, controlId, requestId, reason, dan pending evidence
+- deteksi duplicate controlId/requestId dan orphan evidence markers
+- validasi hubungan status mission dengan control transition aktif
+- bounded repair yang hanya memperbaiki metadata/control evidence state
+- expose inspect/repair pada application boundary
+- memperluas mission integrity agar status paused dikenali sebagai state aktif yang valid
+
+DoD: mission control state dapat diinspeksi dan direpair secara bounded tanpa mengubah execution authority atau memalsukan transition history.

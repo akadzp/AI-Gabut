@@ -1,0 +1,3 @@
+Batch 263 — Renewal/Revocation Lifecycle for Batch 262 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery
+
+Implement a signed append-only lifecycle for Batch 262 external attestations. Require current source attestation and independent checkpoint; bind challenge, action, target digest, source receipt, generation, key lifecycle, intent/action events, replacement, predecessor, and lifecycle audit into canonical digests. Support deterministic retries, terminal revocation, finalization receipts, recovery of interrupted phases, and owner-scoped API routes. Validate schema, imports, syntax, archive integrity, and focused regressions.

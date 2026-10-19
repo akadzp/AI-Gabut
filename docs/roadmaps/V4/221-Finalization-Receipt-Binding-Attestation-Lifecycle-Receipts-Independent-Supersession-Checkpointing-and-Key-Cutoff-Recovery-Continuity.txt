@@ -1,0 +1,18 @@
+Agentic AI V4 Batch 221
+Finalization-Receipt Binding-Attestation Lifecycle Receipts, Independent Supersession Checkpointing, and Key-Cutoff Recovery Continuity
+
+Scope
+- Issue a signed append-only receipt for each finalized finalization-receipt checkpoint binding attestation.
+- Bind the receipt to the attestation ID/digest, binding digest, generation, supersession event ID/digest, and predecessor receipt ID/digest.
+- Add an independent external checkpoint for the receipt chain and enforce provider/endpoint independence.
+- Integrate receipt creation and checkpoint advancement into the existing idempotent renewal/recovery flow.
+- Include receipt status and checkpoint binding in recovery-gate convergence and generation-binding digests.
+
+Acceptance criteria
+- Generation one has no predecessor; each later receipt is bound to the immediately previous receipt and matching attestation supersession event.
+- A repeated operation returns the same receipt without duplicate events.
+- A locally committed receipt survives external checkpoint failure and can be anchored by retry without receipt duplication.
+- Key-cutoff renewal records the cutoff in the supersession event and receipt; current-decision use requires current upstream evidence and checkpoints.
+- Provider or endpoint reuse is rejected.
+- Receipt audit and independent checkpoint status are exposed through authenticated API routes.
+- Source syntax, relative imports, focused regression tests, and ZIP integrity are validated after extraction.

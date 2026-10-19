@@ -1,0 +1,21 @@
+Agentic AI V4 — Batch 136 Release Notes
+
+Stage
+Signed Provider-Identity Drift Events, External Baseline Anchoring, and Retained-Evidence Chain Recovery Attestation
+
+Changes
+- Added Ed25519-signed provider identity drift events and retained-evidence-chain recovery attestations.
+- Added a dedicated external anchor for provider-identity baselines with CAS, digest continuity, local marker checks, rollback detection, and explicit legacy enrollment preserving `historyNotProven`.
+- Added separate trust-domain configuration and authenticated application/HTTP APIs.
+
+Validation baseline
+- Batch 136 regression tests: 7/7 PASS.
+- Cumulative tests: 940/940 PASS.
+- Syntax/import, ZIP integrity, and extracted-source validation: PASS.
+- GitHub commit: none.
+
+Operational boundaries
+- Legacy enrollment cannot prove pre-enrollment history.
+- Provider behavior and administrative independence remain deployment responsibilities.
+- Local markers cannot protect against simultaneous rollback of all local state.
+- HTTP listener startup was not tested directly in the isolated validation environment.

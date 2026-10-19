@@ -1,0 +1,18 @@
+V4 — MISSION CONTROL / OPERATOR ACTIONS
+
+Tujuan: memberi operator bounded control atas mission lifecycle tanpa mengambil alih Work Execution authority.
+
+Scope:
+- pause/resume/cancel mission
+- owner-scoped control
+- lifecycle state validation
+- control reason and evidence
+- observability integration
+- terminal-state protection
+
+Implementation:
+- mission state dimutasi melalui missionStore owner-scoped
+- setiap control menghasilkan evidence event
+- control tidak menyediakan action untuk bypass stage execution atau approval gates
+
+DoD: operator dapat pause, resume, atau cancel mission secara eksplisit; state tersimpan; evidence tercatat; dan tidak ada jalur langsung untuk melompati execution authority.

@@ -1,0 +1,18 @@
+V4 Batch 20 — Mission State Integrity Integration & Safe Execution Gate
+
+Objective:
+- Turn Batch 19 integrity inspection/repair into an execution boundary.
+- Ensure a mission is structurally valid before acquiring execution authority and running Work.
+- Persist only bounded metadata repairs; never execute Work during repair.
+
+Delivered:
+- mission-integrity-gate service
+- scheduler integration before lease/journal/Work execution
+- persisted bounded repair through the application repairMission entry point
+- explicit rejection of unrecoverable mission state
+- dedicated integrity-gate tests
+
+Authority:
+- Integrity gate does not execute Work.
+- Repair cannot mark an unfinished stage completed or advance currentStageIndex except to a bounded valid position.
+- Lease, journal, approval and Work execution authority remain unchanged.

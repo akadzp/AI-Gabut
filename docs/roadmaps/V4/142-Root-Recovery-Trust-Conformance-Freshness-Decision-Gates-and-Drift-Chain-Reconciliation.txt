@@ -1,0 +1,40 @@
+Agentic AI V4 Roadmap — Batch 142
+
+Objective
+---------
+Close the verification gap between root-recovery trust provider declarations and observed CAS behavior, make freshness requirements explicit at current-decision boundaries, and provide safe reconciliation for retained provider-conformance drift evidence.
+
+Scope delivered
+---------------
+1. Challenge-bound conformance probe for the root-recovery trust anchor provider, including disposable namespace, contract metadata, CAS, read-after-write, stale-CAS non-mutation, monotonicity, owner binding, and concurrent-writer checks.
+2. Digest-bound retention and audit of conformance reports for the `root_recovery_trust` domain.
+3. Decision-boundary gate for signed retention-reconciliation attestations. The gate requires valid signature and retention, optional expected-snapshot binding, and freshness under both signed and local policy limits.
+4. Drift-retention chain reconciliation with record/tombstone integrity preflight, CAS-based chain reconciliation, and post-reconciliation audits.
+5. Authenticated application APIs and HTTP routes for these operations.
+
+Security invariants
+-------------------
+- Conformance writes only to a unique disposable namespace and does not mutate production root-trust state.
+- A completed challenge is replay-idempotent; an uncompleted challenge requires matching digest-bound confirmation and an unexpired challenge.
+- A stale attestation may remain historically verifiable but is never accepted by the explicit current-decision gate.
+- Drift event payloads and retained-evidence records must match their digests before reconciliation.
+- Chain reconciliation never rewrites local evidence or bypasses rollback, mismatch, or corrupt-ledger findings.
+- All operations remain owner-scoped and read-only audits do not mutate state.
+
+Validation
+----------
+- Batch tests: 6/6 PASS.
+- Cumulative tests: 982/982 PASS.
+- Syntax and relative import resolution: PASS.
+- Archive integrity and extracted-source test re-run: PASS.
+
+Known limitations
+-----------------
+- Disposable probe records may remain on providers without delete support.
+- Freshness enforcement applies at decision boundaries that invoke the explicit gate; consumers of the older historical-verification API must not treat signature validity alone as authorization for a current decision.
+- Provider conformance cannot prove administrative independence or undisclosed backend topology.
+- HTTP server startup was not exercised in the isolated validation environment.
+
+Next stage
+----------
+Batch 143 — Root-Trust Conformance Baseline Attestation, Decision-Gate Audit Evidence, and Drift-Chain Checkpoint Continuity.

@@ -1,0 +1,44 @@
+Agentic AI V4 — Batch 175 Release Notes
+======================================
+
+Scope
+-----
+- Added Ed25519 lifecycle attestations for CAS-finalization receipt revocation and replacement events.
+- Bound each lifecycle attestation to the immutable event body, event sequence, previous-event digest, challenge binding, receipt binding, recovery-intent binding, signing-key fingerprint, and key-lifecycle cutoff.
+- Preserved historical signature verification while distinguishing current usability after key rotation, stale timestamps, missing lifecycle proof, and external checkpoint requirements.
+- Added durable recovery intents before receipt lifecycle events are appended, with bounded CAS updates and explicit completed/local-only/history-unproven/checkpoint-pending states.
+- Added recovery for persisted revocation/replacement events whose local recovery intent was not finalized, including intent-bound recovery of a missing external checkpoint marker when the anchor postcondition proves the source.
+- Added a cross-domain recovery-intent integrity audit that composes the intent-ledger snapshot, remediation CAS/finalization audit, replay-incident recovery-intent audit, and receipt-lifecycle recovery-intent audit.
+- Added authenticated APIs for lifecycle attestation verification/audit, lifecycle recovery-intent audit/recovery, and cross-domain recovery-intent ledger integrity audit.
+- Kept evidence append-only. No receipt deletion, evidence deletion, or automatic compaction is performed.
+
+Configuration
+-------------
+- AGENTIC_REQUIRE_CROSS_DOMAIN_CAS_FINALIZATION_RECEIPT_LIFECYCLE_ATTESTATION=true
+- AGENTIC_CROSS_DOMAIN_CAS_FINALIZATION_RECEIPT_LIFECYCLE_ATTESTATION_MAX_AGE_MS=86400000
+- AGENTIC_CROSS_DOMAIN_CAS_FINALIZATION_RECEIPT_LIFECYCLE_ATTESTATION_FUTURE_SKEW_MS=60000
+- Lifecycle attestation reuses the configured remediation-finalization Ed25519 signer registry and trusted public-key registry. Private keys are not included in the source archive.
+
+Validation
+----------
+- Full cumulative test suite in the build tree: 1,182/1,182 passed (0 failures).
+- Batch 174 + 175 focused regressions: 15/15 passed.
+- Batch 175 regressions: 7/7 passed.
+- JavaScript/MJS/CJS syntax: 254/254 passed.
+- Relative imports: 493 checked, 0 missing.
+- Authenticated API route mapping: covered by regression tests.
+- Clean extraction: 441/441 files matched by SHA-256; 254/254 syntax checks passed; Batch 174–175 focused regressions passed 15/15.
+- A full-suite rerun from the extracted directory exceeded the 300-second runtime while progressing through Batch 169; no assertion failure was logged before timeout, so a clean-extraction full-suite pass is not claimed.
+
+Operational limitations
+-----------------------
+- If no lifecycle-attestation signer is configured and attestation is optional, lifecycle events are retained with attestation status unavailable; if attestation is required, initialization and event creation fail closed.
+- A valid historical signature is not automatically current after key rotation or revocation.
+- External anchor commits and local storage do not form one distributed atomic transaction. Recovery intents preserve the evidence needed to resume or block safely.
+- A recovered marker may remain history-unproven; the system does not infer pre-enrollment trust.
+- Recovery refuses to replay a missing lifecycle event automatically. It marks the intent recovery-required for explicit investigation.
+
+Repository
+----------
+- No GitHub commit was made.
+- This archive contains the complete cumulative source tree through Batch 175.

@@ -1,0 +1,47 @@
+Batch 131 — Migration Rollback Recovery, Runbook Trust-Key Rotation, and Retention Policy Change Audit
+
+Scope
+- Add a high-water checkpoint for the persistent provider-contract migration ledger. Validate the ledger against the checkpoint before trusting the active contract version.
+- Persist a hash-linked migration recovery journal around contract application. Recover a committed ledger whose journal finalization was interrupted; require an explicit digest-bound retry confirmation before replaying an approved but uncommitted migration.
+- Detect rollback to a previously valid migration-ledger revision when the local high-water checkpoint remains newer. Fail closed rather than automatically rewriting the ledger.
+- Add an owner-scoped runbook signing-key policy initialized from the deployment bootstrap trust configuration. Support Ed25519 key rotation only after the active key authorizes the transition and the new key proves possession of its private key.
+- Retire the previous runbook signing key without invalidating historical attestations issued during its authorized period. Resolve the signing key from the persisted policy rather than assuming the bootstrap key remains active.
+- Add a runbook key-policy high-water checkpoint so a locally valid but older key-policy snapshot is rejected after a rotation checkpoint has been persisted.
+- Add a versioned, hash-linked evidence-retention policy ledger. Retention changes require a digest-bound plan, explicit approval, expiry checks, optimistic revision checks, and a second validation at apply time.
+- Make retention changes prospective-only: existing retained artifacts keep their original retention duration and expiry; newly retained artifacts use the active policy revision.
+- Extend operator evidence event types and authenticated HTTP routes for migration recovery, runbook key rotation, and retention-policy plan/approve/apply/audit operations.
+
+Safety properties
+- Contract migration application is journaled and can be recovered without silently replaying an unapproved migration.
+- A completed migration journal is reconciled against the matching migration event and high-water checkpoint.
+- A missing or older migration ledger relative to a persisted checkpoint is reported as rollback or mismatch; automatic repair is prohibited.
+- Runbook key rotation requires both a valid signature from the current active key and a valid proof-of-possession signature from the proposed key. Challenges expire after ten minutes and are bound to the owner, policy revision, policy digest, old key ID, new key ID, and public key.
+- Historical runbook signatures remain valid after ordinary retirement only when their issuance time falls within the key's authorized interval. A policy rollback or invalid key policy blocks verification.
+- Retention-policy changes expire after 30 minutes for both plan and approval. A stale source revision cannot be applied. Existing artifact expiry timestamps are not rewritten by a policy change.
+- Migration journals are limited to 20 events; runbook key policy and retention policy histories are bounded to 500 revisions.
+- High-water checkpoints are local integrity controls, not independently operated external anchors. A coordinated rollback of the complete storage, including checkpoint records, is outside their guarantee.
+
+API additions
+- `recoverRecoverySloFinalizationAnchorContractMigration(ownerId, planId, input)`
+- `createRecoverySloRunbookTrustKeyTransitionChallenge(ownerId, input)`
+- `applyRecoverySloRunbookTrustKeyTransition(ownerId, challengeId, input)`
+- `auditRecoverySloRunbookTrustKeyPolicy(ownerId)`
+- `auditRecoverySloEvidenceRetentionPolicy(ownerId)`
+- `planRecoverySloEvidenceRetentionPolicyChange(ownerId, input)`
+- `approveRecoverySloEvidenceRetentionPolicyChange(ownerId, planId, input)`
+- `applyRecoverySloEvidenceRetentionPolicyChange(ownerId, approvalId, input)`
+
+Validation
+- Batch 131 regression tests: 11/11 PASS.
+- Full cumulative `npm test`: 886/886 PASS (revalidated after extraction before release).
+- JavaScript/MJS syntax validation, relative import resolution, ZIP integrity, and extracted-source revalidation are required before release.
+- No GitHub commit.
+
+Operational boundaries
+- High-water checkpoints are stored in the same local persistence domain as their ledgers. They detect partial or ledger-only rollback, but not a coordinated restoration of all local records.
+- Runbook key rotation changes the policy used by the application, but the external signer must route signing requests by the supplied `keyId` and retain the corresponding private key outside application storage.
+- This batch supports rotation and retirement; emergency revocation of a runbook key is not added here.
+- Retention-policy changes are prospective-only. Shortening the active duration does not retroactively shorten already-retained artifacts; pruning still depends on each artifact's immutable `expiresAt`.
+- HTTP route mapping and source tests are verified; live HTTP listener startup must still be tested in the target deployment environment.
+
+Next unfinished stage: Batch 132 — Recovery Journal External Anchoring, Runbook Key Revocation and Compromise Cutoff, and Retention Policy Rollback Detection.

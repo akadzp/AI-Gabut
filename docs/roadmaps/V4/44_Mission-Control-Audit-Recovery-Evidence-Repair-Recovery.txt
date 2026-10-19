@@ -1,0 +1,16 @@
+V4 Batch 49 — Mission Control Audit Recovery Evidence Repair Recovery
+
+Scope completed:
+- explicit owner-scoped recovery action for pending repair-evidence intent
+- reuse of bounded repair lifecycle without rerunning canonical repair
+- clear state is a read-only no-op
+- error state without durable pending intent remains fail-closed
+- preserved idempotency, observability, optimistic concurrency, and execution authority
+
+Validation:
+- Batch 49 dedicated regression tests: 3/3 PASS
+- Mission Control recovery-evidence regression set: PASS
+- JavaScript/MJS syntax validation: PASS
+- full npm test: PASS with 5 pre-existing baseline failures outside Batch 49
+
+Next unfinished stage: Batch 50.

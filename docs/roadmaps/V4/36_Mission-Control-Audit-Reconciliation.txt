@@ -1,0 +1,15 @@
+V4 Batch 38 — Mission Control Audit Reconciliation
+
+Scope:
+- owner-scoped read-only audit verification remains available
+- bounded audit reconciliation can persist integrity repair when required
+- reconciliation fails closed when bounded repair leaves remaining issues
+- optimistic storage version protects reconciliation from stale writes
+- application boundary exposes reconcileMissionControlAudit
+- reconciliation does not create operator control transitions or observability evidence
+
+Acceptance:
+- valid audit reconciliation is a no-op
+- malformed/duplicate/orphan control audit state is repaired and persisted when safely recoverable
+- unrecoverable state is rejected
+- version conflict is surfaced without overwriting newer mission state

@@ -1,0 +1,27 @@
+Agentic AI V4 — Batch 176 Release Notes
+
+Scope:
+- Added an independent external checkpoint for CAS-finalization receipt lifecycle attestation history.
+- Bound lifecycle recovery intents and lifecycle events to the attestation-checkpoint state observed before event append.
+- Added checkpoint status, reconciliation, enrollment, audit, marker-recovery inspection, and marker-recovery APIs.
+- Integrated cross-domain recovery-intent integrity, current lifecycle-attestation verification, and attestation checkpoint status into the cross-domain recovery decision gate.
+- Added attestation-checkpoint recovery records to the central recovery-intent ledger snapshot and CAS-finalization audit.
+
+Safety:
+- Required anchor configuration fails closed when no provider is configured.
+- Marker recovery accepts only a proven external anchor postcondition.
+- Missing-marker findings are recoverable only when they are the sole audit findings.
+- Pre-enrollment history remains unproven.
+- Evidence deletion and automatic compaction are not performed.
+
+Validation:
+- Batch 176 focused tests: 6/6 pass.
+- Batch 165–176 focused regression tests: 65/65 pass across bounded groups.
+- All 163 test files were executed in bounded groups: 1,188/1,188 tests pass, 0 failures.
+- An initial single-process cumulative run exceeded the runtime limit and had one transient Batch 104 lease-heartbeat failure under concurrent load; that test passed in isolation and in the bounded group rerun.
+- JavaScript/MJS/CJS syntax: 255/255 pass.
+- Relative import references: 496 checked, 0 missing.
+- ZIP integrity and source hash comparison after extraction: pass.
+- HTTP listener startup was not tested in this environment; route wiring and API surface checks passed.
+
+GitHub: no commit performed.

@@ -1,0 +1,30 @@
+Agentic AI V4 — Batch 242 Release Notes
+
+Title
+External Attestation for Batch 241 Lifecycle Finalization Receipts, Cross-Generation Receipt Continuity, and Independent Checkpoint Recovery
+
+Scope
+- Adds a signed external-attestation event for every Batch 241 lifecycle finalization receipt.
+- Binds receipt identity/digest/generation, finalization event, challenge/action, target/source attestation, source receipt, intent/action events, optional renewal replacement, lifecycle audit digest, checkpoint fingerprint, signing-key lifecycle binding, cutoff state, and predecessor attestation.
+- Verifies receipt-chain prefix digest and attestation predecessor continuity.
+- Enforces deterministic operation IDs and reuse only when current binding matches.
+- Verifies historical signatures, event binding digests, receipt-source binding, and key-cutoff fields.
+- Includes Batch 242 events in the independent finalization-receipt checkpoint snapshot.
+- Adds owner-scoped authenticated attest, audit, snapshot, and reconcile routes.
+- Integrates Batch 242 audit status into overall recovery-gate convergence.
+
+Recovery behavior
+- Empty Batch 241 receipt history remains not_initialized and does not fabricate attestations.
+- Unhealthy or incomplete source lifecycle receipts block attestation.
+- Missing external attestations and checkpoint lag yield recovery_required.
+- Invalid signatures, source binding, generation, or predecessor chain yield unhealthy.
+- A terminal source revocation remains decision_blocked.
+- Key-cutoff evidence is recorded and revalidation is bound to the current signing-key lifecycle.
+
+Validation
+- Focused regression suite: Batch 102 and Batches 223–242, 55/55 passing after extraction.
+- JavaScript syntax, relative imports, ZIP integrity, and extracted-source SHA-256 equality validated separately.
+- Full cumulative npm test is not claimed as passed.
+
+GitHub
+- No commit performed.

@@ -1,0 +1,28 @@
+Agentic AI V4 — Batch 244 Release Notes
+
+Title
+External Attestation for Batch 243 Lifecycle Finalization Receipts, Cross-Generation Receipt Continuity, and Independent Checkpoint Recovery
+
+Scope
+- Adds a signed external-attestation event for each Batch 243 lifecycle finalization receipt.
+- Binds receipt ID/digest/generation, lifecycle finalization event, challenge/action, target and source receipt references, intent/action event digests, replacement attestation, receipt-binding digest, source receipt-chain prefix, source checkpoint fingerprint, lifecycle audit digest, source/current signing-key lifecycle bindings, key-cutoff state, and predecessor attestation.
+- Enforces deterministic operation IDs, signed append-only storage, historical signature verification, monotonically increasing attestation generations, predecessor continuity, and receipt-chain binding checks.
+- Requires complete and current Batch 243 source receipt history before attestation. Missing attestations or non-current checkpoint evidence fail closed.
+- Includes Batch 244 events in the independent external checkpoint snapshot and overall recovery-gate convergence.
+- Adds owner-scoped authenticated attest/audit/snapshot/reconcile routes under the Batch 243 lifecycle root.
+
+Recovery behavior
+- Empty source history remains not_initialized and does not fabricate attestations.
+- Incomplete source receipt history, missing attestations, or stale checkpoint state yields recovery_required.
+- Invalid signatures, binding digests, receipt/finalization links, or predecessor continuity yield unhealthy.
+- Terminal source revocation remains decision_blocked.
+- Key-cutoff evidence is recorded and must be revalidated against the current signing-key lifecycle binding.
+
+Validation
+- Focused regression suite: Batch 102 and Batches 238–244, 27/27 passing after extraction.
+- JavaScript/MJS/CJS syntax and relative import validation are checked separately.
+- ZIP integrity and extracted-source SHA-256 equality are checked separately.
+- Full cumulative npm test is not claimed as passed unless it completes with a final passing summary.
+
+GitHub
+- No commit performed.

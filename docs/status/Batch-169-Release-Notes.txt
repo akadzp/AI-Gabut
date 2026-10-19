@@ -1,0 +1,38 @@
+Agentic AI V4 — Batch 169 Release Notes
+======================================
+
+Batch
+-----
+169 — Recovery-Intent Ledger Policy-Binding Receipt Verification, Retention Approval Lifecycle External Anchoring, and Cross-Ledger Drift Remediation Plan/Execution Guard.
+
+Implemented
+-----------
+- Added owner-scoped policy-binding verification receipts. Each receipt binds a checkpoint domain, external anchor digest/sequence, source digest/count, current and anchored policy digests, freshness, and the policy-binding approval-chain digest. Verification distinguishes historical integrity from current usability; checkpoint or policy changes make a receipt stale, while digest tampering is reported as unhealthy.
+- Added an independent external snapshot checkpoint for signed verification-receipt retention approval lifecycle records. The snapshot covers review challenges, approvals, revocation challenges, and revocations. Mutable challenge finalization fields are excluded from the immutable event snapshot; the original prepared challenge digest is used to preserve event identity. Enrollment is explicit and retains `historyNotProven` for pre-enrollment history.
+- Added one-event continuity proof before retention approval lifecycle checkpoint reconciliation. Policy drift, unhealthy source records, ambiguous continuity, stale markers, and CAS conflicts fail closed. Review/revocation/replacement APIs now report the lifecycle checkpoint result when that trust domain is configured.
+- Added cross-ledger drift remediation plans with a 10-minute expiry, immutable state fingerprint, exact allowed-action list, confirmation phrase, and no-delete/no-compaction guarantees. The execution guard re-audits the snapshot immediately before execution, permits only a whitelisted single-event checkpoint reconciliation with unique continuity proof, rejects stale plans, and records an idempotent execution receipt. Replay with a different action is rejected.
+- Extended the read-only cross-ledger consistency audit to include retention approval lifecycle checkpoint health and policy-binding verification receipt audit state.
+- Added authenticated application APIs and HTTP routes for policy-binding verification receipt create/verify/audit, retention approval lifecycle checkpoint status/enrollment/reconciliation/audit, and drift remediation plan/execute.
+- Added five focused regression tests covering policy receipt binding/tampering, external lifecycle anchoring, remediation plan staleness/replay, local-only fail-closed behavior, and API/route exposure.
+
+Validation
+----------
+- Batch 169 regression tests: 5/5 PASS.
+- Full cumulative `npm test`: 1146/1146 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax validation: PASS.
+- Relative import resolution: PASS, zero missing references.
+- ZIP integrity (`zip -T` and `unzip -t`): PASS.
+- Clean-extraction test and source hash comparison: PASS; no missing, extra, or content-different source files.
+- No GitHub commit was made.
+
+Operational boundaries
+----------------------
+- Policy-binding verification receipts are digest-bound retained evidence, not digital signatures. A storage attacker able to rewrite both the record and digest requires protection from an independent anchor or signer.
+- Explicit external checkpoint enrollment marks pre-enrollment history as unproven. Policy-binding receipts remain historical-only until the checkpoint is both fresh and history-proven.
+- Retention lifecycle checkpoint is a separate trust domain and must use an independent provider/endpoint. Provider CAS, durability, and infrastructure independence remain deployment responsibilities.
+- Drift remediation only reconciles one event with unique continuity proof. It does not auto-accept policy drift, delete evidence, or compact ledgers. The plan fingerprint is rechecked before execution.
+- HTTP listener startup was not smoke-tested because the `express` runtime package is unavailable in the validation environment. Syntax, application-level tests, API/route wiring, and archive integrity were verified.
+
+Next unfinished stage
+---------------------
+Batch 170 — Remediation-Execution Receipt External Anchoring, Policy-Binding Receipt Lifecycle/Revocation, and Cross-Ledger Remediation Crash-Recovery.

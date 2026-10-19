@@ -1,0 +1,12 @@
+Batch 207 — Lifecycle-Checkpoint Drift Monitoring, Revocation-Recovery Receipt Continuity, and Cross-Generation Closure Revalidation
+
+Implemented:
+- Scope-bound lifecycle checkpoint drift observations persisted as signed append-only proof-continuity events.
+- Idempotent drift observation and retention of subsequent generations after a prior incident has been finalized.
+- Drift resolution gated on current proof and lifecycle checkpoints; finalization receipt is required before evidence is considered resolved.
+- Automatic signed revocation-recovery receipt finalization, anchored by the general proof-continuity checkpoint.
+- Retry reconciliation reuses an existing receipt after an interrupted external checkpoint write.
+- Monotonic lifecycle generation advancement across renewal operations and cross-generation closure revalidation.
+- API routes for lifecycle drift monitor/audit/reconcile, revocation receipt finalization, and closure revalidation.
+
+Validation: 4/4 focused Batch 207 tests passed individually. Targeted Batch 205 and Batch 206 revocation/recovery regressions passed. Full cumulative npm test and direct HTTP startup are not claimed. No GitHub commit.

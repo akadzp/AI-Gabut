@@ -1,0 +1,15 @@
+Batch 250 — External Attestation for Batch 249 Lifecycle Finalization Receipts, Cross-Generation Receipt Continuity, and Independent Checkpoint Recovery
+
+Implement signed external attestations for Batch 249 lifecycle finalization receipts. Bind each attestation to the source receipt, lifecycle finalization event, challenge/action lineage, receipt-chain prefix, source checkpoint, lifecycle audit digest, signing-key lifecycle binding, and predecessor attestation. Enforce monotonic generations, deterministic replay-safe operation IDs, key-cutoff tracking, independent checkpoint coverage, and overall recovery-gate convergence.
+
+Validation requirements:
+- Empty-history audit/snapshot/reconcile remain read-only and cannot fabricate attestations.
+- Source Batch 249 lifecycle receipts must be complete and current before attestation.
+- Every attestation binds to a valid finalization receipt and finalization event.
+- Historical signatures, binding digests, predecessor continuity, and generation order are verified.
+- Missing attestations and stale checkpoints require recovery; invalid signatures or bindings fail closed.
+- Application APIs and authenticated owner-scoped HTTP routes are registered.
+- Independent checkpoint snapshots include Batch 250 events.
+- ZIP integrity, syntax/imports, and clean-extraction equivalence are verified.
+
+Do not claim full cumulative npm test or positive end-to-end success unless the full run completes and produces a final summary. No GitHub commit.

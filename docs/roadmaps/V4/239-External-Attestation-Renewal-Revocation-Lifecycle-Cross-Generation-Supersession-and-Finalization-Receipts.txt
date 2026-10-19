@@ -1,0 +1,26 @@
+Batch 239 — External-Attestation Renewal/Revocation Lifecycle for Batch 238 Attestations
+
+Scope
+- Add a challenge-bound, signed append-only lifecycle for Batch 238 external attestations.
+- Support renewal and terminal revocation with monotonic lifecycle generations.
+- Bind every lifecycle phase to the active attestation, its Batch 237 finalization receipt, a reason digest, and signing-key lifecycle evidence.
+- For renewal, create a replacement lifecycle attestation and a signed predecessor-to-replacement supersession event.
+- Finalize each operation and create exactly one signed finalization receipt per finalized lifecycle generation.
+- Bind receipts to lifecycle finalization/action events, source receipt, lifecycle audit digest, checkpoint fingerprint, signing-key binding, and predecessor receipt.
+- Reconcile incomplete phase sequences and missing finalization receipts using deterministic operation IDs.
+- Include Batch 239 lifecycle and receipt events in the independent external-attestation checkpoint snapshot and overall recovery-gate convergence.
+- Expose authenticated prepare/apply/audit/snapshot/reconcile endpoints.
+
+Safety invariants
+- No lifecycle mutation without a current, audited Batch 238 source attestation and current required checkpoint.
+- A challenge is owner-bound, digest-checked, expiring, confirmation-bound, and tied to a ledger head snapshot.
+- Renewal must supersede the exact current target; replay with a different binding conflicts.
+- Finalized revocation is terminal; descendant lifecycle events are unhealthy and cannot restore the revoked attestation.
+- A finalized operation with a missing receipt remains recovery-required until the receipt is reconstructed.
+- Receipt predecessor gaps, orphan receipts, duplicate receipts, invalid signatures, or binding digest mismatches fail closed.
+- Checkpoint freshness is required for current-decision status; local event persistence alone is insufficient.
+- No GitHub commit is part of this stage.
+
+Validation
+- Focused regression tests cover empty-history behavior, fail-closed source preconditions, API registration, checkpoint snapshot coverage, and recovery-gate integration.
+- Positive end-to-end lifecycle execution against a fully bootstrapped historical Batch 238 receipt/attestation chain remains a separate integration-validation requirement.

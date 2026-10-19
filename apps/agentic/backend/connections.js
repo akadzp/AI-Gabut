@@ -1,195 +1,101 @@
 import { AgenticError } from "./errors.js";
-import { createId } from "./ids.js";
+import { createId, assertId } from "./ids.js";
 
-export const CONNECTION_STATES = Object.freeze([
-  "created",
-  "authenticating",
-  "active",
-  "expired",
-  "requires_reauth",
-  "revoked",
-  "disconnected"
-]);
+const now = () => new Date().toISOString();
+const clean = (value, max = 160) => String(value ?? "").trim().slice(0, max);
+const publicConnection = record => {
+  if (!record) return null;
+  const { credential, secret, token, _storage, ...safe } = record;
+  return { ...safe, credentialRef: record.credentialRef ? { ...record.credentialRef } : null };
+};
 
-const TRANSITIONS = Object.freeze({
-  created: new Set(["authenticating", "active", "revoked", "disconnected"]),
-  authenticating: new Set(["active", "expired", "requires_reauth", "revoked", "disconnected"]),
-  active: new Set(["expired", "requires_reauth", "revoked", "disconnected", "active"]),
-  expired: new Set(["authenticating", "active", "revoked", "disconnected"]),
-  requires_reauth: new Set(["authenticating", "active", "revoked", "disconnected"]),
-  revoked: new Set([]),
-  disconnected: new Set(["authenticating", "active"])
-});
-
-function now() {
-  return new Date().toISOString();
-}
-
-function publicConnection(c) {
-  return {
-    id: c.id,
-    provider: c.provider,
-    name: c.name,
-    account: c.account || null,
-    status: c.status,
-    credentialRef: c.credentialRef || { type: "provider-credential", id: c.id },
-    capabilities: Array.isArray(c.capabilities) ? c.capabilities : [],
-    health: c.health || null,
-    createdAt: c.createdAt,
-    updatedAt: c.updatedAt,
-    lastValidatedAt: c.lastValidatedAt || null
-  };
-}
-
-function requireProvider(provider) {
-  const value = String(provider || "").trim();
-  if (!value) throw new AgenticError("INVALID_CONNECTION_PROVIDER", "Connection provider wajib diisi");
-  return value;
-}
-
-export function createConnectionService({ store, providers = {} } = {}) {
-  const registry = new Map(Object.entries(providers));
-
-  function registerProvider(provider, adapter) {
-    const id = requireProvider(provider);
-    if (!adapter || typeof adapter !== "object") {
-      throw new AgenticError("INVALID_CONNECTION_PROVIDER", `Adapter provider ${id} tidak valid`);
-    }
-    registry.set(id, Object.freeze({ ...adapter }));
-    return id;
+export function createConnectionService({ store } = {}) {
+  if (!store?.putConnection || !store?.getConnection || !store?.listConnections) throw new TypeError("Connection service membutuhkan connection store contract");
+  const providers = new Map();
+  function registerProvider(name, provider) {
+    const key = clean(name, 80).toLowerCase();
+    if (!key || !provider || typeof provider !== "object") throw new TypeError("Provider koneksi tidak valid");
+    providers.set(key, provider);
+    return () => providers.delete(key);
   }
-
-  async function get(ownerId, id) {
-    const c = await store.getConnection(ownerId, id);
-    if (!c) throw new AgenticError("CONNECTION_NOT_FOUND", "Connection tidak ditemukan", 404);
-    return publicConnection(c);
-  }
-
-  async function list(ownerId) {
-    return (await store.listConnections(ownerId)).map(publicConnection);
-  }
-
   async function raw(ownerId, id) {
-    const c = await store.getConnection(ownerId, id);
-    if (!c) throw new AgenticError("CONNECTION_NOT_FOUND", "Connection tidak ditemukan", 404);
-    return c;
+    assertId(ownerId, "ownerId"); assertId(id, "connectionId");
+    const connection = await store.getConnection(ownerId, id);
+    return connection?.ownerId === ownerId ? connection : null;
   }
-
+  async function get(ownerId, id) {
+    const connection = await raw(ownerId, id);
+    if (!connection) throw new AgenticError("CONNECTION_NOT_FOUND", "Koneksi tidak ditemukan", 404);
+    return publicConnection(connection);
+  }
+  async function list(ownerId) {
+    return (await store.listConnections(ownerId)).filter(item => item.ownerId === ownerId)
+      .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))).map(publicConnection);
+  }
   async function create(ownerId, input = {}) {
-    const provider = requireProvider(input.provider);
-    const status = input.status || "created";
-    if (!CONNECTION_STATES.includes(status)) {
-      throw new AgenticError("INVALID_CONNECTION_STATUS", `Status connection tidak dikenal: ${status}`);
-    }
+    assertId(ownerId, "ownerId");
+    const provider = clean(input.provider, 80).toLowerCase();
+    const name = clean(input.name || provider, 120);
+    if (!/^[a-z][a-z0-9_-]{0,79}$/.test(provider)) throw new AgenticError("INVALID_CONNECTION_PROVIDER", "Provider koneksi tidak valid", 400);
+    if (!name) throw new AgenticError("INVALID_CONNECTION_NAME", "Nama koneksi wajib diisi", 400);
     const timestamp = now();
-    const connectionId = input.id || createId("conn");
-    const c = {
-      id: connectionId,
-      provider,
-      name: String(input.name || provider).trim().slice(0, 120) || provider,
-      account: input.account || null,
-      credential: input.credential,
-      credentialRef: input.credentialRef || { type: "provider-credential", id: connectionId },
-      capabilities: Array.isArray(input.capabilities) ? [...input.capabilities] : [],
-      health: input.health || null,
-      status,
-      createdAt: input.createdAt || timestamp,
-      updatedAt: timestamp,
-      lastValidatedAt: input.lastValidatedAt || null
+    const record = {
+      id: input.id || createId("connection"), ownerId, provider, name,
+      account: input.account && typeof input.account === "object" ? {
+        login: clean(input.account.login, 160) || null,
+        id: input.account.id == null ? null : String(input.account.id).slice(0, 120),
+        avatarUrl: clean(input.account.avatarUrl, 2000) || null
+      } : null,
+      credentialRef: input.credentialRef && typeof input.credentialRef === "object" ? { ...input.credentialRef } : null,
+      status: ["active", "inactive", "disconnected", "revoked"].includes(input.status) ? input.status : "inactive",
+      health: null, createdAt: timestamp, updatedAt: timestamp, disconnectedAt: null, revokedAt: null
     };
-    await store.putConnection(ownerId, c);
-    return publicConnection(c);
+    await store.putConnection(ownerId, record, { overwrite: false });
+    return publicConnection(record);
   }
-
-  async function transition(ownerId, id, status, patch = {}) {
-    if (!CONNECTION_STATES.includes(status)) {
-      throw new AgenticError("INVALID_CONNECTION_STATUS", `Status connection tidak dikenal: ${status}`);
-    }
-    const current = await raw(ownerId, id);
-    if (current.status !== status && !TRANSITIONS[current.status]?.has(status)) {
-      throw new AgenticError(
-        "INVALID_CONNECTION_TRANSITION",
-        `Tidak dapat mengubah connection dari ${current.status} ke ${status}`,
-        409,
-        { from: current.status, to: status }
-      );
-    }
-    const updated = { ...current, ...patch, id: current.id, provider: current.provider, status, updatedAt: now() };
-    await store.putConnection(ownerId, updated, { overwrite: true });
+  async function validate(ownerId, id) {
+    const connection = await raw(ownerId, id);
+    if (!connection) throw new AgenticError("CONNECTION_NOT_FOUND", "Koneksi tidak ditemukan", 404);
+    if (["revoked", "disconnected"].includes(connection.status)) throw new AgenticError("CONNECTION_INACTIVE", "Koneksi tidak aktif; hubungkan kembali terlebih dahulu", 409);
+    const provider = providers.get(connection.provider);
+    if (typeof provider?.validate !== "function") throw new AgenticError("CONNECTION_VALIDATION_UNSUPPORTED", "Provider tidak menyediakan validasi koneksi", 501);
+    const result = await provider.validate(ownerId, { connection: publicConnection(connection) });
+    const updated = { ...connection, ...(result?.patch || {}), status: result?.status || "active", validatedAt: now(), updatedAt: now() };
+    await store.putConnection(ownerId, updated, { overwrite: true, expectedVersion: connection._storage?.version });
     return publicConnection(updated);
   }
-
-  async function validate(ownerId, id) {
-    const current = await raw(ownerId, id);
-    const adapter = registry.get(current.provider);
-    if (typeof adapter?.validate !== "function") {
-      throw new AgenticError("CONNECTION_VALIDATION_UNSUPPORTED", `Provider ${current.provider} belum menyediakan validation`, 409);
-    }
-    try {
-      const result = await adapter.validate({ ownerId, connection: current });
-      const status = result?.status || "active";
-      const updated = {
-        ...current,
-        ...(result?.patch || {}),
-        status,
-        lastValidatedAt: now(),
-        updatedAt: now()
-      };
-      await store.putConnection(ownerId, updated, { overwrite: true });
-      return publicConnection(updated);
-    } catch (error) {
-      if (error instanceof AgenticError && [401, 403].includes(error.status)) {
-        const updated = { ...current, status: "requires_reauth", lastValidatedAt: now(), updatedAt: now() };
-        await store.putConnection(ownerId, updated, { overwrite: true });
-        throw error;
-      }
-      throw error;
-    }
-  }
-
   async function health(ownerId, id) {
-    const current = await raw(ownerId, id);
-    const adapter = registry.get(current.provider);
-    if (typeof adapter?.health !== "function") {
-      throw new AgenticError("CONNECTION_HEALTH_UNSUPPORTED", `Provider ${current.provider} belum menyediakan health check`, 409);
-    }
-    const result = await adapter.health({ ownerId, connection: current });
-    const healthState = result?.health || { status: "unknown", checkedAt: now() };
-    const updated = { ...current, health: healthState, updatedAt: now() };
-    await store.putConnection(ownerId, updated, { overwrite: true });
-    return healthState;
+    const connection = await raw(ownerId, id);
+    if (!connection) throw new AgenticError("CONNECTION_NOT_FOUND", "Koneksi tidak ditemukan", 404);
+    const provider = providers.get(connection.provider);
+    if (typeof provider?.health !== "function") return { status: "unknown", checkedAt: now(), reason: "Provider tidak menyediakan health check" };
+    const result = await provider.health(ownerId, { connection: publicConnection(connection), credential: null });
+    const health = result?.health || result || { status: "unknown" };
+    const updated = { ...connection, health, healthCheckedAt: now(), updatedAt: now() };
+    await store.putConnection(ownerId, updated, { overwrite: true, expectedVersion: connection._storage?.version });
+    return health;
   }
-
   async function disconnect(ownerId, id) {
-    const current = await raw(ownerId, id);
-    const adapter = registry.get(current.provider);
-    if (typeof adapter?.disconnect === "function") {
-      await adapter.disconnect({ ownerId, connection: current });
-    }
-    return transition(ownerId, id, "disconnected");
+    const connection = await raw(ownerId, id);
+    if (!connection) throw new AgenticError("CONNECTION_NOT_FOUND", "Koneksi tidak ditemukan", 404);
+    if (connection.status === "revoked") return publicConnection(connection);
+    const updated = { ...connection, status: "disconnected", disconnectedAt: now(), updatedAt: now() };
+    await store.putConnection(ownerId, updated, { overwrite: true, expectedVersion: connection._storage?.version });
+    return publicConnection(updated);
   }
-
   async function revoke(ownerId, id) {
-    const current = await raw(ownerId, id);
-    const adapter = registry.get(current.provider);
-    if (typeof adapter?.revoke === "function") {
-      await adapter.revoke({ ownerId, connection: current });
+    const connection = await raw(ownerId, id);
+    if (!connection) throw new AgenticError("CONNECTION_NOT_FOUND", "Koneksi tidak ditemukan", 404);
+    const provider = providers.get(connection.provider);
+    if (typeof provider?.revoke === "function") await provider.revoke(ownerId, id);
+    else if (store.listConnectionCredentials && store.putConnectionCredential) {
+      for (const credential of (await store.listConnectionCredentials(ownerId)).filter(item => item.connectionId === id && !item.revokedAt)) {
+        await store.putConnectionCredential(ownerId, { ...credential, ciphertext: "", revokedAt: now(), updatedAt: now() }, { overwrite: true, expectedVersion: credential._storage?.version });
+      }
     }
-    return transition(ownerId, id, "revoked");
+    const updated = { ...connection, credentialRef: null, status: "revoked", revokedAt: now(), updatedAt: now() };
+    await store.putConnection(ownerId, updated, { overwrite: true, expectedVersion: connection._storage?.version });
+    return publicConnection(updated);
   }
-
-  return Object.freeze({
-    states: CONNECTION_STATES,
-    registerProvider,
-    create,
-    get,
-    list,
-    validate,
-    health,
-    disconnect,
-    revoke,
-    transition,
-    publicConnection,
-    raw
-  });
+  return Object.freeze({ registerProvider, raw, get, list, create, validate, health, disconnect, revoke });
 }

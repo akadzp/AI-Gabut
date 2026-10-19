@@ -1,0 +1,11 @@
+Agentic AI V4 — Batch 238 Release Notes
+
+Scope: external attestation for Batch 237 lifecycle finalization receipts; receipt-prefix continuity; signed predecessor chain; signing-key cutoff handling; independent checkpoint replay/reconciliation; recovery-gate convergence.
+
+New event: proof_continuity_finalization_receipt_binding_attestation_lifecycle_external_finalization_receipt_attestation_attested
+
+New routes: POST /external-attestations/attest, GET /external-attestations/audit, GET /external-attestations/snapshot, POST /external-attestations/reconcile (nested beneath the Batch 237 finalization-receipt root).
+
+GitHub commit: none.
+
+Validation: 47 focused regression tests passed across Batch 102 and Batches 223–238. JavaScript/MJS/CJS syntax checks passed for 330 files; 628 relative import references resolved with no missing targets. ZIP integrity and post-extraction SHA-256 equality passed for all 635 files. The full cumulative `npm test` run did not complete within the execution limit; it reached 1,129 subtests without a recorded `not ok` before timeout. Positive end-to-end lifecycle generation for Batch 238 remains unverified.

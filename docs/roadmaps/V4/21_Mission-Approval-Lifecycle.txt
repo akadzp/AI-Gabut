@@ -1,0 +1,21 @@
+V4 Batch 21 — Mission Approval Lifecycle & Resume Integration
+
+Objective:
+- Make waiting_approval a resumable mission state instead of a dead-end scheduler state.
+- Persist the human decision and safely reopen the stage execution journal on approval.
+- Keep rejection bounded: reject the current stage and do not advance the mission.
+
+Delivered:
+- mission-approval service
+- owner-scoped mission approval persistence
+- scheduler approval metadata persistence
+- approval grant -> scheduled/pending stage + journal reopen
+- approval rejection -> failed current stage, no stage advancement
+- application approveMission/rejectMission/list/get entry points
+- dedicated approval lifecycle tests
+
+Authority:
+- Only an explicit application approval/rejection action changes a waiting_approval mission.
+- Approval does not execute Work itself.
+- Approval grant only makes the same current stage eligible for a later scheduler execution.
+- Approval rejection never advances currentStageIndex.

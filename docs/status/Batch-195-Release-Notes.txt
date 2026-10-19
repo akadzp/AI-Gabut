@@ -1,0 +1,23 @@
+Agentic AI V4 — Batch 195 Release Notes
+
+Scope:
+- Explicit quarantine/mark-unrecoverable disposition for persisted marker-journal lifecycle recovery intents that cannot safely resume.
+- Signed append-only disposition and finalization receipt events on the existing recovery-receipt ledger.
+- Deterministic operation IDs keyed to the original lifecycle challenge to prevent competing disposition receipts.
+- Independent read-only continuity audit for intent -> lifecycle event -> finalization receipt sequence, event signatures, sequence ordering, duplicate operations, orphaned records, and key-cutoff drift.
+- CAS-safe retry after local disposition event persistence or external checkpoint response failure.
+- Disposition never restores current-decision eligibility; closure remains stale/unusable until a separate valid lifecycle path resolves the evidence.
+- Owner-scoped API routes for disposition prepare/apply and finalization-continuity audit.
+
+Validation:
+- Batch 195 focused regression tests: 7/7 PASS.
+- Batch 193–194 regression tests after the change: 16/16 PASS.
+- JavaScript syntax and relative import checks run on the cumulative archive.
+- ZIP integrity and extracted-source SHA-256 equality checked before delivery.
+
+Operational limits:
+- Recovery-receipt external checkpoint and local ledger are not a single distributed transaction; recovery uses durable events, deterministic operation IDs, CAS, and reconciliation.
+- Disposition is an explicit operational record, not proof that the underlying lifecycle evidence is usable for a current decision.
+- HTTP listener startup requires the project's Express dependency to be installed in the deployment environment.
+
+No GitHub commit was performed.

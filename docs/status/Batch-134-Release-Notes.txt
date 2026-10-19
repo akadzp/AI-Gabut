@@ -1,0 +1,42 @@
+Agentic AI V4 — Batch 134 Release Notes
+
+Stage: External Retention-Checkpoint Continuity Receipts, Provider Conformance Evidence Retention, and Cross-Domain Anchor Independence Audit
+
+New application APIs:
+- createRecoverySloRetentionCheckpointContinuityReceipt(ownerId)
+- verifyRecoverySloRetentionCheckpointContinuityReceipt(ownerId, receipt)
+- listRecoverySloRetainedAnchorEvidence(ownerId, options)
+- auditRecoverySloRetainedAnchorEvidence(ownerId)
+- pruneExpiredRecoverySloRetainedAnchorEvidence(ownerId, options)
+- auditRecoverySloAnchorTrustDomainIndependence(ownerId)
+
+New HTTP routes (under `/api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor/slo/finalization-keys/anchor`):
+- POST `/recovery-evidence-retention/continuity-receipts`
+- POST `/recovery-evidence-retention/continuity-receipts/verify`
+- GET `/recovery-evidence-retention/retained-anchor-evidence`
+- GET `/recovery-evidence-retention/retained-anchor-evidence/audit`
+- POST `/recovery-evidence-retention/retained-anchor-evidence/prune`
+- GET `/trust-domain-independence`
+
+Configuration:
+- `recoverySloRetentionContinuitySigner`
+- `recoverySloRetentionContinuityKeyId`
+- `recoverySloRetentionContinuityPublicKeys`
+- `requireRecoverySloRetentionSignedContinuityReceipt` or `AGENTIC_REQUIRE_RETENTION_SIGNED_CONTINUITY_RECEIPT=true`
+- `recoverySloAnchorEvidenceRetentionDays` (default 90, range 1–3650)
+
+Security notes:
+- Continuity receipts use Ed25519 signatures and trusted public keys. Receipt signature validity and current checkpoint binding are reported separately.
+- Completed recovery-journal provider conformance reports are retained automatically. Retained payloads are digest-checked and expire into tombstones that preserve the original payload digest and expiration metadata.
+- Retention evidence is bounded at 500 active / 2000 total records per owner; pruning is bounded at 100 records per operation and fails closed if audit detects tampering.
+- Cross-domain audit detects same provider instances and shared stable backend/endpoint identity fingerprints. Missing or opaque provider identities degrade the result; duplicate identities make it unhealthy. This audit does not cryptographically prove independent administration of backing infrastructure.
+- HTTP external anchor providers expose only a non-secret `providerIdentity` value for audit purposes; bearer tokens are never included in audit output.
+
+Validation:
+- Batch 134 tests: 12/12 PASS.
+- Full cumulative `npm test`: 924/924 PASS on final successful run.
+- JavaScript/MJS syntax: 179/179 PASS.
+- ZIP integrity and extracted-source validation: PASS.
+- No GitHub commit was made.
+
+Next unfinished stage: Batch 135 — Cross-Domain Independence Attestation, Retention Evidence Chain Anchoring, and Provider Identity Drift Monitoring.

@@ -1,0 +1,36 @@
+Agentic AI V4 — Batch 142 Release Notes
+
+Stage
+-----
+Root-Recovery Trust Anchor Provider Conformance, Freshness Enforcement at Decision Boundaries, and Drift-Retention Chain Reconciliation
+
+Changes
+-------
+- Added a challenge-bound root-recovery trust anchor provider conformance probe. It checks the declared 1.1.0 contract, disposable namespace isolation, genesis CAS, read-after-write consistency, stale-CAS rejection without mutation, monotonic revision/sequence, sequence-skip rejection, owner binding, and concurrent single-winner CAS. Reports are digest-bound, retained as owner-scoped evidence, auditable, and idempotent on completed challenge replay.
+- Added explicit retention-evidence validation for the new root-recovery trust anchor conformance artifact type. Evidence records are bound to the report digest and challenge digest; invalid bindings block audit/pruning.
+- Added `requireRecoverySloRetentionReconciliationAttestationForDecision`. This decision-boundary API allows use only when the attestation signature, historical retention, optional expected snapshot digest, and freshness all verify. Stale, future-dated, unretained, or mismatched attestations are rejected with a typed 409 error. Historical verification remains separate from current-decision usability.
+- Added provider conformance drift-retention chain audit/reconciliation. It validates retained drift-event payloads and tombstones before attempting chain advancement, refuses reconciliation when records or the chain ledger show integrity conflicts, advances only through the existing CAS-backed retained-evidence chain reconciler, then runs post-checks on the chain and drift audit.
+- Added authenticated HTTP routes for root-trust anchor conformance, attestation decision checks, and drift-retention chain audit/reconciliation.
+
+Configuration
+-------------
+- The root-trust conformance probe uses the already configured `AGENTIC_ROOT_RECOVERY_TRUST_ANCHOR_URL` / token provider and writes only to a disposable namespace. It does not touch the production root-trust namespace by design.
+- The decision-boundary gate uses the existing retention reconciliation signer/public-key configuration and the configured maximum-age/future-skew policy.
+- Drift-retention chain reconciliation uses the existing retained-evidence chain provider and never accepts a drift baseline or changes trust policy.
+
+Validation
+----------
+- Batch 142 regression tests: 6/6 PASS.
+- Full cumulative `npm test`: 982/982 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax, relative import resolution, ZIP integrity, and extracted-source revalidation: PASS.
+- GitHub commit: none.
+
+Operational boundaries
+----------------------
+- Conformance probe records can remain in the provider's disposable namespace if the provider has no delete API.
+- Conformance proves observed CAS behavior only; it does not prove independent administration or hidden infrastructure separation.
+- Decision-boundary freshness is enforced when callers use the new explicit `require...ForDecision` API. Existing read-only verification remains available for historical inspection; callers must not substitute signature validity alone for current-decision usability.
+- Drift chain reconciliation can advance a provably behind external chain anchor only after validating retained drift records and the local chain. It does not rewrite local evidence, repair a corrupted ledger, or bypass rollback/mismatch findings.
+- HTTP listener startup was not exercised in this isolated environment; source syntax, imports, API exports, route mapping, tests, and archive integrity were validated.
+
+Next unfinished stage: Batch 143 — Root-Trust Conformance Baseline Attestation, Decision-Gate Audit Evidence, and Drift-Chain Checkpoint Continuity.

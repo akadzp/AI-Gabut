@@ -1,0 +1,27 @@
+Batch 157 — Attestation Key-Rotation/Revocation Handling, Manifest-Approval Supersession Ledger Anchoring, and Cross-Process Revalidation Lease/Recovery
+
+- Added owner-scoped, digest-chained attestation signing-key lifecycle events with ten-minute, confirmation-bound rotation/revocation challenges. Rotation switches the active signer for that owner; retired keys remain available for historical signature verification but cannot authorize current decisions. Revoked keys have a lifecycle-sequence cutoff. Legacy attestations without a lifecycle sequence are not treated as proven pre-revocation evidence.
+- Added an append-only supersession event ledger for provider-baseline receipt manifest approvals. Events bind approval/manifest digests and the exact source-state digest, are idempotent for the same source state, and are audited for sequence, previous-event linkage, challenge/source linkage, and tampering.
+- Added an independent external snapshot checkpoint for the combined manifest-approval supersession/revocation ledger. Enrollment is explicit; reconciliation advances only one provable ledger event at a time. The new trust domain is included in checkpoint policy-binding audit coverage and startup rejects provider-object or endpoint reuse across trust domains.
+- Added durable revalidation leases using atomic evidence mutation, expiry, heartbeat renewal, monotonic fencing tokens, stale-worker rejection, explicit expired-lease recovery, and tamper-evident lease event chains. The retention revalidation fingerprint excludes this control-plane lease record so acquiring/releasing a lease does not invalidate a valid decision cache entry.
+- Added authenticated HTTP routes and application APIs for key lifecycle, manifest-ledger checkpoint status/enrollment/reconciliation/audit, explicit supersession recording, and revalidation-lease audit/recovery.
+
+Validation:
+- Batch 157 regression tests: 4/4 PASS.
+- Full cumulative npm test: 1092/1092 PASS, exit code 0.
+- Full cumulative npm test before and after clean extraction: 1092/1092 PASS, exit code 0.
+- JavaScript/MJS/CJS syntax: 236/236 PASS.
+- Relative import references: 428 checked, 0 missing.
+- ZIP integrity (`zip -T`, `unzip -t`): PASS; source tree before/after extraction is byte-for-byte equivalent.
+- Archive contains 395 files and 413 ZIP entries.
+- No GitHub commit was made.
+
+Operational boundaries:
+- Key lifecycle transitions are owner-scoped because the attestation service is owner-scoped. Deployments needing globally revoked signing keys must enforce the same revocation in their external signer/key-management system as well; this local lifecycle ledger is not a substitute for HSM/KMS revocation.
+- Historical verification requires retaining the corresponding trusted public key. A key removed from the public-key registry can no longer verify its old signatures.
+- External ledger anchoring requires a distinct provider endpoint. First-time history must be enrolled explicitly and remains marked as unproven for its pre-enrollment period.
+- Cross-process leases require a shared store that implements atomic `mutateEvidence`; unsupported stores fail closed. Lease expiry and fencing prevent a stale worker from publishing its result after recovery.
+- Manifest supersession/revocation anchoring does not execute compaction or delete evidence.
+- HTTP listener startup remains unverified; syntax, API exposure, route mapping, regression tests, and archive integrity are checked separately.
+
+At completion of Batch 157, next unfinished stage: Batch 158 — Key-Lifecycle External Checkpointing, Manifest-Ledger Freshness/Retention Audit, and Revalidation Lease Contention/Crash-Recovery Hardening.

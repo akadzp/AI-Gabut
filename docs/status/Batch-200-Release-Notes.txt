@@ -1,0 +1,19 @@
+Agentic AI V4 — Batch 200 Release Notes
+
+Scope:
+- Independent external checkpoint for rollback-revalidation lifecycle events.
+- Lifecycle-only projection and provider/endpoint independence enforcement.
+- Drift-triggered, fail-closed reconciliation for pending lifecycle operations.
+- Crash recovery after lifecycle intent commit and after finalization receipt persistence.
+- Closure decision-gate enforcement based on independent lifecycle checkpoint currentness.
+- Checkpoint status, audit, enrollment, reconciliation, and lifecycle recovery HTTP routes.
+
+Validation:
+- Batch 200 focused regression tests: 6/6 PASS.
+- Batch 190–200 focused regression tests: 80/80 PASS across separate batch-file runs.
+- JavaScript/MJS/CJS syntax and relative-import resolution: see validated source archive checks.
+- ZIP integrity and post-extraction checks: PASS.
+- Full cumulative npm test and direct HTTP listener startup are not claimed as verified in this run.
+- No GitHub commit was made.
+
+Next unfinished stage: Batch 201.

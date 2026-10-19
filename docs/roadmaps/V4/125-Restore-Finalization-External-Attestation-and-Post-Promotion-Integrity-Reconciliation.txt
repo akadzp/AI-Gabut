@@ -1,0 +1,50 @@
+Agentic AI V4 — Batch 125
+Restore Finalization External Attestation and Post-Promotion Integrity Reconciliation
+
+Objective
+- Bind restore finalization receipts to a verifiable Ed25519 signature from an externally managed signer.
+- Verify signatures only against explicitly configured trusted public keys.
+- Reconcile finalization receipts, promotion journals, quarantine evidence, and current post-promotion SLO state.
+- Preserve legitimate evolution of mutable SLO ledgers while validating them through their domain-specific audits.
+- Fail closed when a receipt signature, active immutable evidence, promotion binding, or domain audit is invalid.
+
+Implementation
+- Added finalization receipt digest and an attestation payload with a domain separator, owner, promotion journal identity/digest, active-set digest, count, timestamp, and key ID.
+- Added an injectable external Ed25519 signing callback and trusted public-key registry.
+- Signed receipts are verified at creation and again when read, audited, or used by the SLO visibility gate.
+- Added explicit integrity-only receipts for compatibility when external signing is not configured; strict mode requires a signer and matching trusted public key.
+- Preserved compatibility for legacy receipts only when strict attestation is disabled.
+- Added read-only finalization attestation verification and post-promotion reconciliation APIs.
+- Reconciliation checks immutable active evidence against the receipt and invokes SLO domain audits for mutable policy, alert, evaluation, and archive-index state.
+- Updated promotion integrity checks to detect immutable active evidence drift while permitting legitimate SLO ledger evolution.
+- Added HTTP routes for finalization attestation verification and post-promotion reconciliation.
+
+Configuration
+- recoverySloFinalizationSigner: async callback accepting the canonical attestation payload and returning a base64url Ed25519 signature.
+- recoverySloFinalizationKeyId: stable identifier of the signing key.
+- recoverySloFinalizationPublicKeys: map/object of trusted Ed25519 public keys keyed by key ID.
+- requireRecoverySloFinalizationAttestation: set true to require signed receipts; startup fails if the signer/key pair is incomplete.
+- Private signing keys remain outside application storage.
+
+New application APIs
+- verifyRecoverySloEvidenceRestoreFinalizationAttestation(ownerId, promotionJournalId)
+- reconcileRecoverySloEvidenceRestoreFinalizationIntegrity(ownerId, promotionJournalId)
+
+New HTTP endpoints
+- GET /api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor/slo/evidence-export/restore-promotions/:id/finalization-attestation
+- GET /api/agentic/recovery-audit/mutation-outcome-ledger/attestation-trust/anchor/slo/evidence-export/restore-promotions/:id/reconcile
+
+Validation
+- Batch 125 regression tests: 8/8 PASS.
+- Full cumulative npm test: 823/823 PASS.
+- JavaScript/MJS syntax and relative import resolution are validated before archive packaging.
+- ZIP integrity and post-extraction tests are required for the final cumulative artifact.
+
+Security boundaries
+- A valid signature authenticates a receipt only relative to the configured trusted public key; key distribution and revocation remain operational responsibilities.
+- Integrity-only receipts remain available for backward compatibility unless strict attestation is enabled.
+- Hashes and signatures do not prevent direct storage compromise; external signer keys must remain outside application storage.
+- Post-promotion reconciliation is read-only and never repairs or rewrites evidence automatically.
+
+Next stage
+Batch 126 — Finalization Attestation Key Rotation, Revocation, and Historical Receipt Verification Policy.

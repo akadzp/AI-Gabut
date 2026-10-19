@@ -1,0 +1,38 @@
+Agentic AI V4 Roadmap — Batch 172
+=================================
+
+Objective
+---------
+Bind remediation-finalization attestations to an auditable signing-key lifecycle and cutoff, persist high-severity cross-domain checkpoint replay findings in an append-only incident ledger, and audit recovery-intent CAS/finalization postconditions.
+
+Work Items
+----------
+1. Add owner-scoped, challenge-bound activate/rotate/revoke transitions for finalization-attestation signing keys.
+2. Bind each new finalization attestation to the active lifecycle sequence, event digest, and trusted public-key fingerprint.
+3. Verify historical key cutoff separately from current usability; key rotation or revocation makes prior attestations historical-only without erasing their cryptographic history.
+4. Fail closed when strict lifecycle binding is enabled but no active, trusted lifecycle key is proven.
+5. Persist high-severity cross-domain replay, rollback, invalid-integrity, and conflict findings in an append-only, digest-chained incident ledger with deterministic deduplication.
+6. Audit remediation recovery-intent, execution, finalization, and checkpoint-recovery CAS postconditions for missing, duplicated, or mismatched bindings.
+7. Expose authenticated application and HTTP APIs and add regression tests for lifecycle cutoff, stale challenges, replay incident retention, CAS audit, and route wiring.
+
+Acceptance Criteria
+-------------------
+- An attestation is current only when its signing key was active at its bound lifecycle sequence and remains active at the current lifecycle head.
+- Attestations signed before a later rotation/revocation remain historically verifiable when trusted public keys and lifecycle evidence are retained, but cannot be treated as current.
+- Lifecycle challenges are bound to the ledger head, action, key ID, and trusted public-key fingerprint; stale or replayed transitions fail closed.
+- Replay incident events form a verifiable sequence/digest chain and repeated identical findings do not create duplicate events.
+- A corrupt incident ledger is never silently extended or repaired.
+- Recovery-intent CAS audits detect missing or mismatched execution/finalization records and invalid checkpoint recovery postconditions.
+- Regression tests pass; syntax, import resolution, ZIP integrity, clean extraction, and per-file source hashes are verified.
+- No GitHub commit is made.
+
+Operational Notes
+-----------------
+- Retain historical public keys for as long as historical signatures must remain verifiable.
+- The local replay incident ledger is tamper-evident, but it is not itself externally anchored in this batch.
+- Local storage and external checkpoint providers do not form a distributed atomic transaction; ambiguous post-commit failures require recovery/audit rather than rollback assumptions.
+- Enrollment does not retroactively prove history before the enrollment point.
+
+Next Stage
+----------
+Batch 173 — Finalization-Key Lifecycle External Anchoring, Replay-Incident Checkpointing, and CAS-Recovery Receipt Binding.

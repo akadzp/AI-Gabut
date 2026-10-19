@@ -1,0 +1,21 @@
+Agentic AI V4 — Batch 225
+Attestation-Receipt Lifecycle Finalization, Independent Receipt Checkpoint Recovery, and Cross-Generation Revocation Convergence
+
+Objective
+Add signed finalization evidence for Batch 224 attestation-receipt lifecycle operations, make the independent checkpoint snapshot include that evidence, and ensure terminal revocation cannot be bypassed by later receipt generations.
+
+Implementation
+1. Add a deterministic signed finalization-receipt event bound to lifecycle intent, action, finalization, target receipt, optional replacement receipt, and key-lifecycle state.
+2. Reuse finalization receipts on replay and reconstruct missing receipts only after validating the signed lifecycle event chain.
+3. Include Batch 225 finalization receipts in the independent Batch 224 checkpoint snapshot.
+4. Audit finalization receipt uniqueness, signature validity, intent/action/finalization ordering, replacement predecessor linkage, missing receipts, and pending operations.
+5. Treat finalized revocation as terminal across receipt generations; any descendant receipt after a revoked predecessor is an unhealthy chain.
+6. Prefer decision_blocked over ordinary pending-checkpoint status when terminal revocation is established, while preserving unhealthy as the highest-severity status.
+
+Validation status
+- Batch 225 focused tests: 2/2 PASS.
+- Batch 223 focused tests: 2/2 PASS.
+- Batch 224 focused tests: 3/3 PASS.
+- End-to-end renewal/revocation test did not finish within the local validation time budget during cumulative multi-checkpoint advancement; no end-to-end PASS is claimed.
+- Full cumulative npm test and live HTTP startup are unverified.
+- No GitHub commit.

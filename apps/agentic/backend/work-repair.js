@@ -52,7 +52,8 @@ export function createWorkRepairService({ store, work, planner, execute, verify 
     const history = Array.isArray(current.result?.repair?.history) ? current.result.repair.history : [];
     if (history.length >= maxIterations) throw new AgenticError("REPAIR_LIMIT_REACHED", "Batas repair iteration sudah tercapai", 409, { maxIterations, attempts: history.length });
     const iteration = history.length + 1;
-    const { execution, verification, failure } = await latestFailure(ownerId, workId);
+    const { execution, verification, failure: detectedFailure } = await latestFailure(ownerId, workId);
+    const failure = options.externalFailure?.retryable ? options.externalFailure : detectedFailure;
     if (!failure.retryable) throw new AgenticError("REPAIR_NOT_SUPPORTED", "Failure tidak berada dalam bounded repair capability", 409, failure);
     const base = { iteration, failure, executionId: execution?.id || null, verificationId: verification?.id || null, startedAt: new Date().toISOString() };
     await checkpoint(ownerId, workId, { ...base, status: "observed", label: `Repair ${iteration} · failure diklasifikasikan` });

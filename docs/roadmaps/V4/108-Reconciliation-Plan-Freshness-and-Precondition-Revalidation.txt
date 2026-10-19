@@ -1,0 +1,44 @@
+Batch 108 — Reconciliation Plan Freshness and Precondition Revalidation
+
+Objective
+- Detect reconciliation plans whose evidence, findings, record versions, or durable lease state have changed since capture.
+- Revalidate every bounded action against a fresh owner-scoped recovery audit and current source records before human review.
+- Keep revalidation read-only; a fresh plan is not an authorization to mutate recovery state.
+
+Implementation
+- Recovery-audit evidence now records the audit limit and a bounded precondition snapshot for each finding. The snapshot contains owner-scoped Work/task/execution existence, storage versions, fingerprints of allowlisted lifecycle/linkage fields, and sanitized durable lease summaries where relevant.
+- Reconciliation actions bind to their source finding through a stable issue reference and expected precondition digest.
+- Added `revalidateRecoveryReconciliationPlan(ownerId, planId, options)` and a read-only authenticated HTTP endpoint at `GET /api/agentic/recovery-audit/plans/:id/revalidation`.
+- Revalidation verifies plan and evidence digests, checks the plan/evidence linkage, runs a fresh recovery audit, compares issue references, and re-reads the expected records and lease summaries.
+- Results are `fresh`, `stale`, or `incomplete`, with bounded issue codes and per-action mismatches. Missing/changed records, version changes, lease changes, removed findings, or new audit findings prevent a plan from being marked fresh.
+- Truncated source evidence, truncated current audits, missing legacy precondition snapshots, and truncated action plans fail closed as incomplete. They are never reported as ready for review.
+- The result explicitly states `executionAllowed: false`, `automaticExecutionAllowed: false`, and `requiresHumanApproval: true`. No plan is applied and no Work/task/execution/lease/evidence/plan record is modified by revalidation.
+- Sensitive prompts, checkpoints, lease tokens, and arbitrary stored payloads are not copied into precondition snapshots. Projection arrays and identifiers are bounded.
+
+Regression coverage
+- Unchanged evidence and preconditions remain fresh without state mutation.
+- Changed storage version is stale even when the record still exists.
+- A finding that disappears after planning is stale.
+- New findings invalidate a formerly clean plan.
+- Durable lease changes invalidate relevant preconditions.
+- Incomplete evidence, truncated plans, and truncated current audits fail closed.
+- Cross-owner revalidation is rejected.
+- Tampered evidence is rejected.
+- Revalidation leaves evidence, plan, Work, task, execution, and lease state unchanged.
+- HTTP route mapping is present.
+
+Validation
+- Batch 108 focused regression tests: 13/13 PASS.
+- Full cumulative `npm test`: 629/629 PASS.
+- JavaScript/MJS syntax checks: validated across the complete extracted source tree.
+- Relative import resolution: validated across the complete extracted source tree.
+- ZIP integrity: `zip -T` and `unzip -t` PASS.
+- The final ZIP is extracted to a separate directory and the cumulative test suite, syntax checks, and import checks are repeated there.
+- No GitHub commit is made.
+
+Operational boundaries
+- Revalidation is a point-in-time read-only check, not a cross-record transaction. A concurrent state change immediately after the check can make a previously fresh result stale; any separately authorized mutation must still re-read and enforce current versions/lease ownership at the mutation boundary.
+- `fresh` means preconditions matched at the time of inspection only. It is not approval and does not enable automatic execution.
+- The HTTP listener is not claimed as boot-tested in this environment; server syntax, application mapping, and endpoint route presence are tested.
+
+Next unfinished stage: Batch 109 — Revalidation Evidence and Approval-Bound Preconditions.

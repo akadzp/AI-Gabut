@@ -1,0 +1,12 @@
+Agentic AI V4 — Batch 228 Release Notes
+
+Added signed finalization receipts for each finalized Batch 227 external-attestation renewal/revocation lifecycle. Receipts bind intent/action/finalization events, target and replacement attestations, a bounded lifecycle-chain digest, signing-key lifecycle binding, and predecessor receipt ID/digest across generations.
+
+Added idempotent generation-ordered receipt reconciliation, missing/orphan/duplicate/chain-integrity audit findings, key-cutoff status propagation, and an authenticated application endpoint that reconciles receipts and advances configured independent checkpoints. Batch 228 receipts are included in the Batch 226 external-attestation checkpoint snapshot and existing cross-domain convergence audit.
+
+Validation:
+- Batch 228 focused tests: 2/2 PASS.
+- Batch 223–228 focused regression run: 13/13 PASS.
+- Broader Batch 220–228 command did not complete within the environment execution budget; do not infer a full cumulative pass.
+- Full cumulative npm test and live HTTP startup are not claimed as passing.
+- No GitHub commit.

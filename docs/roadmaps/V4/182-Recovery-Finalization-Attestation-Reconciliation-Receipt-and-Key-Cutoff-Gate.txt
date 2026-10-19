@@ -1,0 +1,19 @@
+Batch 182 — Recovery-Finalization Ledger Attestation, External Checkpoint Reconciliation Receipt, and Cross-Domain Recovery-Intent/Key-Cutoff Decision Gate Enforcement
+
+Deliverables
+1. Ed25519 attestation for newly finalized decision-gate recovery receipts, binding payload, recovery intent, source anchor, and signing-key lifecycle state.
+2. Verification distinguishes valid historical signatures from current decision-usable evidence after key rotation/revocation.
+3. Independent reconciliation-receipt ledger and optional external snapshot checkpoint for finalization-checkpoint reconciliation and marker recovery.
+4. Deterministic operation keys, CAS append, idempotent replay, immutable before/after checkpoint binding, and attestation verification for reconciliation receipts.
+5. Explicit checkpoint enrollment/status/reconcile/audit APIs and HTTP routes.
+6. Recovery decision gate blocks stale finalization attestation, key-cutoff drift, invalid recovery-intent binding, and non-current required reconciliation checkpoint.
+7. Legacy schema-v1/v2 finalization receipts remain readable; required attestation mode fails closed for unattested legacy records.
+8. Required reconciliation anchoring fails closed without an independent provider and enrollment; ambiguous continuity, rollback, policy drift, and multi-event gaps remain blocked.
+
+Validation gate
+- Batch 182 tests pass.
+- Batch 178–181 regression tests pass.
+- Run cumulative tests in bounded groups when needed.
+- Validate syntax, relative imports, ZIP integrity, and source SHA-256 equality after extraction.
+
+No GitHub commit.

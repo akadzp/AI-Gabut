@@ -1,0 +1,22 @@
+Batch 234 — Lifecycle Finalization Receipts for External-Attestation Renewal/Revocation
+
+Deliverables
+1. Signed finalization receipt per finalized Batch 233 lifecycle operation.
+2. Cross-generation predecessor receipt chain with deterministic operation IDs.
+3. Receipt audit for source/action/finalization binding, signatures, duplicates, orphans, and missing receipts.
+4. Terminal revocation enforcement in receipt audit and overall convergence.
+5. Checkpoint snapshot coverage for Batch 233 lifecycle events and Batch 234 receipts.
+6. Authenticated owner-scoped audit, snapshot, and reconciliation routes.
+
+Acceptance criteria
+- Empty lifecycle state remains not_initialized and creates no evidence.
+- A finalized lifecycle event is covered by exactly one matching receipt.
+- A later receipt cannot bypass a missing earlier-generation receipt.
+- Renewal receipt binds the renewed event, supersession event, and replacement.
+- Revocation receipt contains no renewal/replacement fields and preserves terminal decision_blocked.
+- Configured checkpoint must be current before reconciliation can be complete.
+- Focused Batch 223–234 plus Batch 102 regression tests pass.
+
+Known validation limits
+- Full cumulative npm test and positive end-to-end lifecycle bootstrap remain unverified.
+- HTTP listener startup remains untested.

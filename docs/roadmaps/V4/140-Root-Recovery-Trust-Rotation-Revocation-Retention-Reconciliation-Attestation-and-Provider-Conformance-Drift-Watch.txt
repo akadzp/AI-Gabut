@@ -1,0 +1,41 @@
+Agentic AI V4 — Batch 140 Roadmap
+
+Objective
+---------
+Establish an auditable lifecycle for root-recovery trust, signed retention-reconciliation snapshots, and an explicit baseline for provider conformance drift monitoring.
+
+Delivered
+---------
+1. Persistent root-recovery trust policy with digest-chained lifecycle events.
+2. Signed root rotation, target-key proof of possession, non-active-key revocation, replay protection, and historical key trust evaluation.
+3. Enforcement of the currently active root key when preparing and applying policy-authority root-recovery challenges.
+4. Ed25519 retention-reconciliation attestation, retained evidence, signature verification, and optional expected-snapshot digest matching.
+5. Provider identity and normalized contract fingerprints in conformance reports.
+6. Explicit enrollment/rotation of the accepted conformance baseline and read-only drift audit for live identity changes, contract changes, and later conformance regressions.
+7. Application APIs, authenticated HTTP routes, and regression coverage.
+
+Security properties
+-------------------
+- Lifecycle transitions bind owner, action, target key, current revision/digest, reason, and expiry.
+- Root rotation requires current-root authorization plus proof of possession from the target root.
+- An active root cannot be revoked directly; a replacement must first become active.
+- Root trust evaluation is timestamp-aware and honors retirement, revocation, and compromise cutoff.
+- Reconciliation attestations bind the full audit snapshot and are retained as evidence.
+- Provider baseline changes are never automatic; rotation requires a fresh conformant report matching the provider's live identity and contract fingerprint.
+
+Known limitations
+-----------------
+- Root-recovery trust policy does not yet have its own external checkpoint. Local storage rollback that rewrites the entire root policy cannot be independently ruled out.
+- Root keys are selected from a preconfigured public-key registry; adding key material requires deployment configuration and a controlled restart/rollout.
+- Provider fingerprints cover observable identity and contract metadata only, not hidden infrastructure or administrative ownership.
+- Signed reconciliation reports are historical snapshots, not proofs that the same state remains current forever.
+
+Validation
+----------
+- Batch 140 tests: 6/6 PASS.
+- Cumulative suite: 969/969 PASS.
+- Syntax, import resolution, ZIP integrity, and extracted-source tests: PASS.
+
+Next
+----
+Batch 141 — Root-Recovery Trust External Checkpoint Anchoring, Reconciliation Attestation Freshness Policy, and Conformance Drift Event Retention.

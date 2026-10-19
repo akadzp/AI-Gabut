@@ -1,0 +1,19 @@
+Agentic AI V4 — Batch 178 Release Notes
+
+Stage: Recovery Decision-Gate Audit Receipt External Anchoring, Attestation Recovery-Intent Checkpoint Marker Crash-Recovery, and Cross-Domain Decision-Receipt Replay Protection.
+
+Implemented:
+- New independent external checkpoint trust domain for recovery decision-gate audit receipts.
+- Receipt schema v2 binds observed checkpoint and policy state, nested audit summaries, reason digests, and the pre-append receipt-checkpoint state.
+- Stable requestId idempotency and replay-conflict detection; requests without an explicit requestId remain separate append-only audit operations.
+- Fail-closed behavior for receipt-checkpoint rollback, invalid/missing marker, policy drift, and unresolved checkpoint recovery.
+- Inspect/recover API for attestation recovery-intent checkpoint marker loss, using an intent recorded in the central recovery-intent ledger.
+- Filesystem-safe recovery-intent IDs; long legacy-ID lookups are avoided when the encoded storage key would exceed safe filesystem filename length, while list-based legacy discovery remains available.
+- Authenticated HTTP routes for checkpoint enrollment, status, reconciliation, audit, inspection, and recovery.
+
+Validation:
+- Batch 178 tests: 9/9 PASS.
+- Batch 174–177 regression tests: 30/30 PASS.
+- All 165 test files completed in bounded groups or individually: 1,206/1,206 PASS, zero failures.
+- HTTP listener startup not tested; syntax/import/API/route checks passed.
+No GitHub commit.

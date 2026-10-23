@@ -1,0 +1,25 @@
+Agentic AI V4 — Batch 276
+
+Objective
+Add signed external attestations for Batch 275 lifecycle finalization receipts, preserving cumulative source and validating cross-generation continuity.
+
+Scope
+- Receipt ID/digest/generation binding.
+- Lifecycle finalization event binding.
+- Intent/action/target/source/replacement binding.
+- Receipt-chain prefix digest and predecessor attestation continuity.
+- Signing-key lifecycle and cutoff revalidation.
+- Independent checkpoint advancement before and after attestation.
+- Owner-scoped attest/audit/snapshot/reconcile APIs.
+- Overall recovery-gate convergence.
+
+Acceptance checks
+- Empty history is read-only and does not fabricate attestations.
+- Missing attestations require recovery.
+- Invalid signature or binding fails closed.
+- Terminal revocation remains decision-blocked.
+- Schema, checkpoint, and route coverage are tested.
+- Complete source ZIP is syntax-checked and archive/extraction integrity is verified.
+
+Next stage
+Batch 277: renewal/revocation lifecycle for Batch 276 external attestations.

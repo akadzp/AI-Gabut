@@ -1,0 +1,3 @@
+# Agentic AI V4 — Batch 301
+
+Batch 301 extends the cumulative V4 source with a renewal/revocation lifecycle for Batch 300 external attestations. The service rejects stale or unhealthy source chains, validates challenge and ledger snapshots before the first write, uses deterministic operation IDs, preserves append-only evidence, and recovers incomplete lifecycle phases. Renewal creates a supersession link; revocation is terminal. Finalization receipts bind lifecycle events, signing-key state, checkpoint fingerprints, and predecessor receipts. The application wrapper reconciles the source Batch 300 attestation chain and advances the independent checkpoint before declaring the lifecycle current.

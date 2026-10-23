@@ -1,0 +1,5 @@
+Agentic AI V4 — Batch 280
+
+Added signed external attestations for Batch 279 lifecycle finalization receipts. The stage binds source receipts and lifecycle finalization events to attestation generations, predecessor digests, receipt-chain prefixes, independent checkpoint fingerprints, and signing-key lifecycle evidence. Owner-scoped attest/audit/snapshot/reconcile APIs are wired into global recovery-gate convergence.
+
+Validation: 38/38 selected regression tests passed. Syntax, import/API references, ZIP integrity, and extracted-source SHA-256 equality were checked. Full cumulative npm test and positive end-to-end lifecycle chain remain unverified. No GitHub commit was made.

@@ -1,0 +1,17 @@
+Batch 292 — External Attestation for Batch 291 Lifecycle Finalization Receipts
+
+Delivered:
+- External attestation for Batch 291 lifecycle finalization receipts.
+- Signed receipt, finalization-event, intent/action, replacement, checkpoint, audit, and signing-key lifecycle bindings.
+- Predecessor-linked attestation generations and receipt-prefix continuity validation.
+- Idempotent attestation reuse when current bindings match.
+- Signature, key-cutoff, missing-receipt, terminal-revocation, and checkpoint-state auditing.
+- Independent checkpoint inventory and overall recovery-gate convergence.
+- Owner-scoped application APIs and HTTP routes.
+
+Verification boundaries:
+- Focused Batch 292 and adjacent Batch 102/artifact/Batch 289–291 tests: 32/32 PASS.
+- The Batch 104 durable lease suite returned 6/7 PASS; heartbeat renewal failed with WORK_EXECUTION_LEASE_LOST and is not claimed as passing.
+- Full cumulative npm test, positive end-to-end attestation from a verified-current Batch 291 source, and live HTTP listener startup remain unverified.
+
+Next stage: Batch 293 — Renewal/Revocation Lifecycle for Batch 292 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery.

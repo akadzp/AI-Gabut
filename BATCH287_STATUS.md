@@ -1,0 +1,3 @@
+# Batch 287 Status
+
+Batch 287 adds a signed, recoverable renewal/revocation lifecycle for Batch 286 external attestations. It is cumulative with the complete Batch 286 source tree. The focused Batch 102, artifact, and Batch 270–287 regression run passed 71/71 tests. The separately executed Batch 104 durable-execution-lease suite passed 7/7. JavaScript-family syntax validation passed for 379 files. The full cumulative `npm test` suite was not run to completion, so no full-suite PASS is claimed. The final ZIP was validated and extracted with no missing/extra files or SHA-256 mismatches. No GitHub commit was made.

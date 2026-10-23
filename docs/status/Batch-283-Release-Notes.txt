@@ -1,0 +1,5 @@
+Agentic AI V4 — Batch 283
+
+Added a signed renewal/revocation lifecycle for Batch 282 external attestations. Lifecycle events include intent, renewal, revocation, supersession, finalization, and a chained finalization receipt. Source preconditions require a verified-current Batch 282 attestation audit; the lifecycle is owner-scoped and integrated with independent checkpoint advancement and overall recovery-gate convergence.
+
+Validation: focused Batch 283 tests and selected cumulative regression suites are reported in BATCH283_VALIDATION_REPORT.md. Full cumulative npm test and positive end-to-end lifecycle execution remain unverified. No GitHub commit was made.

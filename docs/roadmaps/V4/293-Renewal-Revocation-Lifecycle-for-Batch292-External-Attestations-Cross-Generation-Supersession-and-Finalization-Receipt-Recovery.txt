@@ -1,0 +1,17 @@
+Batch 293 — Renewal/Revocation Lifecycle for Batch 292 External Attestations
+
+Delivered:
+- Signed intent, renewal, revocation, supersession, finalization, and finalization-receipt events.
+- Current-source gate against Batch 292 external attestations and Batch 291 lifecycle receipt bindings.
+- Monotonic lifecycle generations, predecessor/replacement continuity, terminal revocation, and deterministic operation IDs.
+- Receipt binding validation, missing-receipt recovery, key-cutoff checks, and fail-closed audit behavior.
+- Independent checkpoint inventory, checkpoint advancement/reconciliation, and overall recovery-gate convergence.
+- Owner-scoped application APIs, HTTP routes, focused regression tests, status, release notes, and validation report.
+
+Verification boundaries:
+- Batch 102/artifact/Batch 291–293 focused and adjacent tests: 29/29 PASS.
+- Batch 104 durable execution lease suite: 7/7 PASS in the Batch 293 run; the prior Batch 292 report's heartbeat failure did not reproduce.
+- JavaScript/MJS/CJS syntax: 385/385 PASS; package JSON: PASS.
+- Full cumulative npm test, positive end-to-end lifecycle from a verified-current Batch 292 chain with enabled independent checkpoint, and live HTTP listener startup remain unverified.
+
+Next stage: Batch 294 — External Attestation for Batch 293 Lifecycle Finalization Receipts, Cross-Generation Receipt Continuity, and Independent Checkpoint Recovery.

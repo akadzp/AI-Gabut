@@ -1,0 +1,20 @@
+Agentic AI V4 — Batch 307
+
+Renewal/Revocation Lifecycle for Batch 306 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery.
+
+Scope:
+- Challenge-bound renew/revoke operations for the current Batch 306 external attestation.
+- Append-only intent, action, supersession, finalization, and finalization-receipt events.
+- Deterministic idempotency and replay-conflict rejection.
+- Source receipt, generation, signing-key binding, and checkpoint fingerprint validation.
+- Terminal revocation and descendant-generation rejection.
+- Independent checkpoint-aware reconciliation and overall recovery-gate convergence.
+- Owner-scoped HTTP prepare/apply/audit/snapshot/reconcile routes.
+
+Validation:
+- Focused regression run: 64 tests passed, 0 failed.
+- JavaScript/MJS/CJS syntax checks: 399 passed, 0 failed.
+- JSON parsing: 1 file passed.
+- Full cumulative npm test and positive end-to-end execution over a fully provisioned current Batch 306 source chain remain unverified.
+
+Next stage: Batch 308 — external attestation for Batch 307 lifecycle finalization receipts, cross-generation receipt continuity, and independent checkpoint recovery.

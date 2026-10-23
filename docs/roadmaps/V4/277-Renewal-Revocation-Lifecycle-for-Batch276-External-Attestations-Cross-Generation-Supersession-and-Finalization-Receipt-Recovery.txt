@@ -1,0 +1,4 @@
+Agentic AI V4 Batch 277
+Renewal/Revocation Lifecycle for Batch 276 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery
+
+Implement signed, owner-scoped renewal and terminal revocation for Batch 276 external attestations. Bind challenges to the current source audit, target attestation, source finalization receipt, ledger snapshot, generation, expiry, confirmation phrase, and signing-key lifecycle. Append intent, action, supersession, finalization, and finalization-receipt events. Audit signature validity, phase completeness, target/replacement binding, predecessor continuity, receipt-chain integrity, key cutoff, and independent checkpoint state. Expose prepare/apply/audit/snapshot/reconcile APIs and incorporate Batch 277 into overall recovery-gate convergence.

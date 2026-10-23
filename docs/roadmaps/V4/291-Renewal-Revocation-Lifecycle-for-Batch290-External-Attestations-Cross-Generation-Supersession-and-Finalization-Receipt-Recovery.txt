@@ -1,0 +1,16 @@
+Batch 291 — Renewal/Revocation Lifecycle for Batch 290 External Attestations
+
+Delivered:
+- Challenge-confirmed renewal and terminal revocation.
+- Signed append-only lifecycle phase events and predecessor/replacement binding.
+- Finalization receipts with receipt-chain predecessor validation.
+- Signing-key lifecycle cutoff detection and revalidation.
+- Independent checkpoint inventory and recovery-gate convergence.
+- Owner-scoped application APIs and HTTP routes.
+
+Verification boundaries:
+- Focused regression and syntax/import checks only; full cumulative npm test is not claimed as passing.
+- Positive end-to-end lifecycle mutation from a verified-current Batch 290 source remains to be exercised.
+- HTTP listener startup remains to be tested in an environment with Express installed.
+
+Next stage: Batch 293 — Renewal/Revocation Lifecycle for Batch 292 External Attestations, Cross-Generation Supersession, and Finalization Receipt Recovery.

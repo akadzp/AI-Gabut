@@ -1,0 +1,7 @@
+Batch 313 — Renewal/Revocation Lifecycle for Batch 312 External Attestations
+
+Implemented: signed intent/action events, renewal replacement, supersession, terminal revocation, finalization receipts, signing-key lifecycle binding, replay protection, checkpoint recovery, owner-scoped API routes, and overall recovery-gate convergence.
+
+Next: Batch 314 — External Attestation for Batch 313 Lifecycle Finalization Receipts, Cross-Generation Receipt Continuity, and Independent Checkpoint Recovery.
+
+Verification gaps: full cumulative npm test, positive end-to-end provisioning, crash-injection at all lifecycle/checkpoint boundaries, and live HTTP listener startup.

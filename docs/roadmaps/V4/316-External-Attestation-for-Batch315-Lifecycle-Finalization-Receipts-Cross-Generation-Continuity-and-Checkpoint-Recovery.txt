@@ -1,0 +1,8 @@
+Batch 316 — External Attestation for Batch 315 Lifecycle Finalization Receipts
+
+1. Attest every valid Batch 315 lifecycle finalization receipt.
+2. Preserve receipt-prefix and predecessor-attestation continuity across generations.
+3. Verify signatures and signing-key cutoff/revalidation bindings.
+4. Reconcile interrupted attestation and checkpoint phases idempotently.
+5. Integrate status into overall recovery-gate convergence.
+6. Validate with focused regression tests, syntax checks, and archive extraction integrity.

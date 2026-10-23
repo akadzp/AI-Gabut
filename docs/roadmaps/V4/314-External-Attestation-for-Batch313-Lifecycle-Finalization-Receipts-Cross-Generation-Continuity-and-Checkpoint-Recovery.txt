@@ -1,0 +1,18 @@
+Agentic AI V4 — Batch 314
+
+Scope: external attestation for Batch 313 lifecycle finalization receipts, cross-generation receipt continuity, and independent checkpoint recovery.
+
+Completed:
+- Signed receipt-bound external-attestation events.
+- Receipt prefix, lifecycle finalization, checkpoint, audit, and signing-key bindings.
+- Predecessor continuity and idempotent attestation creation.
+- Missing-attestation audit and recovery-aware reconciliation.
+- Application methods and owner-scoped HTTP routes.
+- Independent checkpoint inventory and overall recovery-gate convergence.
+- Focused regression, syntax, JSON, and archive validation.
+
+Next: Batch 315 — renewal/revocation lifecycle for Batch 314 external attestations.
+
+Verification gaps: verified-current end-to-end source provisioning, crash-injection at all lifecycle/checkpoint boundaries, live HTTP startup, and a full cumulative npm test run with a final TAP summary.
+
+No GitHub commit was made.

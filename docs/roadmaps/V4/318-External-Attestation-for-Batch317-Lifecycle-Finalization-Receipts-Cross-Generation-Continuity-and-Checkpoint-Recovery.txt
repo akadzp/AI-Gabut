@@ -1,0 +1,16 @@
+Batch 318 — External Attestation for Batch 317 Lifecycle Finalization Receipts
+
+Objective
+Attest Batch 317 lifecycle finalization receipts while preserving cross-generation receipt continuity and independent checkpoint recovery.
+
+Scope
+- Signed append-only attestation events bound to finalization receipt, lifecycle finalization event, source chain, checkpoint fingerprint, and signing-key lifecycle.
+- Deterministic operation IDs, idempotent reconciliation, predecessor attestation continuity, and historical signature verification.
+- Fail-closed audit for missing receipts, invalid signatures, broken bindings, stale key lifecycle, and terminal revocation.
+- Owner-scoped API integration and overall recovery-gate convergence.
+
+Recovery order
+Source receipt recovery; pre-attestation checkpoint advancement; attestation; checkpoint advancement; final audit.
+
+Next
+Batch 319: renewal/revocation lifecycle for Batch 318 external attestations.

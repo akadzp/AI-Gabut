@@ -1,0 +1,3 @@
+Batch 296 — External Attestation for Batch 295 Lifecycle Finalization Receipts
+
+Adds external attestation, cross-generation receipt continuity, signing-key lifecycle checks, independent checkpoint recovery, cumulative recovery-gate convergence, and owner-scoped attest/audit/snapshot/reconcile routes. Focused tests and archive integrity checks are required before local application. No GitHub commit.

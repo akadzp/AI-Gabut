@@ -14993,6 +14993,134 @@ requireRecoverySloCrossDomainRecoveryGateProofContinuityReceiptLifecycleCheckpoi
 
 
 
+  // Batch 277 lifecycle wrappers include checkpoint advancement and recovery convergence.
+  async function prepareRecoveryGateBatch277ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch277ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch277ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch277ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch277ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch277ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch277ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch277ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch277ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch277ExternalAttestationLifecycle(ownerId) {
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch277ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch277-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch277ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch277ExternalAttestationLifecycle(ownerId, challengeId);
+      let checkpointAdvancement = { complete: true, results: [], errors: [] };
+      if (phase.event || phase.status === "recovery_required") checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+        phase.event?.operationId || phase.event?.id || challengeId);
+      phaseResults.push({ ...phase, checkpointAdvancement });
+      if (!checkpointAdvancement.complete || phase.status === "unhealthy") return { status: !checkpointAdvancement.complete ? "recovery_required" : "unhealthy",
+        phaseResults, complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch277ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      terminalRevocation, readOnly: false, mutationAllowed: false };
+  }
+
+
+
+
+
+
+
+  // Batch 279 lifecycle wrappers include checkpoint advancement and recovery convergence.
+  async function prepareRecoveryGateBatch279ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch279ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch279ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch279ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch279ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch279ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch279ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch279ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch279ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch279ExternalAttestationLifecycle(ownerId) {
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch279ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch279-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch279ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch279ExternalAttestationLifecycle(ownerId, challengeId);
+      let checkpointAdvancement = { complete: true, results: [], errors: [] };
+      if (phase.event || phase.status === "recovery_required") checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+        phase.event?.operationId || phase.event?.id || challengeId);
+      phaseResults.push({ ...phase, checkpointAdvancement });
+      if (!checkpointAdvancement.complete || phase.status === "unhealthy") return { status: !checkpointAdvancement.complete ? "recovery_required" : "unhealthy",
+        phaseResults, complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch279ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      terminalRevocation, readOnly: false, mutationAllowed: false };
+  }
+
+
+
+
+
+
+
   async function attestRecoveryGateBatch240ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
     return reconcileRecoveryGateBatch240ExternalLifecycleFinalizationReceiptAttestations(ownerId);
   }
@@ -15831,6 +15959,3080 @@ requireRecoverySloCrossDomainRecoveryGateProofContinuityReceiptLifecycleCheckpoi
   }
 
 
+  // Batch 276 external attestation and checkpoint convergence for Batch 275 lifecycle receipts.
+  async function attestRecoveryGateBatch276ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch276ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch276ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch275LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch276ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch275LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch276ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch275ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch275ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch276-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch275ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch275LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch275LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch276-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch275LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 287 lifecycle wrappers include checkpoint advancement, receipt recovery, and Batch 286 source convergence.
+  async function prepareRecoveryGateBatch287ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch287ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch287ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch287ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch287ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch287ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch287ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch287ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch287ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch287ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch286ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch287ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch287-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch287ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch287ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch287ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+  // Batch 289 lifecycle wrappers include checkpoint advancement, receipt recovery, and Batch 288 source convergence.
+  async function prepareRecoveryGateBatch289ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch289ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch289ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch289ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch289ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch289ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch289ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch289ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch289ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch289ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch288ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch289ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch289-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch289ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch289ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch289ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+  // Batch 291 lifecycle wrappers include checkpoint advancement, receipt recovery, and Batch 290 source convergence.
+  async function prepareRecoveryGateBatch291ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch291ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch291ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch291ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch291ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch291ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch291ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch291ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch291ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch291ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch290ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch291ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch291-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch291ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch291ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch291ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 293 lifecycle wrappers include checkpoint advancement, receipt recovery, and Batch 292 source convergence.
+  async function prepareRecoveryGateBatch293ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch293ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch293ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch293ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch293ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch293ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch293ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch293ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch293ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch293ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch292ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch293ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch293-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch293ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch293ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch293ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+
+
+
+  // Batch 295 lifecycle wrappers include checkpoint advancement, receipt recovery, and Batch 294 source convergence.
+  async function prepareRecoveryGateBatch295ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch295ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch295ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch295ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch295ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch295ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch295ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch295ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch295ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch295ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch294ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch295ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch295-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch295ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch295ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch295ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+
+
+  // Batch 297 lifecycle wrappers include checkpoint advancement, receipt recovery, and Batch 296 source convergence.
+  async function prepareRecoveryGateBatch297ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch297ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch297ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch297ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch297ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch297ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch297ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch297ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch297ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch297ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch296ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch297ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch297-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch297ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch297ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch297ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+
+
+
+
+  // Batch 299 lifecycle wrappers include checkpoint advancement, receipt recovery, and Batch 298 source convergence.
+  async function prepareRecoveryGateBatch299ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch299ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch299ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch299ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch299ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch299ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch299ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch299ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch299ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch299ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch298ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch299ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch299-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch299ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch299ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch299ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+
+
+
+  // Batch 301 lifecycle wrappers include checkpoint advancement, receipt recovery, and Batch 300 source convergence.
+  async function prepareRecoveryGateBatch301ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch301ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch301ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch301ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch301ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch301ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch301ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch301ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch301ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch301ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch300ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch301ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch301-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch301ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch301ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch301ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+  // Batch 303 lifecycle wrappers include checkpoint advancement, receipt recovery, and Batch 302 source convergence.
+  async function prepareRecoveryGateBatch303ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch303ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch303ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch303ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch303ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch303ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch303ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch303ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch303ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch303ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch302ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch303ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch303-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch303ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch303ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch303ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+
+  // Batch 305 lifecycle wrappers include checkpoint advancement, receipt recovery, and Batch 304 source convergence.
+  async function prepareRecoveryGateBatch305ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch305ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch305ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch305ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch305ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch305ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch305ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch305ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch305ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch305ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch304ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch305ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch305-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch305ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch305ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch305ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+  // Batch 306 attests Batch 305 lifecycle finalization receipts with checkpoint-aware recovery.
+  async function attestRecoveryGateBatch306ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch306ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch306ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch305LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch306ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch305LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch306ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch305ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch305ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch306-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch305ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch305LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch305LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch306-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch305LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+  // Batch 307 lifecycle wrappers include checkpoint advancement, receipt recovery, and Batch 306 source convergence.
+  async function prepareRecoveryGateBatch307ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch307ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch307ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch307ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch307ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch307ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch307ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch307ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch307ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch307ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch306ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch307ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch307-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch307ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch307ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch307ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+  // Batch 309 lifecycle wrappers include checkpoint advancement, receipt recovery, and Batch 308 source convergence.
+  async function prepareRecoveryGateBatch309ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch309ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch309ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch309ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch309ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch309ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch309ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch309ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch309ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch309ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch308ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch309ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch309-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch309ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch309ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch309ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+  // Batch 308 attests Batch 307 lifecycle finalization receipts with checkpoint-aware recovery.
+  async function attestRecoveryGateBatch308ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch308ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch308ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch307LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch308ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch307LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch308ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch307ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch307ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch308-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch307ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch307LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch307LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch308-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch307LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+  // Batch 310 attests Batch 309 lifecycle finalization receipts with checkpoint-aware recovery.
+  async function attestRecoveryGateBatch310ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch310ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch310ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch309LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch310ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch309LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch310ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch309ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch309ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch310-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch309ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch309LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch309LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch310-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch309LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+
+  // Batch 312 attests Batch 311 lifecycle finalization receipts with checkpoint-aware recovery.
+  async function attestRecoveryGateBatch312ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch312ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch312ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch311LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch312ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch311LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch312ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch311ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch311ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch312-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch311ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch311LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch311LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch312-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch311LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+  // Batch 314 attests Batch 313 lifecycle finalization receipts with checkpoint-aware recovery.
+  async function attestRecoveryGateBatch314ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch314ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch314ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch313LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch314ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch313LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch314ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch313ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch313ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch314-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch313ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch313LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch313LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch314-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch313LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 316 attests Batch 315 lifecycle finalization receipts with independent checkpoint recovery.
+  async function attestRecoveryGateBatch316ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch316ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch316ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch315LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch316ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch315LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch316ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch315ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch315ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch316-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch315ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch315LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch315LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch316-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch315LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+  // Batch 318 attests Batch 317 lifecycle finalization receipts with independent checkpoint recovery.
+  async function attestRecoveryGateBatch318ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch318ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch318ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch317LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch318ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch317LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch318ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch317ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch317ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch318-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch317ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch317LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch317LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch318-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch317LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+
+  // Batch 320 attests Batch 319 lifecycle finalization receipts with independent checkpoint recovery.
+  async function attestRecoveryGateBatch320ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch320ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch320ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch319LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch320ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch319LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch320ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch319ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch319ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch320-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch319ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch319LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch319LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch320-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch319LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 322 attests Batch 321 lifecycle finalization receipts with independent checkpoint recovery.
+  async function attestRecoveryGateBatch322ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch322ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch322ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch321LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch322ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch321LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch322ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch321ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch321ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch322-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch321ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch321LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch321LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch322-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch321LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+  
+
+// Batch 324 attests Batch 323 lifecycle finalization receipts with independent checkpoint recovery.
+  async function attestRecoveryGateBatch324ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch324ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch324ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch323LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch324ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch323LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch324ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch323ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch323ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch324-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch323ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch323LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch323LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch324-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch323LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 326 attests Batch 325 lifecycle finalization receipts with independent checkpoint recovery.
+  async function attestRecoveryGateBatch326ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch326ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch326ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch325LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch326ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch325LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch326ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch325ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch325ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch326-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch325ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch325LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch325LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch326-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch325LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+  
+  // Batch 328 attests Batch 327 lifecycle finalization receipts with independent checkpoint recovery.
+  async function attestRecoveryGateBatch328ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch328ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch328ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch327LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch328ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch327LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch328ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch327ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch327ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch328-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch327ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch327LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch327LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch328-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch327LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+  
+
+  // Batch 311 lifecycle wraps Batch 310 external attestations with checkpoint advancement and source convergence.
+  async function prepareRecoveryGateBatch311ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch311ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch311ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch311ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch311ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch311ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch311ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch311ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch311ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch311ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch310ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch311ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch311-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch311ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch311ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch311ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+  // Batch 313 lifecycle wraps Batch 312 external attestations with checkpoint advancement and source convergence.
+  async function prepareRecoveryGateBatch313ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch313ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch313ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch313ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch313ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch313ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch313ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch313ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch313ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch313ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch312ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch313ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch313-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch313ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch313ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch313ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 315 lifecycle wraps Batch 314 external attestations with checkpoint advancement and source convergence.
+  async function prepareRecoveryGateBatch315ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch315ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch315ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch315ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch315ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch315ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch315ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch315ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch315ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch315ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch314ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch315ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch315-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch315ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch315ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch315ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+
+  // Batch 317 lifecycle wraps Batch 316 external attestations with checkpoint advancement and source convergence.
+  async function prepareRecoveryGateBatch317ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch317ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch317ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch317ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch317ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch317ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch317ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch317ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch317ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch317ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch316ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch317ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch317-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch317ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch317ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch317ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+
+  // Batch 319 lifecycle wraps Batch 318 external attestations with checkpoint advancement and source convergence.
+  async function prepareRecoveryGateBatch319ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch319ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch319ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch319ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch319ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch319ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch319ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch319ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch319ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch319ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch318ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch319ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch319-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch319ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch319ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch319ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+
+
+  // Batch 321 lifecycle wraps Batch 320 external attestations with checkpoint advancement and source convergence.
+  async function prepareRecoveryGateBatch321ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch321ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch321ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch321ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch321ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch321ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch321ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch321ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch321ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch321ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch320ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch321ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch321-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch321ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch321ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch321ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+
+  // Batch 323 lifecycle wraps Batch 322 external attestations with checkpoint advancement and source convergence.
+  async function prepareRecoveryGateBatch323ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch323ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch323ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch323ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch323ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch323ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch323ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch323ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch323ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch323ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch322ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch323ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch323-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch323ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch323ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch323ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 325 lifecycle wraps Batch 324 external attestations with checkpoint advancement and source convergence.
+  async function prepareRecoveryGateBatch325ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch325ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch325ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch325ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch325ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch325ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch325ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch325ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch325ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch325ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch324ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch325ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch325-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch325ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch325ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch325ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 327 lifecycle wraps Batch 326 external attestations with checkpoint advancement and source convergence.
+  async function prepareRecoveryGateBatch327ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch327ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch327ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch327ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch327ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch327ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch327ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch327ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch327ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch327ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch326ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch327ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch327-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch327ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch327ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch327ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 329 lifecycle wraps Batch 328 external attestations with checkpoint advancement and source convergence.
+  async function prepareRecoveryGateBatch329ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch329ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch329ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch329ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch329ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch329ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch329ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch329ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch329ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch329ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch328ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch329ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch329-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch329ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch329ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch329ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+  async function prepareRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycle(ownerId, challengeId, options);
+    const checkpointAdvancement = result.event
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, result.event.operationId || result.event.digest || result.event.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "finalized" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycle(ownerId);
+  }
+  async function reconcileRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycle(ownerId) {
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 8; attempt++) {
+      const audit = await recoveryGateProofContinuityService.auditFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      const pendingChallengeId = audit.pendingChallengeIds?.[0];
+      if (!pendingChallengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycle(ownerId, pendingChallengeId);
+      phaseResults.push(phase);
+      if (phase.event) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId, phase.event.operationId || phase.event.digest || phase.event.id || pendingChallengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycle(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = (audit.status === "not_initialized" || audit.status === "verified_current" || terminalRevocation)
+      && (audit.pendingChallengeIds?.length || 0) === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+  async function auditRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycleFinalizationReceipts(ownerId) {
+    return recoveryGateProofContinuityService.auditFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycleFinalizationReceipts(ownerId);
+  }
+  async function getRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycleFinalizationReceiptsSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycleFinalizationReceiptsSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycleFinalizationReceipts(ownerId) {
+    const sourceAudit = await recoveryGateProofContinuityService.auditFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycle(ownerId);
+    let preCheckpointAdvancement = { complete: true, results: [], errors: [] };
+    if (sourceAudit.lifecycleEventCount > 0 && sourceAudit.status === "recovery_required") {
+      preCheckpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+        sourceAudit.latestLifecycleEvent?.id || "batch237-source-checkpoint-recovery");
+      if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceAudit, preCheckpointAdvancement,
+        complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const result = await recoveryGateProofContinuityService.reconcileFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycleFinalizationReceipts(ownerId);
+    if (!result.receiptCount && result.status === "not_initialized") return { ...result, sourceAudit, preCheckpointAdvancement };
+    const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+      result.latestReceipt?.operationId || result.latestReceipt?.id || "batch237-lifecycle-finalization-receipt-reconciliation");
+    const audit = await recoveryGateProofContinuityService.auditFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycleFinalizationReceipts(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked" && audit.missingFinalizationReceiptCount === 0;
+    const complete = checkpointAdvancement.complete === true
+      && (audit.status === "verified_current" || terminalRevocation || audit.status === "not_initialized");
+    return { ...result, status: !preCheckpointAdvancement.complete || !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required", sourceAudit, preCheckpointAdvancement, audit, checkpointAdvancement, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+  async function advanceRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpoint(ownerId, options = {}) {
+    const current = await getRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpointState(ownerId);
+    if (current.findings?.some(item => item.code === "RECOVERY_GATE_FINALIZATION_RECEIPT_BINDING_ATTESTATION_LIFECYCLE_ATTESTATION_RECEIPT_ANCHOR_PROVIDER_REUSED"))
+      throw new AgenticError("RECOVERY_GATE_FINALIZATION_RECEIPT_BINDING_ATTESTATION_LIFECYCLE_ATTESTATION_RECEIPT_ANCHOR_PROVIDER_REUSED",
+        "Lifecycle finalization-attestation receipt checkpoint harus independen", 409, { findings: current.findings });
+    return advanceRecoveryIntentClosureCheckpoint(ownerId, recoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpointService,
+      ownerId => recoveryGateProofContinuityService.getFinalizationReceiptBindingAttestationLifecycleAttestationReceiptSnapshot(ownerId),
+      "finalization receipt lifecycle attestation receipt", options.operationId);
+  }
+  async function reconcileRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpoint(ownerId) {
+    const current = await getRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpointState(ownerId);
+    if (current.findings?.some(item => item.code === "RECOVERY_GATE_FINALIZATION_RECEIPT_BINDING_ATTESTATION_LIFECYCLE_ATTESTATION_RECEIPT_ANCHOR_PROVIDER_REUSED"))
+      throw new AgenticError("RECOVERY_GATE_FINALIZATION_RECEIPT_BINDING_ATTESTATION_LIFECYCLE_ATTESTATION_RECEIPT_ANCHOR_PROVIDER_REUSED",
+        "Lifecycle finalization-attestation receipt checkpoint harus independen", 409, { findings: current.findings });
+    return reconcileRecoveryIntentClosureCheckpoint(ownerId, recoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpointService,
+      ownerId => recoveryGateProofContinuityService.getFinalizationReceiptBindingAttestationLifecycleAttestationReceiptSnapshot(ownerId),
+      "finalization receipt lifecycle attestation receipt");
+  }
+  async function auditRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpoint(ownerId) {
+    const [checkpointAudit, checkpointState, lifecycleAudit, externalLifecycleAudit] = await Promise.all([
+      recoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpointService.auditExternalSnapshotCheckpoint(ownerId),
+      getRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpointState(ownerId),
+      recoveryGateProofContinuityService.auditFinalizationReceiptBindingAttestationLifecycleAttestationReceipt(ownerId),
+      recoveryGateProofContinuityService.auditFinalizationReceiptBindingAttestationLifecycleExternalAttestationLifecycle(ownerId)]);
+    const status = checkpointState.status === "unhealthy" || lifecycleAudit.status === "unhealthy" || externalLifecycleAudit.status === "unhealthy" ? "unhealthy"
+      : lifecycleAudit.status === "decision_blocked" || externalLifecycleAudit.status === "decision_blocked" ? "decision_blocked"
+      : checkpointState.enabled && checkpointState.usableForCurrentDecision !== true ? "recovery_required"
+      : externalLifecycleAudit.status === "stale" || externalLifecycleAudit.status === "recovery_required" ? externalLifecycleAudit.status
+      : lifecycleAudit.status;
+    return { ...checkpointAudit, status, checkpointState, lifecycleAudit, externalLifecycleAudit,
+      generationBindingDigest: crossDomainSha256(crossDomainCanonical({ checkpointDigest: checkpointState.snapshotDigest || null,
+        lifecycleAuditDigest: lifecycleAudit.generationBindingDigest || null,
+        externalLifecycleAuditDigest: externalLifecycleAudit.generationBindingDigest || null, status })),
+      usableForCurrentDecision: (!checkpointState.enabled || checkpointState.usableForCurrentDecision === true)
+        && lifecycleAudit.usableForCurrentDecision === true && externalLifecycleAudit.usableForCurrentDecision === true
+        && ["verified_current", "not_initialized"].includes(status), readOnly: true, mutationAllowed: false };
+  }
+  async function prepareRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpointEnrollment(ownerId, options = {}) {
+    const state = await getRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpointState(ownerId);
+    if (state.findings?.some(item => item.code === "RECOVERY_GATE_FINALIZATION_RECEIPT_BINDING_ATTESTATION_LIFECYCLE_ATTESTATION_RECEIPT_ANCHOR_PROVIDER_REUSED"))
+      throw new AgenticError("RECOVERY_GATE_FINALIZATION_RECEIPT_BINDING_ATTESTATION_LIFECYCLE_ATTESTATION_RECEIPT_ANCHOR_PROVIDER_REUSED", "Lifecycle finalization-attestation receipt checkpoint harus independen", 409, { findings: state.findings });
+    return recoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpointService.prepareExternalSnapshotCheckpointEnrollment(ownerId, options);
+  }
+  async function applyRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpointEnrollment(ownerId, challengeId, options = {}) {
+    const state = await getRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpointState(ownerId);
+    if (state.findings?.some(item => item.code === "RECOVERY_GATE_FINALIZATION_RECEIPT_BINDING_ATTESTATION_LIFECYCLE_ATTESTATION_RECEIPT_ANCHOR_PROVIDER_REUSED"))
+      throw new AgenticError("RECOVERY_GATE_FINALIZATION_RECEIPT_BINDING_ATTESTATION_LIFECYCLE_ATTESTATION_RECEIPT_ANCHOR_PROVIDER_REUSED", "Lifecycle finalization-attestation receipt checkpoint harus independen", 409, { findings: state.findings });
+    return recoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpointService.applyExternalSnapshotCheckpointEnrollment(ownerId, challengeId, options);
+  }
+  async function attestRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceipt(ownerId) {
+    const result = await recoveryGateProofContinuityService.attestFinalizationReceiptBindingAttestationLifecycleAttestationReceipt(ownerId);
+    const checkpointAdvancement = result.event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, result.event?.operationId || result.event?.id || "batch226-lifecycle-finalization-receipt-attestation")
+      : { complete: true, results: [], errors: [] };
+    const audit = await auditRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptCheckpoint(ownerId);
+    const terminal = audit.status === "decision_blocked" && result.event?.stableBinding?.action === "revoke";
+    const complete = checkpointAdvancement.complete && (audit.usableForCurrentDecision === true || terminal);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+  // Batch 278 external attestation and checkpoint convergence for Batch 277 lifecycle receipts.
+  async function attestRecoveryGateBatch278ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch278ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch278ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch277LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch278ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch277LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch278ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch277ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch277ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch278-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch277ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch277LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch277LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch278-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch277LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 280 external attestation and checkpoint convergence for Batch 279 lifecycle receipts.
+  async function attestRecoveryGateBatch280ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch280ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch280ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch279LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch280ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch279LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch280ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch279ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch279ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch280-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch279ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch279LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch279LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch280-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch279LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 282 external attestation and checkpoint convergence for Batch 281 lifecycle receipts.
+  async function attestRecoveryGateBatch282ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch282ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch282ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch281LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch282ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch281LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch282ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch281ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch281ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch282-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch281ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch281LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch281LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch282-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch281LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 284 external attestation and checkpoint convergence for Batch 283 lifecycle receipts.
+  async function attestRecoveryGateBatch284ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch284ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch284ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch283LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch284ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch283LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch284ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch283ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch283ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch284-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch283ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch283LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch283LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch284-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch283LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 286 external attestation and checkpoint convergence for Batch 285 lifecycle receipts.
+  async function attestRecoveryGateBatch286ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch286ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch286ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch285LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch286ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch285LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch286ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch285ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch285ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch286-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch285ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch285LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch285LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch286-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch285LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+
+  // Batch 288 external attestation and checkpoint convergence for Batch 287 lifecycle receipts.
+  async function attestRecoveryGateBatch288ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch288ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch288ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch287LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch288ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch287LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch288ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch287ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch287ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch288-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch287ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch287LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch287LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch288-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch287LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+
+
+  // Batch 290 external attestation and checkpoint convergence for Batch 289 lifecycle receipts.
+  async function attestRecoveryGateBatch290ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch290ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch290ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch289LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch290ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch289LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch290ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch289ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch289ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch290-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch289ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch289LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch289LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch290-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch289LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 292 external attestation and checkpoint convergence for Batch 291 lifecycle receipts.
+  async function attestRecoveryGateBatch292ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch292ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch292ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch291LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch292ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch291LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch292ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch291ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch291ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch292-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch291ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch291LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch291LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch292-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch291LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 294 external attestation and checkpoint convergence for Batch 293 lifecycle receipts.
+  async function attestRecoveryGateBatch294ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch294ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch294ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch293LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch294ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch293LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch294ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch293ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch293ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch294-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch293ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch293LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch293LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch294-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch293LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+
+  // Batch 296 external attestation and checkpoint convergence for Batch 295 lifecycle receipts.
+  async function attestRecoveryGateBatch296ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch296ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch296ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch295LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch296ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch295LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch296ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch295ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch295ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch296-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch295ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch295LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch295LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch296-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch295LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+  // Batch 298 external attestation and checkpoint convergence for Batch 297 lifecycle receipts.
+  async function attestRecoveryGateBatch298ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch298ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch298ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch297LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch298ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch297LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch298ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch297ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch297ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch298-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch297ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch297LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch297LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch298-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch297LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+
+  // Batch 300 external attestation and checkpoint convergence for Batch 299 lifecycle receipts.
+  async function attestRecoveryGateBatch300ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch300ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch300ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch299LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch300ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch299LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch300ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch299ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch299ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch300-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch299ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch299LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch299LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch300-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch299LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+
+  // Batch 302 external attestation and checkpoint convergence for Batch 301 lifecycle receipts.
+  async function attestRecoveryGateBatch302ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch302ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch302ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch301LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch302ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch301LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch302ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch301ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch301ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch302-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch301ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch301LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch301LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch302-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch301LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+  // Batch 304 external attestation and checkpoint convergence for Batch 303 lifecycle receipts.
+  async function attestRecoveryGateBatch304ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return reconcileRecoveryGateBatch304ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function auditRecoveryGateBatch304ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    return recoveryGateProofContinuityService.auditExternalBatch303LifecycleFinalizationReceiptAttestations(ownerId);
+  }
+  async function getRecoveryGateBatch304ExternalLifecycleFinalizationReceiptAttestationSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getExternalBatch303LifecycleFinalizationReceiptAttestationSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch304ExternalLifecycleFinalizationReceiptAttestations(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch303ExternalAttestationLifecycle(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    let sourceAudit = await recoveryGateProofContinuityService.auditBatch303ExternalAttestationLifecycle(ownerId);
+    if (sourceAudit.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, sourceAudit, complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const preCheckpointAdvancement = sourceAudit.receiptCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, `batch304-pre-attest:${sourceAudit.generationBindingDigest || sourceAudit.receiptCount}`)
+      : { complete: true, results: [], errors: [] };
+    if (!preCheckpointAdvancement.complete) return { status: "recovery_required", sourceReconciliation, sourceAudit, preCheckpointAdvancement,
+      complete: false, usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    if (sourceAudit.receiptCount > 0) sourceAudit = await recoveryGateProofContinuityService.auditBatch303ExternalAttestationLifecycle(ownerId);
+    if (!sourceAudit.receiptCount) {
+      const audit = await recoveryGateProofContinuityService.auditExternalBatch303LifecycleFinalizationReceiptAttestations(ownerId);
+      return { status: audit.status, sourceReconciliation, sourceAudit, preCheckpointAdvancement, audit,
+        complete: audit.status === "not_initialized", usableForCurrentDecision: audit.usableForCurrentDecision === true,
+        readOnly: false, mutationAllowed: false };
+    }
+    if (!["verified_current", "decision_blocked"].includes(sourceAudit.status)) return { status: "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, complete: false, usableForCurrentDecision: false,
+      readOnly: false, mutationAllowed: false };
+    const attestation = await recoveryGateProofContinuityService.attestExternalBatch303LifecycleFinalizationReceipts(ownerId);
+    const checkpointAdvancement = attestation.attestationCount > 0
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, attestation.latestAttestation?.operationId
+        || attestation.latestAttestation?.id || "batch304-reconcile")
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditExternalBatch303LifecycleFinalizationReceiptAttestations(ownerId);
+    const terminalRevocation = audit.status === "decision_blocked";
+    const complete = checkpointAdvancement.complete && audit.missingAttestationCount === 0
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { status: !checkpointAdvancement.complete ? "recovery_required" : complete ? audit.status
+      : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, sourceAudit, preCheckpointAdvancement, attestation, checkpointAdvancement, audit, complete,
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+
+
+
+
+  // Batch 281 lifecycle wrappers include independent checkpoint advancement and recovery convergence.
+  async function prepareRecoveryGateBatch281ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch281ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch281ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch281ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch281ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch281ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch281ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch281ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch281ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch281ExternalAttestationLifecycle(ownerId) {
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch281ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch281-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch281ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch281ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch281ExternalAttestationLifecycle(ownerId);
+    const complete = ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+  // Batch 283 lifecycle wrappers include independent checkpoint advancement and recovery convergence.
+  async function prepareRecoveryGateBatch283ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch283ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch283ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch283ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch283ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch283ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch283ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch283ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch283ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch283ExternalAttestationLifecycle(ownerId) {
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch283ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch283-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch283ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch283ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch283ExternalAttestationLifecycle(ownerId);
+    const complete = ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
+
+  // Batch 285 lifecycle wrappers include independent checkpoint advancement and recovery convergence.
+  async function prepareRecoveryGateBatch285ExternalAttestationLifecycle(ownerId, options = {}) {
+    return recoveryGateProofContinuityService.prepareBatch285ExternalAttestationLifecycle(ownerId, options);
+  }
+  async function applyRecoveryGateBatch285ExternalAttestationLifecycle(ownerId, challengeId, options = {}) {
+    const result = await recoveryGateProofContinuityService.applyBatch285ExternalAttestationLifecycle(ownerId, challengeId, options);
+    const event = result.event || result.finalized || result.receipt || result.renewed || result.revoked || null;
+    const checkpointAdvancement = event || result.status === "recovery_required"
+      ? await advanceBatch210FinalizationCheckpoints(ownerId, event?.operationId || event?.id || challengeId)
+      : { complete: true, results: [], errors: [] };
+    const audit = await recoveryGateProofContinuityService.auditBatch285ExternalAttestationLifecycle(ownerId);
+    const terminalRevocation = result.action === "revoke" && result.phase === "receipt" && audit.status === "decision_blocked";
+    const complete = result.complete === true && checkpointAdvancement.complete
+      && (audit.usableForCurrentDecision === true || terminalRevocation);
+    return { ...result, checkpointAdvancement, audit, complete,
+      status: !checkpointAdvancement.complete ? "recovery_required" : result.complete !== true ? result.status
+        : complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      usableForCurrentDecision: complete && audit.usableForCurrentDecision === true, readOnly: false, mutationAllowed: false };
+  }
+  async function auditRecoveryGateBatch285ExternalAttestationLifecycle(ownerId) {
+    return recoveryGateProofContinuityService.auditBatch285ExternalAttestationLifecycle(ownerId);
+  }
+  async function getRecoveryGateBatch285ExternalAttestationLifecycleSnapshot(ownerId) {
+    return recoveryGateProofContinuityService.getBatch285ExternalAttestationLifecycleSnapshot(ownerId);
+  }
+  async function reconcileRecoveryGateBatch285ExternalAttestationLifecycle(ownerId) {
+    const sourceReconciliation = await reconcileRecoveryGateBatch284ExternalLifecycleFinalizationReceiptAttestations(ownerId);
+    if (sourceReconciliation.status === "unhealthy") return { status: "unhealthy", sourceReconciliation, phaseResults: [], complete: false,
+      usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    const phaseResults = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      let audit = await recoveryGateProofContinuityService.auditBatch285ExternalAttestationLifecycle(ownerId);
+      if (audit.status === "unhealthy") return { status: "unhealthy", phaseResults, audit, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      if (audit.checkpointState?.enabled && audit.checkpointState.usableForCurrentDecision !== true) {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          `batch285-reconcile-checkpoint:${audit.generationBindingDigest || attempt}`);
+        phaseResults.push({ phase: "checkpoint_reconciliation", checkpointAdvancement });
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+        audit = await recoveryGateProofContinuityService.auditBatch285ExternalAttestationLifecycle(ownerId);
+      }
+      const challengeId = audit.pendingChallengeIds?.[0];
+      if (!challengeId) break;
+      const phase = await recoveryGateProofContinuityService.resumeBatch285ExternalAttestationLifecycle(ownerId, challengeId);
+      phaseResults.push(phase);
+      if (phase.event || phase.status === "recovery_required") {
+        const checkpointAdvancement = await advanceBatch210FinalizationCheckpoints(ownerId,
+          phase.event?.operationId || phase.event?.id || challengeId);
+        phaseResults[phaseResults.length - 1] = { ...phase, checkpointAdvancement };
+        if (!checkpointAdvancement.complete) return { status: "recovery_required", phaseResults, audit, complete: false,
+          usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+      }
+      if (phase.status === "unhealthy") return { status: "unhealthy", phaseResults, complete: false,
+        usableForCurrentDecision: false, readOnly: false, mutationAllowed: false };
+    }
+    const audit = await recoveryGateProofContinuityService.auditBatch285ExternalAttestationLifecycle(ownerId);
+    const complete = sourceReconciliation.complete === true && ["verified_current", "decision_blocked", "not_initialized"].includes(audit.status)
+      && !(audit.pendingChallengeIds || []).length && audit.missingFinalizationReceiptCount === 0;
+    return { status: complete ? audit.status : audit.status === "unhealthy" ? "unhealthy" : "recovery_required",
+      sourceReconciliation, phaseResults, audit, complete, usableForCurrentDecision: complete && audit.usableForCurrentDecision === true,
+      readOnly: false, mutationAllowed: false };
+  }
+
+
   async function prepareRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycle(ownerId, options = {}) {
     return recoveryGateProofContinuityService.prepareFinalizationReceiptBindingAttestationLifecycleExternalFinalizationReceiptAttestationLifecycle(ownerId, options);
   }
@@ -16031,6 +19233,60 @@ requireRecoverySloCrossDomainRecoveryGateProofContinuityReceiptLifecycleCheckpoi
     const batch273ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch273ExternalAttestationLifecycle(ownerId);
     const batch274ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch273LifecycleFinalizationReceiptAttestations(ownerId);
     const batch275ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch275ExternalAttestationLifecycle(ownerId);
+    const batch276ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch275LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch277ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch277ExternalAttestationLifecycle(ownerId);
+    const batch278ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch277LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch279ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch279ExternalAttestationLifecycle(ownerId);
+    const batch280ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch279LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch281ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch281ExternalAttestationLifecycle(ownerId);
+    const batch282ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch281LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch283ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch283ExternalAttestationLifecycle(ownerId);
+    const batch284ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch283LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch285ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch285ExternalAttestationLifecycle(ownerId);
+    const batch286ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch285LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch287ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch287ExternalAttestationLifecycle(ownerId);
+    const batch288ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch287LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch289ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch289ExternalAttestationLifecycle(ownerId);
+    const batch290ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch289LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch291ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch291ExternalAttestationLifecycle(ownerId);
+    const batch292ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch291LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch293ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch293ExternalAttestationLifecycle(ownerId);
+    const batch294ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch293LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch295ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch295ExternalAttestationLifecycle(ownerId);
+    const batch296ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch295LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch297ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch297ExternalAttestationLifecycle(ownerId);
+    const batch298ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch297LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch299ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch299ExternalAttestationLifecycle(ownerId);
+    const batch300ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch299LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch301ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch301ExternalAttestationLifecycle(ownerId);
+    const batch302ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch301LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch303ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch303ExternalAttestationLifecycle(ownerId);
+    const batch304ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch303LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch305ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch305ExternalAttestationLifecycle(ownerId);
+    const batch306ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch305LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch307ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch307ExternalAttestationLifecycle(ownerId);
+    const batch308ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch307LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch309ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch309ExternalAttestationLifecycle(ownerId);
+    const batch310ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch309LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch311ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch311ExternalAttestationLifecycle(ownerId);
+    const batch312ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch311LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch313ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch313ExternalAttestationLifecycle(ownerId);
+    const batch314ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch313LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch315ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch315ExternalAttestationLifecycle(ownerId);
+    const batch316ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch315LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch317ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch317ExternalAttestationLifecycle(ownerId);
+    const batch318ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch317LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch319ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch319ExternalAttestationLifecycle(ownerId);
+    const batch320ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch319LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch321ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch321ExternalAttestationLifecycle(ownerId);
+    const batch322ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch321LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch323ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch323ExternalAttestationLifecycle(ownerId);
+    const batch324ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch323LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch325ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch325ExternalAttestationLifecycle(ownerId);
+    const batch326ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch325LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch327ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch327ExternalAttestationLifecycle(ownerId);
+    const batch328ExternalLifecycleFinalizationReceiptAttestationAudit = await recoveryGateProofContinuityService.auditExternalBatch327LifecycleFinalizationReceiptAttestations(ownerId);
+    const batch329ExternalAttestationLifecycleAudit = await recoveryGateProofContinuityService.auditBatch329ExternalAttestationLifecycle(ownerId);
     const externalFinalizationReceiptAttestationRequired = externalFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
       || externalFinalizationReceiptAttestationAudit.attestationCount > 0;
     const externalFinalizationReceiptAttestationLifecycleRequired = externalFinalizationReceiptAttestationLifecycleAudit.checkpointState?.enabled === true
@@ -16483,7 +19739,663 @@ requireRecoverySloCrossDomainRecoveryGateProofContinuityReceiptLifecycleCheckpoi
         : ["stale", "recovery_required"].includes(batch274ConvergedStatus) ? batch274ConvergedStatus
           : batch275ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch275ExternalAttestationLifecycleAudit.status)
             ? batch275ExternalAttestationLifecycleAudit.status : batch274ConvergedStatus;
-    return { ...baseAudit, status: batch275ConvergedStatus, batch275ExternalAttestationLifecycleAudit, batch275ExternalAttestationLifecycleRequired, batch274ExternalLifecycleFinalizationReceiptAttestationAudit, batch273ExternalAttestationLifecycleAudit, batch272ExternalLifecycleFinalizationReceiptAttestationAudit, batch271ExternalAttestationLifecycleAudit, batch270ExternalLifecycleFinalizationReceiptAttestationAudit, batch269ExternalAttestationLifecycleAudit, batch268ExternalLifecycleFinalizationReceiptAttestationAudit, batch267ExternalAttestationLifecycleAudit, batch266ExternalLifecycleFinalizationReceiptAttestationAudit, batch265ExternalAttestationLifecycleAudit, batch264ExternalLifecycleFinalizationReceiptAttestationAudit, batch259ExternalAttestationLifecycleAudit, batch260ExternalLifecycleFinalizationReceiptAttestationAudit, batch261ExternalAttestationLifecycleAudit, batch262ExternalLifecycleFinalizationReceiptAttestationAudit, batch263ExternalAttestationLifecycleAudit, batch251ExternalAttestationLifecycleAudit, batch252ExternalLifecycleFinalizationReceiptAttestationAudit, batch253ExternalAttestationLifecycleAudit, batch254ExternalLifecycleFinalizationReceiptAttestationAudit, batch255ExternalAttestationLifecycleAudit, batch256ExternalLifecycleFinalizationReceiptAttestationAudit, batch257ExternalAttestationLifecycleAudit, batch258ExternalLifecycleFinalizationReceiptAttestationAudit, externalLifecycleAudit, externalFinalizationReceiptAttestationAudit, externalFinalizationReceiptAttestationLifecycleAudit,
+    const batch276ExternalLifecycleFinalizationReceiptAttestationRequired = batch276ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch276ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch276ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch276ConvergedStatus = batch275ConvergedStatus === "unhealthy"
+      || batch276ExternalLifecycleFinalizationReceiptAttestationRequired && batch276ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch275ConvergedStatus === "decision_blocked"
+        || batch276ExternalLifecycleFinalizationReceiptAttestationRequired && batch276ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch275ConvergedStatus) ? batch275ConvergedStatus
+          : batch276ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch276ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch276ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch275ConvergedStatus;
+    const batch277ExternalAttestationLifecycleRequired = batch277ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch277ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch277ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch277ConvergedStatus = batch276ConvergedStatus === "unhealthy"
+      || batch277ExternalAttestationLifecycleRequired && batch277ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch276ConvergedStatus === "decision_blocked"
+        || batch277ExternalAttestationLifecycleRequired && batch277ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch276ConvergedStatus) ? batch276ConvergedStatus
+          : batch277ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch277ExternalAttestationLifecycleAudit.status)
+            ? batch277ExternalAttestationLifecycleAudit.status : batch276ConvergedStatus;
+    const batch278ExternalLifecycleFinalizationReceiptAttestationRequired = batch278ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch278ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch278ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch278ConvergedStatus = batch277ConvergedStatus === "unhealthy"
+      || batch278ExternalLifecycleFinalizationReceiptAttestationRequired && batch278ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch277ConvergedStatus === "decision_blocked"
+        || batch278ExternalLifecycleFinalizationReceiptAttestationRequired && batch278ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch277ConvergedStatus) ? batch277ConvergedStatus
+          : batch278ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch278ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch278ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch277ConvergedStatus;
+    const batch279ExternalAttestationLifecycleRequired = batch279ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch279ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch279ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch279ConvergedStatus = batch278ConvergedStatus === "unhealthy"
+      || batch279ExternalAttestationLifecycleRequired && batch279ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch278ConvergedStatus === "decision_blocked"
+        || batch279ExternalAttestationLifecycleRequired && batch279ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch278ConvergedStatus) ? batch278ConvergedStatus
+          : batch279ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch279ExternalAttestationLifecycleAudit.status)
+            ? batch279ExternalAttestationLifecycleAudit.status : batch278ConvergedStatus;
+    const batch280ExternalLifecycleFinalizationReceiptAttestationRequired = batch280ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch280ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch280ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch280ConvergedStatus = batch279ConvergedStatus === "unhealthy"
+      || batch280ExternalLifecycleFinalizationReceiptAttestationRequired && batch280ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch279ConvergedStatus === "decision_blocked"
+        || batch280ExternalLifecycleFinalizationReceiptAttestationRequired && batch280ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch279ConvergedStatus) ? batch279ConvergedStatus
+          : batch280ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch280ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch280ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch279ConvergedStatus;
+    const batch281ExternalAttestationLifecycleRequired = batch281ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch281ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch281ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch281ConvergedStatus = batch280ConvergedStatus === "unhealthy"
+      || batch281ExternalAttestationLifecycleRequired && batch281ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch280ConvergedStatus === "decision_blocked"
+        || batch281ExternalAttestationLifecycleRequired && batch281ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch280ConvergedStatus) ? batch280ConvergedStatus
+          : batch281ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch281ExternalAttestationLifecycleAudit.status)
+            ? batch281ExternalAttestationLifecycleAudit.status : batch280ConvergedStatus;
+    const batch282ExternalLifecycleFinalizationReceiptAttestationRequired = batch282ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch282ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch282ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch282ConvergedStatus = batch281ConvergedStatus === "unhealthy"
+      || batch282ExternalLifecycleFinalizationReceiptAttestationRequired && batch282ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch281ConvergedStatus === "decision_blocked"
+        || batch282ExternalLifecycleFinalizationReceiptAttestationRequired && batch282ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch281ConvergedStatus) ? batch281ConvergedStatus
+          : batch282ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch282ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch282ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch281ConvergedStatus;
+    const batch283ExternalAttestationLifecycleRequired = batch283ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch283ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch283ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch283ConvergedStatus = batch282ConvergedStatus === "unhealthy"
+      || batch283ExternalAttestationLifecycleRequired && batch283ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch282ConvergedStatus === "decision_blocked"
+        || batch283ExternalAttestationLifecycleRequired && batch283ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch282ConvergedStatus) ? batch282ConvergedStatus
+          : batch283ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch283ExternalAttestationLifecycleAudit.status)
+            ? batch283ExternalAttestationLifecycleAudit.status : batch282ConvergedStatus;
+    const batch284ExternalLifecycleFinalizationReceiptAttestationRequired = batch284ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch284ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch284ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch284ConvergedStatus = batch283ConvergedStatus === "unhealthy"
+      || batch284ExternalLifecycleFinalizationReceiptAttestationRequired && batch284ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch283ConvergedStatus === "decision_blocked"
+        || batch284ExternalLifecycleFinalizationReceiptAttestationRequired && batch284ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch283ConvergedStatus) ? batch283ConvergedStatus
+          : batch284ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch284ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch284ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch283ConvergedStatus;
+    const batch285ExternalAttestationLifecycleRequired = batch285ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch285ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch285ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch285ConvergedStatus = batch284ConvergedStatus === "unhealthy"
+      || batch285ExternalAttestationLifecycleRequired && batch285ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch284ConvergedStatus === "decision_blocked"
+        || batch285ExternalAttestationLifecycleRequired && batch285ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch284ConvergedStatus) ? batch284ConvergedStatus
+          : batch285ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch285ExternalAttestationLifecycleAudit.status)
+            ? batch285ExternalAttestationLifecycleAudit.status : batch284ConvergedStatus;
+    const batch286ExternalLifecycleFinalizationReceiptAttestationRequired = batch286ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch286ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch286ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch286ConvergedStatus = batch285ConvergedStatus === "unhealthy"
+      || batch286ExternalLifecycleFinalizationReceiptAttestationRequired && batch286ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch285ConvergedStatus === "decision_blocked"
+        || batch286ExternalLifecycleFinalizationReceiptAttestationRequired && batch286ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch285ConvergedStatus) ? batch285ConvergedStatus
+          : batch286ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch286ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch286ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch285ConvergedStatus;
+    const batch287ExternalAttestationLifecycleRequired = batch287ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch287ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch287ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch287ConvergedStatus = batch286ConvergedStatus === "unhealthy"
+      || batch287ExternalAttestationLifecycleRequired && batch287ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch286ConvergedStatus === "decision_blocked"
+        || batch287ExternalAttestationLifecycleRequired && batch287ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch286ConvergedStatus) ? batch286ConvergedStatus
+          : batch287ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch287ExternalAttestationLifecycleAudit.status)
+            ? batch287ExternalAttestationLifecycleAudit.status : batch286ConvergedStatus;
+    const batch288ExternalLifecycleFinalizationReceiptAttestationRequired = batch288ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch288ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch288ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch288ConvergedStatus = batch287ConvergedStatus === "unhealthy"
+      || batch288ExternalLifecycleFinalizationReceiptAttestationRequired && batch288ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch287ConvergedStatus === "decision_blocked"
+        || batch288ExternalLifecycleFinalizationReceiptAttestationRequired && batch288ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch287ConvergedStatus) ? batch287ConvergedStatus
+          : batch288ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch288ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch288ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch287ConvergedStatus;
+    const batch289ExternalAttestationLifecycleRequired = batch289ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch289ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch289ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch289ConvergedStatus = batch288ConvergedStatus === "unhealthy"
+      || batch289ExternalAttestationLifecycleRequired && batch289ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch288ConvergedStatus === "decision_blocked"
+        || batch289ExternalAttestationLifecycleRequired && batch289ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch288ConvergedStatus) ? batch288ConvergedStatus
+          : batch289ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch289ExternalAttestationLifecycleAudit.status)
+            ? batch289ExternalAttestationLifecycleAudit.status : batch288ConvergedStatus;
+    const batch290ExternalLifecycleFinalizationReceiptAttestationRequired = batch290ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch290ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch290ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch290ConvergedStatus = batch289ConvergedStatus === "unhealthy"
+      || batch290ExternalLifecycleFinalizationReceiptAttestationRequired && batch290ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch289ConvergedStatus === "decision_blocked"
+        || batch290ExternalLifecycleFinalizationReceiptAttestationRequired && batch290ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch289ConvergedStatus) ? batch289ConvergedStatus
+          : batch290ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch290ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch290ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch289ConvergedStatus;
+    const batch291ExternalAttestationLifecycleRequired = batch291ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch291ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch291ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch291ConvergedStatus = batch290ConvergedStatus === "unhealthy"
+      || batch291ExternalAttestationLifecycleRequired && batch291ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch290ConvergedStatus === "decision_blocked"
+        || batch291ExternalAttestationLifecycleRequired && batch291ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch290ConvergedStatus) ? batch290ConvergedStatus
+          : batch291ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch291ExternalAttestationLifecycleAudit.status)
+            ? batch291ExternalAttestationLifecycleAudit.status : batch290ConvergedStatus;
+    const batch292ExternalLifecycleFinalizationReceiptAttestationRequired = batch292ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch292ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch292ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch292ConvergedStatus = batch291ConvergedStatus === "unhealthy"
+      || batch292ExternalLifecycleFinalizationReceiptAttestationRequired && batch292ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch291ConvergedStatus === "decision_blocked"
+        || batch292ExternalLifecycleFinalizationReceiptAttestationRequired && batch292ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch291ConvergedStatus) ? batch291ConvergedStatus
+          : batch292ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch292ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch292ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch291ConvergedStatus;
+    const batch293ExternalAttestationLifecycleRequired = batch293ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch293ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch293ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch293ConvergedStatus = batch292ConvergedStatus === "unhealthy"
+      || batch293ExternalAttestationLifecycleRequired && batch293ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch292ConvergedStatus === "decision_blocked"
+        || batch293ExternalAttestationLifecycleRequired && batch293ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch292ConvergedStatus) ? batch292ConvergedStatus
+          : batch293ExternalAttestationLifecycleRequired
+            && ["stale", "recovery_required"].includes(batch293ExternalAttestationLifecycleAudit.status)
+            ? batch293ExternalAttestationLifecycleAudit.status : batch292ConvergedStatus;
+    const batch294ExternalLifecycleFinalizationReceiptAttestationRequired = batch294ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch294ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch294ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch294ConvergedStatus = batch293ConvergedStatus === "unhealthy"
+      || batch294ExternalLifecycleFinalizationReceiptAttestationRequired && batch294ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch293ConvergedStatus === "decision_blocked"
+        || batch294ExternalLifecycleFinalizationReceiptAttestationRequired && batch294ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch293ConvergedStatus) ? batch293ConvergedStatus
+          : batch294ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch294ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch294ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch293ConvergedStatus;
+    const batch295ExternalAttestationLifecycleRequired = batch295ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch295ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch295ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch295ConvergedStatus = batch294ConvergedStatus === "unhealthy"
+      || batch295ExternalAttestationLifecycleRequired && batch295ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch294ConvergedStatus === "decision_blocked"
+        || batch295ExternalAttestationLifecycleRequired && batch295ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch294ConvergedStatus) ? batch294ConvergedStatus
+          : batch295ExternalAttestationLifecycleRequired
+            && ["stale", "recovery_required"].includes(batch295ExternalAttestationLifecycleAudit.status)
+            ? batch295ExternalAttestationLifecycleAudit.status : batch294ConvergedStatus;
+    const batch296ExternalLifecycleFinalizationReceiptAttestationRequired = batch296ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch296ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch296ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch296ConvergedStatus = batch295ConvergedStatus === "unhealthy"
+      || batch296ExternalLifecycleFinalizationReceiptAttestationRequired && batch296ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch295ConvergedStatus === "decision_blocked"
+        || batch296ExternalLifecycleFinalizationReceiptAttestationRequired && batch296ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch295ConvergedStatus) ? batch295ConvergedStatus
+          : batch296ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch296ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch296ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch295ConvergedStatus;
+    const batch297ExternalAttestationLifecycleRequired = batch297ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch297ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch297ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch297ConvergedStatus = batch296ConvergedStatus === "unhealthy"
+      || batch297ExternalAttestationLifecycleRequired && batch297ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch296ConvergedStatus === "decision_blocked"
+        || batch297ExternalAttestationLifecycleRequired && batch297ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch296ConvergedStatus) ? batch296ConvergedStatus
+          : batch297ExternalAttestationLifecycleRequired
+            && ["stale", "recovery_required"].includes(batch297ExternalAttestationLifecycleAudit.status)
+            ? batch297ExternalAttestationLifecycleAudit.status : batch296ConvergedStatus;
+    const batch298ExternalLifecycleFinalizationReceiptAttestationRequired = batch298ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch298ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch298ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch298ConvergedStatus = batch297ConvergedStatus === "unhealthy"
+      || batch298ExternalLifecycleFinalizationReceiptAttestationRequired && batch298ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch297ConvergedStatus === "decision_blocked"
+        || batch298ExternalLifecycleFinalizationReceiptAttestationRequired && batch298ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch297ConvergedStatus) ? batch297ConvergedStatus
+          : batch298ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch298ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch298ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch297ConvergedStatus;
+    const batch299ExternalAttestationLifecycleRequired = batch299ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch299ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch299ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch299ConvergedStatus = batch298ConvergedStatus === "unhealthy"
+      || batch299ExternalAttestationLifecycleRequired && batch299ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch298ConvergedStatus === "decision_blocked"
+        || batch299ExternalAttestationLifecycleRequired && batch299ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch298ConvergedStatus) ? batch298ConvergedStatus
+          : batch299ExternalAttestationLifecycleRequired
+            && ["stale", "recovery_required"].includes(batch299ExternalAttestationLifecycleAudit.status)
+            ? batch299ExternalAttestationLifecycleAudit.status : batch298ConvergedStatus;
+    const batch300ExternalLifecycleFinalizationReceiptAttestationRequired = batch300ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch300ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch300ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch300ConvergedStatus = batch299ConvergedStatus === "unhealthy"
+      || batch300ExternalLifecycleFinalizationReceiptAttestationRequired && batch300ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch299ConvergedStatus === "decision_blocked"
+        || batch300ExternalLifecycleFinalizationReceiptAttestationRequired && batch300ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch299ConvergedStatus) ? batch299ConvergedStatus
+          : batch300ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch300ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch300ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch299ConvergedStatus;
+    const batch301ExternalAttestationLifecycleRequired = batch301ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch301ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch301ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch301ConvergedStatus = batch300ConvergedStatus === "unhealthy"
+      || batch301ExternalAttestationLifecycleRequired && batch301ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch300ConvergedStatus === "decision_blocked"
+        || batch301ExternalAttestationLifecycleRequired && batch301ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch300ConvergedStatus) ? batch300ConvergedStatus
+          : batch301ExternalAttestationLifecycleRequired
+            && ["stale", "recovery_required"].includes(batch301ExternalAttestationLifecycleAudit.status)
+            ? batch301ExternalAttestationLifecycleAudit.status : batch300ConvergedStatus;
+    const batch302ExternalLifecycleFinalizationReceiptAttestationRequired = batch302ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch302ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch302ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch302ConvergedStatus = batch301ConvergedStatus === "unhealthy"
+      || batch302ExternalLifecycleFinalizationReceiptAttestationRequired && batch302ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch301ConvergedStatus === "decision_blocked"
+        || batch302ExternalLifecycleFinalizationReceiptAttestationRequired && batch302ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch301ConvergedStatus) ? batch301ConvergedStatus
+          : batch302ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch302ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch302ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch301ConvergedStatus;
+    const batch303ExternalAttestationLifecycleRequired = batch303ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch303ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch303ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch303ConvergedStatus = batch302ConvergedStatus === "unhealthy"
+      || batch303ExternalAttestationLifecycleRequired && batch303ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch302ConvergedStatus === "decision_blocked"
+        || batch303ExternalAttestationLifecycleRequired && batch303ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch302ConvergedStatus) ? batch302ConvergedStatus
+          : batch303ExternalAttestationLifecycleRequired
+            && ["stale", "recovery_required"].includes(batch303ExternalAttestationLifecycleAudit.status)
+            ? batch303ExternalAttestationLifecycleAudit.status : batch302ConvergedStatus;
+    const batch304ExternalLifecycleFinalizationReceiptAttestationRequired = batch304ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch304ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch304ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch304ConvergedStatus = batch303ConvergedStatus === "unhealthy"
+      || batch304ExternalLifecycleFinalizationReceiptAttestationRequired && batch304ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch303ConvergedStatus === "decision_blocked"
+        || batch304ExternalLifecycleFinalizationReceiptAttestationRequired && batch304ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch303ConvergedStatus) ? batch303ConvergedStatus
+          : batch304ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch304ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch304ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch303ConvergedStatus;
+    const batch305ExternalAttestationLifecycleRequired = batch305ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch305ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch305ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch305ConvergedStatus = batch304ConvergedStatus === "unhealthy"
+      || batch305ExternalAttestationLifecycleRequired && batch305ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch304ConvergedStatus === "decision_blocked"
+        || batch305ExternalAttestationLifecycleRequired && batch305ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch304ConvergedStatus) ? batch304ConvergedStatus
+          : batch305ExternalAttestationLifecycleRequired
+            && ["stale", "recovery_required"].includes(batch305ExternalAttestationLifecycleAudit.status)
+            ? batch305ExternalAttestationLifecycleAudit.status : batch304ConvergedStatus;
+    const batch306ExternalLifecycleFinalizationReceiptAttestationRequired = batch306ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch306ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch306ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch306ConvergedStatus = batch305ConvergedStatus === "unhealthy"
+      || batch306ExternalLifecycleFinalizationReceiptAttestationRequired && batch306ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch305ConvergedStatus === "decision_blocked"
+        || batch306ExternalLifecycleFinalizationReceiptAttestationRequired && batch306ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch305ConvergedStatus) ? batch305ConvergedStatus
+          : batch306ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch306ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch306ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch305ConvergedStatus;
+    const batch307ExternalAttestationLifecycleRequired = batch307ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch307ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch307ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch307ConvergedStatus = batch306ConvergedStatus === "unhealthy"
+      || batch307ExternalAttestationLifecycleRequired && batch307ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch306ConvergedStatus === "decision_blocked"
+        || batch307ExternalAttestationLifecycleRequired && batch307ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch306ConvergedStatus) ? batch306ConvergedStatus
+          : batch307ExternalAttestationLifecycleRequired
+            && ["stale", "recovery_required"].includes(batch307ExternalAttestationLifecycleAudit.status)
+            ? batch307ExternalAttestationLifecycleAudit.status : batch306ConvergedStatus;
+    const batch308ExternalLifecycleFinalizationReceiptAttestationRequired = batch308ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch308ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch308ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch308ConvergedStatus = batch307ConvergedStatus === "unhealthy"
+      || batch308ExternalLifecycleFinalizationReceiptAttestationRequired && batch308ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch307ConvergedStatus === "decision_blocked"
+        || batch308ExternalLifecycleFinalizationReceiptAttestationRequired && batch308ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch307ConvergedStatus) ? batch307ConvergedStatus
+          : batch308ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch308ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch308ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch307ConvergedStatus;
+    const batch309ExternalAttestationLifecycleRequired = batch309ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch309ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch309ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch309ConvergedStatus = batch308ConvergedStatus === "unhealthy"
+      || batch309ExternalAttestationLifecycleRequired && batch309ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch308ConvergedStatus === "decision_blocked"
+        || batch309ExternalAttestationLifecycleRequired && batch309ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch308ConvergedStatus) ? batch308ConvergedStatus
+          : batch309ExternalAttestationLifecycleRequired
+            && ["stale", "recovery_required"].includes(batch309ExternalAttestationLifecycleAudit.status)
+            ? batch309ExternalAttestationLifecycleAudit.status : batch308ConvergedStatus;
+    const batch310ExternalLifecycleFinalizationReceiptAttestationRequired = batch310ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch310ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch310ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch310ConvergedStatus = batch309ConvergedStatus === "unhealthy"
+      || batch310ExternalLifecycleFinalizationReceiptAttestationRequired && batch310ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch309ConvergedStatus === "decision_blocked"
+        || batch310ExternalLifecycleFinalizationReceiptAttestationRequired && batch310ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch309ConvergedStatus) ? batch309ConvergedStatus
+          : batch310ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch310ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch310ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch309ConvergedStatus;
+    const batch311ExternalAttestationLifecycleRequired = batch311ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch311ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch311ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch311ConvergedStatus = batch310ConvergedStatus === "unhealthy"
+      || batch311ExternalAttestationLifecycleRequired && batch311ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch310ConvergedStatus === "decision_blocked"
+        || batch311ExternalAttestationLifecycleRequired && batch311ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch310ConvergedStatus) ? batch310ConvergedStatus
+          : batch311ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch311ExternalAttestationLifecycleAudit.status)
+            ? batch311ExternalAttestationLifecycleAudit.status : batch310ConvergedStatus;
+    const batch312ExternalLifecycleFinalizationReceiptAttestationRequired = batch312ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch312ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch312ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch312ConvergedStatus = batch311ConvergedStatus === "unhealthy"
+      || batch312ExternalLifecycleFinalizationReceiptAttestationRequired && batch312ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch311ConvergedStatus === "decision_blocked"
+        || batch312ExternalLifecycleFinalizationReceiptAttestationRequired && batch312ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch311ConvergedStatus) ? batch311ConvergedStatus
+          : batch312ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch312ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch312ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch311ConvergedStatus;
+    const batch313ExternalAttestationLifecycleRequired = batch313ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch313ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch313ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch313ConvergedStatus = batch312ConvergedStatus === "unhealthy"
+      || batch313ExternalAttestationLifecycleRequired && batch313ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch312ConvergedStatus === "decision_blocked"
+        || batch313ExternalAttestationLifecycleRequired && batch313ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch312ConvergedStatus) ? batch312ConvergedStatus
+          : batch313ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch313ExternalAttestationLifecycleAudit.status)
+            ? batch313ExternalAttestationLifecycleAudit.status : batch312ConvergedStatus;
+    const batch314ExternalLifecycleFinalizationReceiptAttestationRequired = batch314ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch314ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch314ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch314ConvergedStatus = batch313ConvergedStatus === "unhealthy"
+      || batch314ExternalLifecycleFinalizationReceiptAttestationRequired && batch314ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch313ConvergedStatus === "decision_blocked"
+        || batch314ExternalLifecycleFinalizationReceiptAttestationRequired && batch314ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch313ConvergedStatus) ? batch313ConvergedStatus
+          : batch314ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch314ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch314ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch313ConvergedStatus;
+    const batch315ExternalAttestationLifecycleRequired = batch315ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch315ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch315ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch315ConvergedStatus = batch314ConvergedStatus === "unhealthy"
+      || batch315ExternalAttestationLifecycleRequired && batch315ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch314ConvergedStatus === "decision_blocked"
+        || batch315ExternalAttestationLifecycleRequired && batch315ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch314ConvergedStatus) ? batch314ConvergedStatus
+          : batch315ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch315ExternalAttestationLifecycleAudit.status)
+            ? batch315ExternalAttestationLifecycleAudit.status : batch314ConvergedStatus;
+    const batch316ExternalLifecycleFinalizationReceiptAttestationRequired = batch316ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch316ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch316ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch316ConvergedStatus = batch315ConvergedStatus === "unhealthy"
+      || batch316ExternalLifecycleFinalizationReceiptAttestationRequired && batch316ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch315ConvergedStatus === "decision_blocked"
+        || batch316ExternalLifecycleFinalizationReceiptAttestationRequired && batch316ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch315ConvergedStatus) ? batch315ConvergedStatus
+          : batch316ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch316ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch316ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch315ConvergedStatus;
+    const batch317ExternalAttestationLifecycleRequired = batch317ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch317ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch317ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch317ConvergedStatus = batch316ConvergedStatus === "unhealthy"
+      || batch317ExternalAttestationLifecycleRequired && batch317ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch316ConvergedStatus === "decision_blocked"
+        || batch317ExternalAttestationLifecycleRequired && batch317ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch316ConvergedStatus) ? batch316ConvergedStatus
+          : batch317ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch317ExternalAttestationLifecycleAudit.status)
+            ? batch317ExternalAttestationLifecycleAudit.status : batch316ConvergedStatus;
+    const batch318ExternalLifecycleFinalizationReceiptAttestationRequired = batch318ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch318ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch318ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch318ConvergedStatus = batch317ConvergedStatus === "unhealthy"
+      || batch318ExternalLifecycleFinalizationReceiptAttestationRequired && batch318ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch317ConvergedStatus === "decision_blocked"
+        || batch318ExternalLifecycleFinalizationReceiptAttestationRequired && batch318ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch317ConvergedStatus) ? batch317ConvergedStatus
+          : batch318ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch318ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch318ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch317ConvergedStatus;
+    const batch319ExternalAttestationLifecycleRequired = batch319ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch319ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch319ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch319ConvergedStatus = batch318ConvergedStatus === "unhealthy"
+      || batch319ExternalAttestationLifecycleRequired && batch319ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch318ConvergedStatus === "decision_blocked"
+        || batch319ExternalAttestationLifecycleRequired && batch319ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch318ConvergedStatus) ? batch318ConvergedStatus
+          : batch319ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch319ExternalAttestationLifecycleAudit.status)
+            ? batch319ExternalAttestationLifecycleAudit.status : batch318ConvergedStatus;
+    const batch320ExternalLifecycleFinalizationReceiptAttestationRequired = batch320ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch320ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch320ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch320ConvergedStatus = batch319ConvergedStatus === "unhealthy"
+      || batch320ExternalLifecycleFinalizationReceiptAttestationRequired && batch320ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch319ConvergedStatus === "decision_blocked"
+        || batch320ExternalLifecycleFinalizationReceiptAttestationRequired && batch320ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch319ConvergedStatus) ? batch319ConvergedStatus
+          : batch320ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch320ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch320ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch319ConvergedStatus;
+    const batch321ExternalAttestationLifecycleRequired = batch321ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch321ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch321ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch321ConvergedStatus = batch320ConvergedStatus === "unhealthy"
+      || batch321ExternalAttestationLifecycleRequired && batch321ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch320ConvergedStatus === "decision_blocked"
+        || batch321ExternalAttestationLifecycleRequired && batch321ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch320ConvergedStatus) ? batch320ConvergedStatus
+          : batch321ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch321ExternalAttestationLifecycleAudit.status)
+            ? batch321ExternalAttestationLifecycleAudit.status : batch320ConvergedStatus;
+    const batch322ExternalLifecycleFinalizationReceiptAttestationRequired = batch322ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch322ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch322ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch322ConvergedStatus = batch321ConvergedStatus === "unhealthy"
+      || batch322ExternalLifecycleFinalizationReceiptAttestationRequired && batch322ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch321ConvergedStatus === "decision_blocked"
+        || batch322ExternalLifecycleFinalizationReceiptAttestationRequired && batch322ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch321ConvergedStatus) ? batch321ConvergedStatus
+          : batch322ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch322ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch322ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch321ConvergedStatus;
+    const batch323ExternalAttestationLifecycleRequired = batch323ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch323ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch323ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch323ConvergedStatus = batch322ConvergedStatus === "unhealthy"
+      || batch323ExternalAttestationLifecycleRequired && batch323ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch322ConvergedStatus === "decision_blocked"
+        || batch323ExternalAttestationLifecycleRequired && batch323ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch322ConvergedStatus) ? batch322ConvergedStatus
+          : batch323ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch323ExternalAttestationLifecycleAudit.status)
+            ? batch323ExternalAttestationLifecycleAudit.status : batch322ConvergedStatus;
+    const batch324ExternalLifecycleFinalizationReceiptAttestationRequired = batch324ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch324ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch324ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch324ConvergedStatus = batch323ConvergedStatus === "unhealthy"
+      || batch324ExternalLifecycleFinalizationReceiptAttestationRequired && batch324ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch323ConvergedStatus === "decision_blocked"
+        || batch324ExternalLifecycleFinalizationReceiptAttestationRequired && batch324ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch323ConvergedStatus) ? batch323ConvergedStatus
+          : batch324ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch324ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch324ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch323ConvergedStatus;
+    const batch325ExternalAttestationLifecycleRequired = batch325ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch325ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch325ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch325ConvergedStatus = batch324ConvergedStatus === "unhealthy"
+      || batch325ExternalAttestationLifecycleRequired && batch325ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch324ConvergedStatus === "decision_blocked"
+        || batch325ExternalAttestationLifecycleRequired && batch325ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch324ConvergedStatus) ? batch324ConvergedStatus
+          : batch325ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch325ExternalAttestationLifecycleAudit.status)
+            ? batch325ExternalAttestationLifecycleAudit.status : batch324ConvergedStatus;
+    const batch326ExternalLifecycleFinalizationReceiptAttestationRequired = batch326ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch326ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch326ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch326ConvergedStatus = batch325ConvergedStatus === "unhealthy"
+      || batch326ExternalLifecycleFinalizationReceiptAttestationRequired && batch326ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch325ConvergedStatus === "decision_blocked"
+        || batch326ExternalLifecycleFinalizationReceiptAttestationRequired && batch326ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch325ConvergedStatus) ? batch325ConvergedStatus
+          : batch326ExternalLifecycleFinalizationReceiptAttestationRequired
+            && ["stale", "recovery_required"].includes(batch326ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch326ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch325ConvergedStatus;
+    const batch327ExternalAttestationLifecycleRequired = batch327ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch327ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch327ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch328ExternalLifecycleFinalizationReceiptAttestationRequired = batch328ExternalLifecycleFinalizationReceiptAttestationAudit.checkpointState?.enabled === true
+      || batch328ExternalLifecycleFinalizationReceiptAttestationAudit.receiptCount > 0
+      || batch328ExternalLifecycleFinalizationReceiptAttestationAudit.attestationCount > 0;
+    const batch329ExternalAttestationLifecycleRequired = batch329ExternalAttestationLifecycleAudit.checkpointState?.enabled === true
+      || batch329ExternalAttestationLifecycleAudit.lifecycleEventCount > 0 || batch329ExternalAttestationLifecycleAudit.receiptCount > 0;
+    const batch327ConvergedStatus = batch326ConvergedStatus === "unhealthy"
+      || batch327ExternalAttestationLifecycleRequired && batch327ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch326ConvergedStatus === "decision_blocked"
+        || batch327ExternalAttestationLifecycleRequired && batch327ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch326ConvergedStatus) ? batch326ConvergedStatus
+          : batch327ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch327ExternalAttestationLifecycleAudit.status)
+            ? batch327ExternalAttestationLifecycleAudit.status : batch326ConvergedStatus;
+    const batch328ConvergedStatus = batch327ConvergedStatus === "unhealthy"
+      || batch328ExternalLifecycleFinalizationReceiptAttestationRequired && batch328ExternalLifecycleFinalizationReceiptAttestationAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch327ConvergedStatus === "decision_blocked"
+        || batch328ExternalLifecycleFinalizationReceiptAttestationRequired && batch328ExternalLifecycleFinalizationReceiptAttestationAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch327ConvergedStatus) ? batch327ConvergedStatus
+          : batch328ExternalLifecycleFinalizationReceiptAttestationRequired && ["stale", "recovery_required"].includes(batch328ExternalLifecycleFinalizationReceiptAttestationAudit.status)
+            ? batch328ExternalLifecycleFinalizationReceiptAttestationAudit.status : batch327ConvergedStatus;
+    const batch329ConvergedStatus = batch328ConvergedStatus === "unhealthy"
+      || batch329ExternalAttestationLifecycleRequired && batch329ExternalAttestationLifecycleAudit.status === "unhealthy"
+      ? "unhealthy"
+      : batch328ConvergedStatus === "decision_blocked"
+        || batch329ExternalAttestationLifecycleRequired && batch329ExternalAttestationLifecycleAudit.status === "decision_blocked"
+        ? "decision_blocked"
+        : ["stale", "recovery_required"].includes(batch328ConvergedStatus) ? batch328ConvergedStatus
+          : batch329ExternalAttestationLifecycleRequired && ["stale", "recovery_required"].includes(batch329ExternalAttestationLifecycleAudit.status)
+            ? batch329ExternalAttestationLifecycleAudit.status : batch328ConvergedStatus;
+    return { ...baseAudit, status: batch329ConvergedStatus, batch329ExternalAttestationLifecycleAudit, batch329ExternalAttestationLifecycleRequired, batch329ConvergedStatus, batch328ExternalLifecycleFinalizationReceiptAttestationAudit, batch328ExternalLifecycleFinalizationReceiptAttestationRequired, batch328ConvergedStatus, batch327ExternalAttestationLifecycleAudit, batch327ExternalAttestationLifecycleRequired, batch327ConvergedStatus, batch326ExternalLifecycleFinalizationReceiptAttestationAudit, batch326ExternalLifecycleFinalizationReceiptAttestationRequired, batch326ConvergedStatus, batch322ExternalLifecycleFinalizationReceiptAttestationAudit, batch322ExternalLifecycleFinalizationReceiptAttestationRequired, batch322ConvergedStatus, batch323ExternalAttestationLifecycleAudit, batch323ExternalAttestationLifecycleRequired, batch323ConvergedStatus, batch324ExternalLifecycleFinalizationReceiptAttestationAudit, batch324ExternalLifecycleFinalizationReceiptAttestationRequired, batch324ConvergedStatus, batch325ExternalAttestationLifecycleAudit, batch325ExternalAttestationLifecycleRequired, batch325ConvergedStatus, batch321ExternalAttestationLifecycleAudit, batch321ExternalAttestationLifecycleRequired, batch321ConvergedStatus, batch320ExternalLifecycleFinalizationReceiptAttestationAudit, batch320ExternalLifecycleFinalizationReceiptAttestationRequired, batch320ConvergedStatus, batch319ExternalAttestationLifecycleAudit, batch319ExternalAttestationLifecycleRequired, batch319ConvergedStatus, batch318ExternalLifecycleFinalizationReceiptAttestationAudit, batch318ExternalLifecycleFinalizationReceiptAttestationRequired, batch318ConvergedStatus, batch317ExternalAttestationLifecycleAudit, batch317ExternalAttestationLifecycleRequired, batch317ConvergedStatus, batch316ExternalLifecycleFinalizationReceiptAttestationAudit, batch316ExternalLifecycleFinalizationReceiptAttestationRequired, batch316ConvergedStatus, batch315ExternalAttestationLifecycleAudit, batch315ExternalAttestationLifecycleRequired, batch315ConvergedStatus, batch314ExternalLifecycleFinalizationReceiptAttestationAudit, batch314ExternalLifecycleFinalizationReceiptAttestationRequired, batch314ConvergedStatus, batch313ExternalAttestationLifecycleAudit, batch313ExternalAttestationLifecycleRequired, batch313ConvergedStatus, batch312ExternalLifecycleFinalizationReceiptAttestationAudit, batch312ExternalLifecycleFinalizationReceiptAttestationRequired, batch312ConvergedStatus, batch311ExternalAttestationLifecycleAudit, batch311ExternalAttestationLifecycleRequired, batch311ConvergedStatus, batch310ExternalLifecycleFinalizationReceiptAttestationAudit, batch310ExternalLifecycleFinalizationReceiptAttestationRequired, batch310ConvergedStatus, batch309ExternalAttestationLifecycleAudit, batch309ExternalAttestationLifecycleRequired, batch309ConvergedStatus, batch308ExternalLifecycleFinalizationReceiptAttestationAudit, batch308ExternalLifecycleFinalizationReceiptAttestationRequired, batch308ConvergedStatus, batch307ExternalAttestationLifecycleAudit, batch307ExternalAttestationLifecycleRequired, batch307ConvergedStatus, batch306ExternalLifecycleFinalizationReceiptAttestationAudit, batch306ExternalLifecycleFinalizationReceiptAttestationRequired, batch306ConvergedStatus, batch305ExternalAttestationLifecycleAudit, batch305ExternalAttestationLifecycleRequired, batch305ConvergedStatus, batch304ExternalLifecycleFinalizationReceiptAttestationAudit, batch304ExternalLifecycleFinalizationReceiptAttestationRequired, batch304ConvergedStatus, batch303ExternalAttestationLifecycleAudit, batch303ExternalAttestationLifecycleRequired, batch303ConvergedStatus, batch302ExternalLifecycleFinalizationReceiptAttestationAudit, batch302ExternalLifecycleFinalizationReceiptAttestationRequired, batch302ConvergedStatus, batch301ExternalAttestationLifecycleAudit, batch301ExternalAttestationLifecycleRequired, batch301ConvergedStatus, batch300ExternalLifecycleFinalizationReceiptAttestationAudit, batch300ExternalLifecycleFinalizationReceiptAttestationRequired, batch300ConvergedStatus, batch299ExternalAttestationLifecycleAudit, batch299ExternalAttestationLifecycleRequired, batch299ConvergedStatus, batch298ExternalLifecycleFinalizationReceiptAttestationAudit, batch298ExternalLifecycleFinalizationReceiptAttestationRequired, batch298ConvergedStatus, batch297ExternalAttestationLifecycleAudit, batch297ExternalAttestationLifecycleRequired, batch297ConvergedStatus, batch296ExternalLifecycleFinalizationReceiptAttestationAudit, batch296ExternalLifecycleFinalizationReceiptAttestationRequired, batch296ConvergedStatus, batch295ExternalAttestationLifecycleAudit, batch295ExternalAttestationLifecycleRequired, batch295ConvergedStatus, batch294ExternalLifecycleFinalizationReceiptAttestationAudit, batch294ExternalLifecycleFinalizationReceiptAttestationRequired, batch294ConvergedStatus, batch293ExternalAttestationLifecycleAudit, batch293ExternalAttestationLifecycleRequired, batch293ConvergedStatus, batch292ExternalLifecycleFinalizationReceiptAttestationAudit, batch292ExternalLifecycleFinalizationReceiptAttestationRequired, batch292ConvergedStatus, batch291ExternalAttestationLifecycleAudit, batch291ExternalAttestationLifecycleRequired, batch291ConvergedStatus, batch290ExternalLifecycleFinalizationReceiptAttestationAudit, batch290ExternalLifecycleFinalizationReceiptAttestationRequired, batch290ConvergedStatus, batch289ExternalAttestationLifecycleAudit, batch289ExternalAttestationLifecycleRequired, batch289ConvergedStatus, batch288ExternalLifecycleFinalizationReceiptAttestationAudit, batch288ExternalLifecycleFinalizationReceiptAttestationRequired, batch288ConvergedStatus, batch287ExternalAttestationLifecycleAudit, batch287ExternalAttestationLifecycleRequired, batch287ConvergedStatus, batch286ConvergedStatus, batch286ExternalLifecycleFinalizationReceiptAttestationAudit, batch286ExternalLifecycleFinalizationReceiptAttestationRequired, batch285ConvergedStatus, batch285ExternalAttestationLifecycleAudit, batch285ExternalAttestationLifecycleRequired, batch284ConvergedStatus, batch284ExternalLifecycleFinalizationReceiptAttestationAudit, batch284ExternalLifecycleFinalizationReceiptAttestationRequired, batch283ExternalAttestationLifecycleAudit, batch283ExternalAttestationLifecycleRequired, batch282ConvergedStatus, batch282ExternalLifecycleFinalizationReceiptAttestationAudit, batch282ExternalLifecycleFinalizationReceiptAttestationRequired, batch281ExternalAttestationLifecycleAudit, batch281ExternalAttestationLifecycleRequired, batch280ExternalLifecycleFinalizationReceiptAttestationAudit, batch280ExternalLifecycleFinalizationReceiptAttestationRequired, batch279ExternalAttestationLifecycleAudit, batch279ExternalAttestationLifecycleRequired, batch278ExternalLifecycleFinalizationReceiptAttestationAudit, batch278ExternalLifecycleFinalizationReceiptAttestationRequired, batch277ExternalAttestationLifecycleAudit, batch277ExternalAttestationLifecycleRequired, batch276ExternalLifecycleFinalizationReceiptAttestationAudit, batch276ExternalLifecycleFinalizationReceiptAttestationRequired, batch275ExternalAttestationLifecycleAudit, batch275ExternalAttestationLifecycleRequired, batch274ExternalLifecycleFinalizationReceiptAttestationAudit, batch273ExternalAttestationLifecycleAudit, batch272ExternalLifecycleFinalizationReceiptAttestationAudit, batch271ExternalAttestationLifecycleAudit, batch270ExternalLifecycleFinalizationReceiptAttestationAudit, batch269ExternalAttestationLifecycleAudit, batch268ExternalLifecycleFinalizationReceiptAttestationAudit, batch267ExternalAttestationLifecycleAudit, batch266ExternalLifecycleFinalizationReceiptAttestationAudit, batch265ExternalAttestationLifecycleAudit, batch264ExternalLifecycleFinalizationReceiptAttestationAudit, batch259ExternalAttestationLifecycleAudit, batch260ExternalLifecycleFinalizationReceiptAttestationAudit, batch261ExternalAttestationLifecycleAudit, batch262ExternalLifecycleFinalizationReceiptAttestationAudit, batch263ExternalAttestationLifecycleAudit, batch251ExternalAttestationLifecycleAudit, batch252ExternalLifecycleFinalizationReceiptAttestationAudit, batch253ExternalAttestationLifecycleAudit, batch254ExternalLifecycleFinalizationReceiptAttestationAudit, batch255ExternalAttestationLifecycleAudit, batch256ExternalLifecycleFinalizationReceiptAttestationAudit, batch257ExternalAttestationLifecycleAudit, batch258ExternalLifecycleFinalizationReceiptAttestationAudit, externalLifecycleAudit, externalFinalizationReceiptAttestationAudit, externalFinalizationReceiptAttestationLifecycleAudit,
       externalLifecycleFinalizationReceiptAttestationAudit, externalLifecycleFinalizationReceiptAttestationLifecycleAudit,
       externalLifecycleFinalizationReceiptAttestationFinalizationReceiptAudit, externalLifecycleFinalizationReceiptAttestationExternalAudit,
       externalFinalizationReceiptAttestationExternalLifecycleAudit, externalFinalizationReceiptAttestationLifecycleFinalizationReceiptAudit,
@@ -16541,7 +20453,97 @@ requireRecoverySloCrossDomainRecoveryGateProofContinuityReceiptLifecycleCheckpoi
         batch256ExternalLifecycleFinalizationReceiptAttestationDigest: batch256ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
         batch256ExternalLifecycleFinalizationReceiptAttestationRequired,
         batch257ExternalAttestationLifecycleDigest: batch257ExternalAttestationLifecycleAudit.generationBindingDigest || null,
-        batch257ExternalAttestationLifecycleRequired, batch258ExternalLifecycleFinalizationReceiptAttestationDigest: batch258ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch258ExternalLifecycleFinalizationReceiptAttestationRequired, batch259ExternalAttestationLifecycleDigest: batch259ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch259ExternalAttestationLifecycleRequired, batch260ExternalLifecycleFinalizationReceiptAttestationDigest: batch260ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch260ExternalLifecycleFinalizationReceiptAttestationRequired, batch261ExternalAttestationLifecycleDigest: batch261ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch261ExternalAttestationLifecycleRequired, batch262ExternalLifecycleFinalizationReceiptAttestationDigest: batch262ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch262ExternalLifecycleFinalizationReceiptAttestationRequired, batch263ExternalAttestationLifecycleDigest: batch263ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch263ExternalAttestationLifecycleRequired, batch264ExternalLifecycleFinalizationReceiptAttestationDigest: batch264ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch264ExternalLifecycleFinalizationReceiptAttestationRequired, batch265ExternalAttestationLifecycleDigest: batch265ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch265ExternalAttestationLifecycleRequired, batch266ExternalLifecycleFinalizationReceiptAttestationDigest: batch266ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch266ExternalLifecycleFinalizationReceiptAttestationRequired, batch267ExternalAttestationLifecycleDigest: batch267ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch267ExternalAttestationLifecycleRequired, batch268ExternalLifecycleFinalizationReceiptAttestationDigest: batch268ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch268ExternalLifecycleFinalizationReceiptAttestationRequired, batch269ExternalAttestationLifecycleDigest: batch269ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch269ExternalAttestationLifecycleRequired, batch270ExternalLifecycleFinalizationReceiptAttestationDigest: batch270ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch270ExternalLifecycleFinalizationReceiptAttestationRequired, batch271ExternalAttestationLifecycleDigest: batch271ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch271ExternalAttestationLifecycleRequired, batch272ExternalLifecycleFinalizationReceiptAttestationDigest: batch272ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch272ExternalLifecycleFinalizationReceiptAttestationRequired, batch273ExternalAttestationLifecycleDigest: batch273ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch273ExternalAttestationLifecycleRequired, batch274ExternalLifecycleFinalizationReceiptAttestationDigest: batch274ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch274ExternalLifecycleFinalizationReceiptAttestationRequired, batch275ExternalAttestationLifecycleDigest: batch275ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch275ExternalAttestationLifecycleRequired, status: batch275ConvergedStatus })),
+        batch257ExternalAttestationLifecycleRequired, batch258ExternalLifecycleFinalizationReceiptAttestationDigest: batch258ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch258ExternalLifecycleFinalizationReceiptAttestationRequired, batch259ExternalAttestationLifecycleDigest: batch259ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch259ExternalAttestationLifecycleRequired, batch260ExternalLifecycleFinalizationReceiptAttestationDigest: batch260ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch260ExternalLifecycleFinalizationReceiptAttestationRequired, batch261ExternalAttestationLifecycleDigest: batch261ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch261ExternalAttestationLifecycleRequired, batch262ExternalLifecycleFinalizationReceiptAttestationDigest: batch262ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch262ExternalLifecycleFinalizationReceiptAttestationRequired, batch263ExternalAttestationLifecycleDigest: batch263ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch263ExternalAttestationLifecycleRequired, batch264ExternalLifecycleFinalizationReceiptAttestationDigest: batch264ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch264ExternalLifecycleFinalizationReceiptAttestationRequired, batch265ExternalAttestationLifecycleDigest: batch265ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch265ExternalAttestationLifecycleRequired, batch266ExternalLifecycleFinalizationReceiptAttestationDigest: batch266ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch266ExternalLifecycleFinalizationReceiptAttestationRequired, batch267ExternalAttestationLifecycleDigest: batch267ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch267ExternalAttestationLifecycleRequired, batch268ExternalLifecycleFinalizationReceiptAttestationDigest: batch268ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch268ExternalLifecycleFinalizationReceiptAttestationRequired, batch269ExternalAttestationLifecycleDigest: batch269ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch269ExternalAttestationLifecycleRequired, batch270ExternalLifecycleFinalizationReceiptAttestationDigest: batch270ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch270ExternalLifecycleFinalizationReceiptAttestationRequired, batch271ExternalAttestationLifecycleDigest: batch271ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch271ExternalAttestationLifecycleRequired, batch272ExternalLifecycleFinalizationReceiptAttestationDigest: batch272ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch272ExternalLifecycleFinalizationReceiptAttestationRequired, batch273ExternalAttestationLifecycleDigest: batch273ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch273ExternalAttestationLifecycleRequired, batch274ExternalLifecycleFinalizationReceiptAttestationDigest: batch274ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch274ExternalLifecycleFinalizationReceiptAttestationRequired, batch275ExternalAttestationLifecycleDigest: batch275ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch275ExternalAttestationLifecycleRequired, batch276ExternalLifecycleFinalizationReceiptAttestationDigest: batch276ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch276ExternalLifecycleFinalizationReceiptAttestationRequired, batch277ExternalAttestationLifecycleDigest: batch277ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch277ExternalAttestationLifecycleRequired, batch278ExternalLifecycleFinalizationReceiptAttestationDigest: batch278ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch278ExternalLifecycleFinalizationReceiptAttestationRequired, batch279ExternalAttestationLifecycleDigest: batch279ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch279ExternalAttestationLifecycleRequired, batch280ExternalLifecycleFinalizationReceiptAttestationDigest: batch280ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch280ExternalLifecycleFinalizationReceiptAttestationRequired, batch281ExternalAttestationLifecycleDigest: batch281ExternalAttestationLifecycleAudit.generationBindingDigest || null, batch281ExternalAttestationLifecycleRequired, batch282ExternalLifecycleFinalizationReceiptAttestationDigest: batch282ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null, batch282ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch283ExternalAttestationLifecycleDigest: batch283ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch283ExternalAttestationLifecycleRequired,
+        batch284ExternalLifecycleFinalizationReceiptAttestationDigest: batch284ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch284ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch285ExternalAttestationLifecycleDigest: batch285ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch285ExternalAttestationLifecycleRequired,
+        batch286ExternalLifecycleFinalizationReceiptAttestationDigest: batch286ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch286ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch287ExternalAttestationLifecycleDigest: batch287ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch287ExternalAttestationLifecycleRequired,
+        batch288ExternalLifecycleFinalizationReceiptAttestationDigest: batch288ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch288ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch289ExternalAttestationLifecycleDigest: batch289ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch289ExternalAttestationLifecycleRequired,
+        batch290ExternalLifecycleFinalizationReceiptAttestationDigest: batch290ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch290ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch291ExternalAttestationLifecycleDigest: batch291ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch291ExternalAttestationLifecycleRequired,
+        batch292ExternalLifecycleFinalizationReceiptAttestationDigest: batch292ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch292ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch293ExternalAttestationLifecycleDigest: batch293ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch293ExternalAttestationLifecycleRequired,
+        batch294ExternalLifecycleFinalizationReceiptAttestationDigest: batch294ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch294ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch295ExternalAttestationLifecycleDigest: batch295ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch295ExternalAttestationLifecycleRequired,
+        batch296ExternalLifecycleFinalizationReceiptAttestationDigest: batch296ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch296ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch297ExternalAttestationLifecycleDigest: batch297ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch297ExternalAttestationLifecycleRequired,
+        batch298ExternalLifecycleFinalizationReceiptAttestationDigest: batch298ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch298ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch299ExternalAttestationLifecycleDigest: batch299ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch300ExternalLifecycleFinalizationReceiptAttestationDigest: batch300ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch301ExternalAttestationLifecycleDigest: batch301ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch302ExternalLifecycleFinalizationReceiptAttestationDigest: batch302ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch303ExternalAttestationLifecycleDigest: batch303ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch304ExternalLifecycleFinalizationReceiptAttestationDigest: batch304ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch305ExternalAttestationLifecycleDigest: batch305ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch305ExternalAttestationLifecycleRequired,
+        batch306ExternalLifecycleFinalizationReceiptAttestationDigest: batch306ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch306ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch307ExternalAttestationLifecycleDigest: batch307ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch307ExternalAttestationLifecycleRequired,
+        batch308ExternalLifecycleFinalizationReceiptAttestationDigest: batch308ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch308ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch309ExternalAttestationLifecycleDigest: batch309ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch309ExternalAttestationLifecycleRequired,
+        batch310ExternalLifecycleFinalizationReceiptAttestationDigest: batch310ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch310ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch312ExternalLifecycleFinalizationReceiptAttestationDigest: batch312ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch312ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch313ExternalAttestationLifecycleDigest: batch313ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch313ExternalAttestationLifecycleRequired,
+        batch314ExternalLifecycleFinalizationReceiptAttestationDigest: batch314ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch314ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch315ExternalAttestationLifecycleDigest: batch315ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch315ExternalAttestationLifecycleRequired,
+        batch316ExternalLifecycleFinalizationReceiptAttestationDigest: batch316ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch316ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch317ExternalAttestationLifecycleDigest: batch317ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch317ExternalAttestationLifecycleRequired,
+        batch318ExternalLifecycleFinalizationReceiptAttestationDigest: batch318ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch318ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch319ExternalAttestationLifecycleDigest: batch319ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch319ExternalAttestationLifecycleRequired,
+        batch320ExternalLifecycleFinalizationReceiptAttestationDigest: batch320ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch320ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch321ExternalAttestationLifecycleDigest: batch321ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch321ExternalAttestationLifecycleRequired,
+        batch322ExternalLifecycleFinalizationReceiptAttestationDigest: batch322ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch322ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch323ExternalAttestationLifecycleDigest: batch323ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch323ExternalAttestationLifecycleRequired,
+        batch324ExternalLifecycleFinalizationReceiptAttestationDigest: batch324ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch324ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch325ExternalAttestationLifecycleDigest: batch325ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch325ExternalAttestationLifecycleRequired,
+        batch326ExternalLifecycleFinalizationReceiptAttestationDigest: batch326ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch326ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch327ExternalAttestationLifecycleDigest: batch327ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch327ExternalAttestationLifecycleRequired,
+        batch328ExternalLifecycleFinalizationReceiptAttestationDigest: batch328ExternalLifecycleFinalizationReceiptAttestationAudit.generationBindingDigest || null,
+        batch328ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch329ExternalAttestationLifecycleDigest: batch329ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch329ExternalAttestationLifecycleRequired,
+        batch311ExternalAttestationLifecycleDigest: batch311ExternalAttestationLifecycleAudit.generationBindingDigest || null,
+        batch311ExternalAttestationLifecycleRequired,
+        batch299ExternalAttestationLifecycleRequired, batch300ExternalLifecycleFinalizationReceiptAttestationRequired,
+        batch301ExternalAttestationLifecycleRequired, batch302ExternalLifecycleFinalizationReceiptAttestationRequired, batch303ExternalAttestationLifecycleRequired, batch304ExternalLifecycleFinalizationReceiptAttestationRequired, batch308ExternalLifecycleFinalizationReceiptAttestationRequired, batch309ExternalAttestationLifecycleRequired, batch310ExternalLifecycleFinalizationReceiptAttestationRequired, status: batch329ConvergedStatus })),
       usableForCurrentDecision: baseAudit.usableForCurrentDecision === true && externalLifecycleAudit.usableForCurrentDecision === true
         && (!externalFinalizationReceiptAttestationRequired || externalFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
         && (!externalFinalizationReceiptAttestationLifecycleRequired || externalFinalizationReceiptAttestationLifecycleAudit.usableForCurrentDecision === true)
@@ -16595,7 +20597,64 @@ requireRecoverySloCrossDomainRecoveryGateProofContinuityReceiptLifecycleCheckpoi
         && (!batch273ExternalAttestationLifecycleRequired || batch273ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
         && (!batch274ExternalLifecycleFinalizationReceiptAttestationRequired || batch274ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
         && (!batch275ExternalAttestationLifecycleRequired || batch275ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
-        && ["verified_current", "not_initialized"].includes(batch275ConvergedStatus), readOnly: true, mutationAllowed: false };
+        && (!batch276ExternalLifecycleFinalizationReceiptAttestationRequired || batch276ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch277ExternalAttestationLifecycleRequired || batch277ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch278ExternalLifecycleFinalizationReceiptAttestationRequired || batch278ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch279ExternalAttestationLifecycleRequired || batch279ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch280ExternalLifecycleFinalizationReceiptAttestationRequired || batch280ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch281ExternalAttestationLifecycleRequired || batch281ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch282ExternalLifecycleFinalizationReceiptAttestationRequired || batch282ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch283ExternalAttestationLifecycleRequired || batch283ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch284ExternalLifecycleFinalizationReceiptAttestationRequired || batch284ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch285ExternalAttestationLifecycleRequired || batch285ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch286ExternalLifecycleFinalizationReceiptAttestationRequired
+          || batch286ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch287ExternalAttestationLifecycleRequired || batch287ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch288ExternalLifecycleFinalizationReceiptAttestationRequired
+          || batch288ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch289ExternalAttestationLifecycleRequired || batch289ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch290ExternalLifecycleFinalizationReceiptAttestationRequired
+          || batch290ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch291ExternalAttestationLifecycleRequired || batch291ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch292ExternalLifecycleFinalizationReceiptAttestationRequired || batch292ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch293ExternalAttestationLifecycleRequired || batch293ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch294ExternalLifecycleFinalizationReceiptAttestationRequired || batch294ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch295ExternalAttestationLifecycleRequired || batch295ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch296ExternalLifecycleFinalizationReceiptAttestationRequired || batch296ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch297ExternalAttestationLifecycleRequired || batch297ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch298ExternalLifecycleFinalizationReceiptAttestationRequired || batch298ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch299ExternalAttestationLifecycleRequired || batch299ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch300ExternalLifecycleFinalizationReceiptAttestationRequired || batch300ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch301ExternalAttestationLifecycleRequired || batch301ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch302ExternalLifecycleFinalizationReceiptAttestationRequired || batch302ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch303ExternalAttestationLifecycleRequired || batch303ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch304ExternalLifecycleFinalizationReceiptAttestationRequired || batch304ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch305ExternalAttestationLifecycleRequired || batch305ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch306ExternalLifecycleFinalizationReceiptAttestationRequired || batch306ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch307ExternalAttestationLifecycleRequired || batch307ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch308ExternalLifecycleFinalizationReceiptAttestationRequired || batch308ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch309ExternalAttestationLifecycleRequired || batch309ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch310ExternalLifecycleFinalizationReceiptAttestationRequired || batch310ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch311ExternalAttestationLifecycleRequired || batch311ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch312ExternalLifecycleFinalizationReceiptAttestationRequired || batch312ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch313ExternalAttestationLifecycleRequired || batch313ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch314ExternalLifecycleFinalizationReceiptAttestationRequired || batch314ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch315ExternalAttestationLifecycleRequired || batch315ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch316ExternalLifecycleFinalizationReceiptAttestationRequired || batch316ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch317ExternalAttestationLifecycleRequired || batch317ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch318ExternalLifecycleFinalizationReceiptAttestationRequired || batch318ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch319ExternalAttestationLifecycleRequired || batch319ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch320ExternalLifecycleFinalizationReceiptAttestationRequired || batch320ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch321ExternalAttestationLifecycleRequired || batch321ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch322ExternalLifecycleFinalizationReceiptAttestationRequired || batch322ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch323ExternalAttestationLifecycleRequired || batch323ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch324ExternalLifecycleFinalizationReceiptAttestationRequired || batch324ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch325ExternalAttestationLifecycleRequired || batch325ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch326ExternalLifecycleFinalizationReceiptAttestationRequired || batch326ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch327ExternalAttestationLifecycleRequired || batch327ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && (!batch328ExternalLifecycleFinalizationReceiptAttestationRequired || batch328ExternalLifecycleFinalizationReceiptAttestationAudit.usableForCurrentDecision === true)
+        && (!batch329ExternalAttestationLifecycleRequired || batch329ExternalAttestationLifecycleAudit.usableForCurrentDecision === true)
+        && ["verified_current", "not_initialized"].includes(batch329ConvergedStatus), readOnly: true, mutationAllowed: false };
   }
   async function prepareRecoveryGateProofContinuityFinalizationReceiptBindingAttestationExternalLifecycle(ownerId, options = {}) {
     if (requireRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleAttestationReceiptKeyCutoffRevalidation
@@ -18735,6 +22794,213 @@ requireRecoverySloCrossDomainRecoveryGateProofContinuityReceiptLifecycleCheckpoi
     auditRecoveryGateBatch275ExternalAttestationLifecycle:auditRecoveryGateBatch275ExternalAttestationLifecycle,
     getRecoveryGateBatch275ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch275ExternalAttestationLifecycleSnapshot,
     reconcileRecoveryGateBatch275ExternalAttestationLifecycle:reconcileRecoveryGateBatch275ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch277ExternalAttestationLifecycle:prepareRecoveryGateBatch277ExternalAttestationLifecycle,
+    applyRecoveryGateBatch277ExternalAttestationLifecycle:applyRecoveryGateBatch277ExternalAttestationLifecycle,
+    auditRecoveryGateBatch277ExternalAttestationLifecycle:auditRecoveryGateBatch277ExternalAttestationLifecycle,
+    getRecoveryGateBatch277ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch277ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch277ExternalAttestationLifecycle:reconcileRecoveryGateBatch277ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch279ExternalAttestationLifecycle:prepareRecoveryGateBatch279ExternalAttestationLifecycle,
+    applyRecoveryGateBatch279ExternalAttestationLifecycle:applyRecoveryGateBatch279ExternalAttestationLifecycle,
+    auditRecoveryGateBatch279ExternalAttestationLifecycle:auditRecoveryGateBatch279ExternalAttestationLifecycle,
+    getRecoveryGateBatch279ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch279ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch279ExternalAttestationLifecycle:reconcileRecoveryGateBatch279ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch281ExternalAttestationLifecycle:prepareRecoveryGateBatch281ExternalAttestationLifecycle,
+    applyRecoveryGateBatch281ExternalAttestationLifecycle:applyRecoveryGateBatch281ExternalAttestationLifecycle,
+    auditRecoveryGateBatch281ExternalAttestationLifecycle:auditRecoveryGateBatch281ExternalAttestationLifecycle,
+    getRecoveryGateBatch281ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch281ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch281ExternalAttestationLifecycle:reconcileRecoveryGateBatch281ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch283ExternalAttestationLifecycle:prepareRecoveryGateBatch283ExternalAttestationLifecycle,
+    applyRecoveryGateBatch283ExternalAttestationLifecycle:applyRecoveryGateBatch283ExternalAttestationLifecycle,
+    auditRecoveryGateBatch283ExternalAttestationLifecycle:auditRecoveryGateBatch283ExternalAttestationLifecycle,
+    getRecoveryGateBatch283ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch283ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch283ExternalAttestationLifecycle:reconcileRecoveryGateBatch283ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch285ExternalAttestationLifecycle:prepareRecoveryGateBatch285ExternalAttestationLifecycle,
+    applyRecoveryGateBatch285ExternalAttestationLifecycle:applyRecoveryGateBatch285ExternalAttestationLifecycle,
+    auditRecoveryGateBatch285ExternalAttestationLifecycle:auditRecoveryGateBatch285ExternalAttestationLifecycle,
+    getRecoveryGateBatch285ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch285ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch285ExternalAttestationLifecycle:reconcileRecoveryGateBatch285ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch287ExternalAttestationLifecycle:prepareRecoveryGateBatch287ExternalAttestationLifecycle,
+    applyRecoveryGateBatch287ExternalAttestationLifecycle:applyRecoveryGateBatch287ExternalAttestationLifecycle,
+    auditRecoveryGateBatch287ExternalAttestationLifecycle:auditRecoveryGateBatch287ExternalAttestationLifecycle,
+    getRecoveryGateBatch287ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch287ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch287ExternalAttestationLifecycle:reconcileRecoveryGateBatch287ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch289ExternalAttestationLifecycle:prepareRecoveryGateBatch289ExternalAttestationLifecycle,
+    applyRecoveryGateBatch289ExternalAttestationLifecycle:applyRecoveryGateBatch289ExternalAttestationLifecycle,
+    auditRecoveryGateBatch289ExternalAttestationLifecycle:auditRecoveryGateBatch289ExternalAttestationLifecycle,
+    getRecoveryGateBatch289ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch289ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch289ExternalAttestationLifecycle:reconcileRecoveryGateBatch289ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch291ExternalAttestationLifecycle:prepareRecoveryGateBatch291ExternalAttestationLifecycle,
+    applyRecoveryGateBatch291ExternalAttestationLifecycle:applyRecoveryGateBatch291ExternalAttestationLifecycle,
+    auditRecoveryGateBatch291ExternalAttestationLifecycle:auditRecoveryGateBatch291ExternalAttestationLifecycle,
+    getRecoveryGateBatch291ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch291ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch291ExternalAttestationLifecycle:reconcileRecoveryGateBatch291ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch293ExternalAttestationLifecycle:prepareRecoveryGateBatch293ExternalAttestationLifecycle,
+    applyRecoveryGateBatch293ExternalAttestationLifecycle:applyRecoveryGateBatch293ExternalAttestationLifecycle,
+    auditRecoveryGateBatch293ExternalAttestationLifecycle:auditRecoveryGateBatch293ExternalAttestationLifecycle,
+    getRecoveryGateBatch293ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch293ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch293ExternalAttestationLifecycle:reconcileRecoveryGateBatch293ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch295ExternalAttestationLifecycle:prepareRecoveryGateBatch295ExternalAttestationLifecycle,
+    applyRecoveryGateBatch295ExternalAttestationLifecycle:applyRecoveryGateBatch295ExternalAttestationLifecycle,
+    auditRecoveryGateBatch295ExternalAttestationLifecycle:auditRecoveryGateBatch295ExternalAttestationLifecycle,
+    getRecoveryGateBatch295ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch295ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch295ExternalAttestationLifecycle:reconcileRecoveryGateBatch295ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch297ExternalAttestationLifecycle:prepareRecoveryGateBatch297ExternalAttestationLifecycle,
+    applyRecoveryGateBatch297ExternalAttestationLifecycle:applyRecoveryGateBatch297ExternalAttestationLifecycle,
+    auditRecoveryGateBatch297ExternalAttestationLifecycle:auditRecoveryGateBatch297ExternalAttestationLifecycle,
+    getRecoveryGateBatch297ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch297ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch297ExternalAttestationLifecycle:reconcileRecoveryGateBatch297ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch299ExternalAttestationLifecycle:prepareRecoveryGateBatch299ExternalAttestationLifecycle,
+    applyRecoveryGateBatch299ExternalAttestationLifecycle:applyRecoveryGateBatch299ExternalAttestationLifecycle,
+    auditRecoveryGateBatch299ExternalAttestationLifecycle:auditRecoveryGateBatch299ExternalAttestationLifecycle,
+    getRecoveryGateBatch299ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch299ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch299ExternalAttestationLifecycle:reconcileRecoveryGateBatch299ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch301ExternalAttestationLifecycle:prepareRecoveryGateBatch301ExternalAttestationLifecycle,
+    applyRecoveryGateBatch301ExternalAttestationLifecycle:applyRecoveryGateBatch301ExternalAttestationLifecycle,
+    auditRecoveryGateBatch301ExternalAttestationLifecycle:auditRecoveryGateBatch301ExternalAttestationLifecycle,
+    getRecoveryGateBatch301ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch301ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch301ExternalAttestationLifecycle:reconcileRecoveryGateBatch301ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch303ExternalAttestationLifecycle:prepareRecoveryGateBatch303ExternalAttestationLifecycle,
+    applyRecoveryGateBatch303ExternalAttestationLifecycle:applyRecoveryGateBatch303ExternalAttestationLifecycle,
+    auditRecoveryGateBatch303ExternalAttestationLifecycle:auditRecoveryGateBatch303ExternalAttestationLifecycle,
+    getRecoveryGateBatch303ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch303ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch303ExternalAttestationLifecycle:reconcileRecoveryGateBatch303ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch305ExternalAttestationLifecycle:prepareRecoveryGateBatch305ExternalAttestationLifecycle,
+    applyRecoveryGateBatch305ExternalAttestationLifecycle:applyRecoveryGateBatch305ExternalAttestationLifecycle,
+    auditRecoveryGateBatch305ExternalAttestationLifecycle:auditRecoveryGateBatch305ExternalAttestationLifecycle,
+    getRecoveryGateBatch305ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch305ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch305ExternalAttestationLifecycle:reconcileRecoveryGateBatch305ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch307ExternalAttestationLifecycle:prepareRecoveryGateBatch307ExternalAttestationLifecycle,
+    applyRecoveryGateBatch307ExternalAttestationLifecycle:applyRecoveryGateBatch307ExternalAttestationLifecycle,
+    auditRecoveryGateBatch307ExternalAttestationLifecycle:auditRecoveryGateBatch307ExternalAttestationLifecycle,
+    getRecoveryGateBatch307ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch307ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch307ExternalAttestationLifecycle:reconcileRecoveryGateBatch307ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch309ExternalAttestationLifecycle:prepareRecoveryGateBatch309ExternalAttestationLifecycle,
+    applyRecoveryGateBatch309ExternalAttestationLifecycle:applyRecoveryGateBatch309ExternalAttestationLifecycle,
+    auditRecoveryGateBatch309ExternalAttestationLifecycle:auditRecoveryGateBatch309ExternalAttestationLifecycle,
+    getRecoveryGateBatch309ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch309ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch309ExternalAttestationLifecycle:reconcileRecoveryGateBatch309ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch311ExternalAttestationLifecycle:prepareRecoveryGateBatch311ExternalAttestationLifecycle,
+    applyRecoveryGateBatch311ExternalAttestationLifecycle:applyRecoveryGateBatch311ExternalAttestationLifecycle,
+    auditRecoveryGateBatch311ExternalAttestationLifecycle:auditRecoveryGateBatch311ExternalAttestationLifecycle,
+    getRecoveryGateBatch311ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch311ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch311ExternalAttestationLifecycle:reconcileRecoveryGateBatch311ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch313ExternalAttestationLifecycle:prepareRecoveryGateBatch313ExternalAttestationLifecycle,
+    applyRecoveryGateBatch313ExternalAttestationLifecycle:applyRecoveryGateBatch313ExternalAttestationLifecycle,
+    auditRecoveryGateBatch313ExternalAttestationLifecycle:auditRecoveryGateBatch313ExternalAttestationLifecycle,
+    getRecoveryGateBatch313ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch313ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch313ExternalAttestationLifecycle:reconcileRecoveryGateBatch313ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch315ExternalAttestationLifecycle:prepareRecoveryGateBatch315ExternalAttestationLifecycle,
+    applyRecoveryGateBatch315ExternalAttestationLifecycle:applyRecoveryGateBatch315ExternalAttestationLifecycle,
+    auditRecoveryGateBatch315ExternalAttestationLifecycle:auditRecoveryGateBatch315ExternalAttestationLifecycle,
+    getRecoveryGateBatch315ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch315ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch315ExternalAttestationLifecycle:reconcileRecoveryGateBatch315ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch317ExternalAttestationLifecycle:prepareRecoveryGateBatch317ExternalAttestationLifecycle,
+    applyRecoveryGateBatch317ExternalAttestationLifecycle:applyRecoveryGateBatch317ExternalAttestationLifecycle,
+    auditRecoveryGateBatch317ExternalAttestationLifecycle:auditRecoveryGateBatch317ExternalAttestationLifecycle,
+    getRecoveryGateBatch317ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch317ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch317ExternalAttestationLifecycle:reconcileRecoveryGateBatch317ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch319ExternalAttestationLifecycle:prepareRecoveryGateBatch319ExternalAttestationLifecycle,
+    applyRecoveryGateBatch319ExternalAttestationLifecycle:applyRecoveryGateBatch319ExternalAttestationLifecycle,
+    auditRecoveryGateBatch319ExternalAttestationLifecycle:auditRecoveryGateBatch319ExternalAttestationLifecycle,
+    getRecoveryGateBatch319ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch319ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch319ExternalAttestationLifecycle:reconcileRecoveryGateBatch319ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch321ExternalAttestationLifecycle:prepareRecoveryGateBatch321ExternalAttestationLifecycle,
+    applyRecoveryGateBatch321ExternalAttestationLifecycle:applyRecoveryGateBatch321ExternalAttestationLifecycle,
+    auditRecoveryGateBatch321ExternalAttestationLifecycle:auditRecoveryGateBatch321ExternalAttestationLifecycle,
+    getRecoveryGateBatch321ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch321ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch321ExternalAttestationLifecycle:reconcileRecoveryGateBatch321ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch323ExternalAttestationLifecycle:prepareRecoveryGateBatch323ExternalAttestationLifecycle,
+    applyRecoveryGateBatch323ExternalAttestationLifecycle:applyRecoveryGateBatch323ExternalAttestationLifecycle,
+    auditRecoveryGateBatch323ExternalAttestationLifecycle:auditRecoveryGateBatch323ExternalAttestationLifecycle,
+    getRecoveryGateBatch323ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch323ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch323ExternalAttestationLifecycle:reconcileRecoveryGateBatch323ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch325ExternalAttestationLifecycle:prepareRecoveryGateBatch325ExternalAttestationLifecycle,
+    applyRecoveryGateBatch325ExternalAttestationLifecycle:applyRecoveryGateBatch325ExternalAttestationLifecycle,
+    auditRecoveryGateBatch325ExternalAttestationLifecycle:auditRecoveryGateBatch325ExternalAttestationLifecycle,
+    getRecoveryGateBatch325ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch325ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch325ExternalAttestationLifecycle:reconcileRecoveryGateBatch325ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch327ExternalAttestationLifecycle:prepareRecoveryGateBatch327ExternalAttestationLifecycle,
+    applyRecoveryGateBatch327ExternalAttestationLifecycle:applyRecoveryGateBatch327ExternalAttestationLifecycle,
+    auditRecoveryGateBatch327ExternalAttestationLifecycle:auditRecoveryGateBatch327ExternalAttestationLifecycle,
+    getRecoveryGateBatch327ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch327ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch327ExternalAttestationLifecycle:reconcileRecoveryGateBatch327ExternalAttestationLifecycle,
+    prepareRecoveryGateBatch329ExternalAttestationLifecycle:prepareRecoveryGateBatch329ExternalAttestationLifecycle,
+    applyRecoveryGateBatch329ExternalAttestationLifecycle:applyRecoveryGateBatch329ExternalAttestationLifecycle,
+    auditRecoveryGateBatch329ExternalAttestationLifecycle:auditRecoveryGateBatch329ExternalAttestationLifecycle,
+    getRecoveryGateBatch329ExternalAttestationLifecycleSnapshot:getRecoveryGateBatch329ExternalAttestationLifecycleSnapshot,
+    reconcileRecoveryGateBatch329ExternalAttestationLifecycle:reconcileRecoveryGateBatch329ExternalAttestationLifecycle,
+    attestRecoveryGateBatch294ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch294ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch294ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch294ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch294ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch294ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch294ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch294ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch296ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch296ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch296ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch296ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch296ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch296ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch296ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch296ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch298ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch298ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch298ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch298ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch298ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch298ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch298ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch298ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch300ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch300ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch300ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch300ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch300ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch300ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch300ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch300ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch302ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch302ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch302ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch302ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch302ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch302ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch302ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch302ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch304ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch304ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch304ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch304ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch304ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch304ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch304ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch304ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch306ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch306ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch306ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch306ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch306ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch306ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch306ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch306ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch308ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch308ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch308ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch308ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch308ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch308ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch308ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch308ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch310ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch310ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch310ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch310ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch310ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch310ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch310ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch310ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch312ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch312ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch312ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch312ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch312ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch312ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch312ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch312ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch314ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch314ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch314ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch314ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch314ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch314ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch314ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch314ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch316ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch316ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch316ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch316ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch316ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch316ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch316ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch316ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch318ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch318ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch318ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch318ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch318ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch318ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch318ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch318ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch320ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch320ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch320ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch320ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch320ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch320ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch320ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch320ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch322ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch322ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch322ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch322ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch322ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch322ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch322ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch322ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch324ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch324ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch324ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch324ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch324ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch324ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch324ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch324ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch326ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch326ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch326ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch326ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch326ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch326ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch326ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch326ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch328ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch328ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch328ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch328ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch328ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch328ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch328ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch328ExternalLifecycleFinalizationReceiptAttestations,
     attestRecoveryGateBatch240ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch240ExternalLifecycleFinalizationReceiptAttestations,
     auditRecoveryGateBatch240ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch240ExternalLifecycleFinalizationReceiptAttestations,
     getRecoveryGateBatch240ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch240ExternalLifecycleFinalizationReceiptAttestationSnapshot,
@@ -18807,6 +23073,42 @@ requireRecoverySloCrossDomainRecoveryGateProofContinuityReceiptLifecycleCheckpoi
     auditRecoveryGateBatch274ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch274ExternalLifecycleFinalizationReceiptAttestations,
     getRecoveryGateBatch274ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch274ExternalLifecycleFinalizationReceiptAttestationSnapshot,
     reconcileRecoveryGateBatch274ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch274ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch276ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch276ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch276ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch276ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch276ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch276ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch276ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch276ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch278ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch278ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch278ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch278ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch278ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch278ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch278ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch278ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch280ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch280ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch280ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch280ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch280ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch280ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch280ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch280ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch282ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch282ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch282ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch282ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch282ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch282ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch282ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch282ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch284ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch284ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch284ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch284ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch284ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch284ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch284ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch284ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch286ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch286ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch286ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch286ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch286ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch286ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch286ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch286ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch288ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch288ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch288ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch288ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch288ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch288ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch288ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch288ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch290ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch290ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch290ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch290ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch290ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch290ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch290ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch290ExternalLifecycleFinalizationReceiptAttestations,
+    attestRecoveryGateBatch292ExternalLifecycleFinalizationReceiptAttestations:attestRecoveryGateBatch292ExternalLifecycleFinalizationReceiptAttestations,
+    auditRecoveryGateBatch292ExternalLifecycleFinalizationReceiptAttestations:auditRecoveryGateBatch292ExternalLifecycleFinalizationReceiptAttestations,
+    getRecoveryGateBatch292ExternalLifecycleFinalizationReceiptAttestationSnapshot:getRecoveryGateBatch292ExternalLifecycleFinalizationReceiptAttestationSnapshot,
+    reconcileRecoveryGateBatch292ExternalLifecycleFinalizationReceiptAttestations:reconcileRecoveryGateBatch292ExternalLifecycleFinalizationReceiptAttestations,
     attestRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleExternalLifecycleFinalizationReceiptAttestationExternalAttestations:attestRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleExternalLifecycleFinalizationReceiptAttestationExternalAttestations,
     auditRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleExternalLifecycleFinalizationReceiptAttestationExternalAttestations:auditRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleExternalLifecycleFinalizationReceiptAttestationExternalAttestations,
     getRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleExternalLifecycleFinalizationReceiptAttestationExternalAttestationsSnapshot:getRecoveryGateProofContinuityFinalizationReceiptBindingAttestationLifecycleExternalLifecycleFinalizationReceiptAttestationExternalAttestationsSnapshot,
